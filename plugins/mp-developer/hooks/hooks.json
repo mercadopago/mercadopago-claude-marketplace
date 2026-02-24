@@ -1,0 +1,17 @@
+{
+  "description": "Prevents Mercado Pago credentials from being written to source files",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/validate_mp_credentials.py",
+            "timeout": 10
+          }
+        ],
+        "matcher": "Bash|Edit|Write|MultiEdit"
+      }
+    ]
+  }
+}

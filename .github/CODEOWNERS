@@ -1,0 +1,5 @@
+# Global owner — MP Developer Experience team owns the whole marketplace
+* @mercadopago/developer-experience
+
+# Plugin-level ownership
+/plugins/mp-developer/ @mercadopago/developer-experience
