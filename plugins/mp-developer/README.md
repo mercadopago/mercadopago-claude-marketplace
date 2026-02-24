@@ -2,6 +2,26 @@
 
 Mercado Pago payment integration toolkit for Claude Code. Provides an expert agent, checkout and notification skills, credential leak prevention, and live API documentation access.
 
+## Quick Start
+
+After installing the plugin, connect it to your Mercado Pago account:
+
+```bash
+# Run from your terminal (not inside Claude Code)
+bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mp-developer/*/scripts/setup.sh
+```
+
+The setup script will:
+1. Ask for your Access Token (hidden input)
+2. Store it in your **OS keychain** (macOS Keychain / Linux secret-tool)
+3. Test the connection
+
+Then restart Claude Code. The MCP server will read the token from the keychain at startup.
+
+> Your Access Token is never stored in any file. Claude Code cannot read the OS keychain — only the MCP server process accesses it.
+
+Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
+
 ## Components
 
 ### Agent: `mp-integration-expert`
@@ -12,6 +32,7 @@ A specialized agent for implementing, reviewing, and debugging Mercado Pago inte
 
 | Command | Description |
 |---------|-------------|
+| `/mp-connect` | Connect to your Mercado Pago account — runs the secure token setup |
 | `/mp-review [area]` | Review your MP integration for correctness, security, and best practices. Optional focus: `security`, `webhooks`, `checkout`, `errors` |
 | `/mp-setup [lang] [type]` | Scaffold a new MP integration. Language: `node`, `python`, `java`. Type: `checkout-pro`, `bricks`, `payments-api` |
 
@@ -32,9 +53,9 @@ Automatically scans code being written for hardcoded Mercado Pago credentials:
 
 Blocks the write and suggests using environment variables instead. Skips `.env` files where credentials belong.
 
-### MCP: Live Documentation
+### MCP: Mercado Pago API
 
-Provides access to fetch content from the official Mercado Pago developer documentation at runtime.
+Connects Claude Code to the official Mercado Pago MCP server (`mcp.mercadopago.com`), providing live access to the Payments API, preference management, and developer documentation. Requires an Access Token — run `/mp-connect` or the setup script to configure.
 
 ## Configuration
 

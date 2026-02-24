@@ -22,6 +22,20 @@ Public marketplace of Claude Code plugins for Mercado Pago payment integration d
 /plugin install mp-developer@mercadopago-claude-marketplace
 ```
 
+## Setup — Connect Your Account
+
+After installing, run the setup script from your **terminal** (not inside Claude Code):
+
+```bash
+bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mp-developer/*/scripts/setup.sh
+```
+
+This stores your Access Token in the **OS keychain** (macOS Keychain / Linux secret-tool). Claude Code cannot read the keychain — only the MCP server process accesses it at startup.
+
+Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
+
+Then restart Claude Code.
+
 ## What's Included
 
 The `mp-developer` plugin provides 5 component types:
@@ -29,12 +43,13 @@ The `mp-developer` plugin provides 5 component types:
 | Component | Name | Purpose |
 |-----------|------|---------|
 | **Agent** | `mp-integration-expert` | Specialized agent for implementing, reviewing, and debugging MP integrations |
+| **Command** | `/mp-connect` | Securely connect to your Mercado Pago account (Access Token setup) |
 | **Command** | `/mp-review` | Review an existing integration for correctness, security, and best practices |
 | **Command** | `/mp-setup` | Scaffold a new MP integration (SDK install, `.env.example`, checkout + webhook skeleton) |
 | **Skill** | `mp-checkout` | Checkout Pro, Checkout Bricks, and Payments API code patterns |
 | **Skill** | `mp-notifications` | Webhook/IPN handling, HMAC signature validation, idempotency |
 | **Hook** | Credential scanner | Prevents hardcoded MP tokens/secrets from being written to source files |
-| **MCP** | `mp-docs` | Live access to official Mercado Pago developer documentation |
+| **MCP** | `mercadopago` | Live Mercado Pago API access via MCP server (token from OS keychain) |
 | **Setting** | Per-project config | Optional `.claude/mp-developer.local.md` to customize hook behavior |
 
 ## Requirements

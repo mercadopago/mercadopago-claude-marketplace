@@ -1,7 +1,7 @@
 {
-  "mp-docs": {
+  "mercadopago": {
     "type": "stdio",
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-fetch"]
+    "command": "bash",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/mcp-launcher.sh"]
   }
 }
