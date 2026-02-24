@@ -1,6 +1,6 @@
 ---
-description: Scaffold a new Mercado Pago integration — installs SDK, configures .env.example, and creates working checkout + webhook skeleton
-argument-hint: [node|python|java] [checkout-pro|bricks|payments-api]
+description: Scaffold a new Mercado Pago integration — supports all MP products including online checkout, in-store, subscriptions, marketplace, and more
+argument-hint: "[node|python|java] [checkout-pro|bricks|payments-api|qr|subscriptions|marketplace|point]"
 allowed-tools: [Read, Write, Edit, Bash]
 ---
 
@@ -12,20 +12,24 @@ Scaffold a new Mercado Pago payment integration in the current project.
 
 You are setting up a Mercado Pago integration from scratch. Follow these steps:
 
-### 1. Determine Language and Integration Type
+### 1. Determine Language and Product
 
-If `$ARGUMENTS` is provided, parse it for language and integration type:
+If `$ARGUMENTS` is provided, parse it for language and product type:
 - Languages: `node`, `python`, `java`
-- Types: `checkout-pro`, `bricks`, `payments-api`
+- Products:
+  - **Online**: `checkout-pro`, `bricks`, `payments-api`
+  - **In-Store**: `qr`, `point`
+  - **Recurring**: `subscriptions`
+  - **Platform**: `marketplace`
 
-Example: `/mp-setup node checkout-pro`
+Example: `/mp-setup node checkout-pro` or `/mp-setup python subscriptions`
 
-If not provided, check the project for existing indicators:
+If not provided, detect language from project files:
 - `package.json` → Node.js
 - `requirements.txt` / `pyproject.toml` → Python
 - `pom.xml` / `build.gradle` → Java
 
-If still unclear, ask the user.
+If product is unclear, ask the user which MP product they want to integrate.
 
 ### 2. Create `.env.example`
 
@@ -34,6 +38,9 @@ If still unclear, ask the user.
 # Get yours at: https://www.mercadopago.com.ar/developers/panel/app
 MP_ACCESS_TOKEN=TEST-0000000000000000-000000-00000000000000000000000000000000-000000000
 MP_PUBLIC_KEY=TEST-00000000-0000-0000-0000-000000000000
+
+# Webhook Secret (from Dashboard → Webhooks)
+MP_WEBHOOK_SECRET=your_webhook_secret_here
 
 # App Config
 APP_URL=http://localhost:3000
@@ -52,23 +59,21 @@ Run the appropriate install command:
 
 ### 5. Scaffold Integration Files
 
-Based on the integration type, create working skeleton files:
+Use the Mercado Pago MCP server to get current code templates for the selected product and language. If MCP is unavailable, use the corresponding skill for integration patterns:
 
-**Checkout Pro** — Create:
-- Server route to create preferences
-- Redirect handler for back_urls (success/failure/pending)
-- Webhook receiver endpoint
+| Product | Skill | Key files to scaffold |
+|---------|-------|-----------------------|
+| checkout-pro | mp-checkout-online | Preference route, back_url handler, webhook receiver |
+| bricks | mp-checkout-online | Preference route, Brick HTML, process route, webhook |
+| payments-api | mp-checkout-online | Payment route, tokenization frontend, webhook |
+| qr | mp-instore | Store/POS setup, order creation route, webhook |
+| point | mp-instore | Device registration, payment intent route, webhook |
+| subscriptions | mp-subscriptions | Plan creation, subscription URL/route, invoice webhook |
+| marketplace | mp-marketplace | OAuth route, split payment route, seller management, webhook |
 
-**Bricks** — Create:
-- Server route to create preferences
-- Frontend HTML with Payment Brick initialization
-- Server route to process brick form submission
-- Webhook receiver endpoint
-
-**Payments API** — Create:
-- Server route to create payments directly
-- Card tokenization frontend snippet
-- Webhook receiver endpoint
+For every product, always scaffold:
+- A webhook receiver endpoint with HMAC signature validation
+- Proper error handling with user-friendly messages
 
 ### 6. Summary
 
@@ -77,8 +82,8 @@ After scaffolding, print a summary:
 ```
 ## MP Integration Ready
 
-**Language**: [node|python|java]
-**Type**: [checkout-pro|bricks|payments-api]
+**Language**: [detected language]
+**Product**: [selected product]
 
 ### Created files:
 - `.env.example` — credential template

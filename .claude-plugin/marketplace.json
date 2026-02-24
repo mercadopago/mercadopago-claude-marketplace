@@ -4,20 +4,20 @@
     "name": "Mercado Pago Developer Experience"
   },
   "metadata": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Public marketplace of Claude Code plugins for Mercado Pago payment integration development"
   },
   "plugins": [
     {
       "name": "mp-developer",
       "source": "./plugins/mp-developer",
-      "description": "Mercado Pago payment integration toolkit. Includes an expert agent, checkout and notification skills, credential leak prevention hook, and MCP-backed API documentation.",
-      "version": "1.0.0",
+      "description": "Mercado Pago full-product integration toolkit. Covers online checkout (Pro, Bricks, API), in-store (QR, Point), subscriptions, marketplace, wallet, money-out, security (3DS, PCI), reporting, and specialized integrations. Hybrid architecture: 11 skills provide stable integration intelligence, MCP provides live API data.",
+      "version": "2.0.0",
       "author": { "name": "Mercado Pago Developer Experience" },
       "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
       "license": "MIT",
       "category": "development",
-      "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "fintech", "meli"]
+      "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "wallet", "3ds", "fintech", "meli"]
     }
   ]
 }

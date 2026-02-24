@@ -6,7 +6,7 @@ Public marketplace of Claude Code plugins for Mercado Pago payment integration d
 
 | Plugin | Version | Description |
 |--------|---------|-------------|
-| [mp-developer](./plugins/mp-developer/) | 1.0.0 | Mercado Pago payment integration toolkit — expert agent, checkout & notification skills, credential leak prevention hook, and live API docs |
+| [mp-developer](./plugins/mp-developer/) | 2.0.0 | Mercado Pago full-product integration toolkit — 11 product skills, expert routing agent, credential leak prevention, and live API docs via MCP |
 
 ## Installation
 
@@ -38,24 +38,54 @@ Then restart Claude Code.
 
 ## What's Included
 
-The `mp-developer` plugin provides 5 component types:
+The `mp-developer` plugin covers the full Mercado Pago product suite:
+
+### Agent
 
 | Component | Name | Purpose |
 |-----------|------|---------|
-| **Agent** | `mp-integration-expert` | Specialized agent for implementing, reviewing, and debugging MP integrations |
-| **Command** | `/mp-connect` | Securely connect to your Mercado Pago account (Access Token setup) |
-| **Command** | `/mp-review` | Review an existing integration for correctness, security, and best practices |
-| **Command** | `/mp-setup` | Scaffold a new MP integration (SDK install, `.env.example`, checkout + webhook skeleton) |
-| **Skill** | `mp-checkout` | Checkout Pro, Checkout Bricks, and Payments API code patterns |
-| **Skill** | `mp-notifications` | Webhook/IPN handling, HMAC signature validation, idempotency |
-| **Hook** | Credential scanner | Prevents hardcoded MP tokens/secrets from being written to source files |
-| **MCP** | `mercadopago` | Live Mercado Pago API access via MCP server (token from OS keychain) |
-| **Setting** | Per-project config | Optional `.claude/mp-developer.local.md` to customize hook behavior |
+| Agent | `mp-integration-expert` | Routes to the correct product skill based on project signals. Detects country and product automatically. |
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/mp-connect` | Securely connect to your Mercado Pago account |
+| `/mp-review [scope]` | Review an integration for correctness, security, and best practices |
+| `/mp-setup [lang] [product]` | Scaffold a new MP integration for any product |
+
+### Skills (11 product skills — hybrid architecture)
+
+| Skill | Products Covered |
+|-------|-----------------|
+| `mp-checkout-online` | Checkout Pro, Checkout Bricks, Payments API, 3DS, Cross-Border Payments |
+| `mp-notifications` | Webhooks (v2), IPN (legacy), HMAC validation |
+| `mp-instore` | QR Attended, QR Dynamic, Point devices, Kiosk |
+| `mp-unified-orders` | Unified Orders, OU + QR |
+| `mp-subscriptions` | Subscription Plans, Preapprovals, Invoices |
+| `mp-wallet` | Wallet Connect, Debt Payments, Massive Payment Links |
+| `mp-money-out` | Disbursements, Bank Transfers |
+| `mp-marketplace` | Marketplace Splits, Seller Onboarding, VTEX, Application Fees |
+| `mp-security` | 3D Secure, PCI, Supertoken, Vault, Card Tokenization |
+| `mp-specialized` | Insurance (AR), Yape (PE), Fintoc (CL) |
+| `mp-reporting` | Settlement Reports, Reconciliation, Account Statements |
+
+### Infrastructure
+
+| Component | Purpose |
+|-----------|---------|
+| Hook | Credential scanner — prevents hardcoded MP tokens from being written to source files |
+| MCP | Live Mercado Pago API access via MCP server (token from OS keychain) |
+| Setting | Per-project config via `.claude/mp-developer.local.md` |
+
+## Hybrid Architecture
+
+Skills contain **stable integration intelligence** (flows, decision trees, gotchas) that rarely changes. The MCP server provides **dynamic data** (endpoints, payloads, code snippets) that's always current. This keeps context lightweight while ensuring up-to-date information.
 
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code) CLI
-- Node.js 18+ (for the `mp-docs` MCP server)
+- Node.js 18+ (for the MCP server)
 - Python 3.8+ (for the credential scanning hook)
 
 ## Contributing

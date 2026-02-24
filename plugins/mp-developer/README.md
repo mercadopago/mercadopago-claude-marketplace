@@ -1,6 +1,6 @@
 # mp-developer
 
-Mercado Pago payment integration toolkit for Claude Code. Provides an expert agent, checkout and notification skills, credential leak prevention, and live API documentation access.
+Mercado Pago full-product integration toolkit for Claude Code. Hybrid architecture: 11 product skills provide stable integration intelligence (flows, decision trees, gotchas), while the MCP server provides live API data (endpoints, payloads, code snippets).
 
 ## Quick Start
 
@@ -22,28 +22,62 @@ Then restart Claude Code. The MCP server will read the token from the keychain a
 
 Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
 
-## Components
+## Products Covered
 
-### Agent: `mp-integration-expert`
+| Product | Skill | Description |
+|---------|-------|-------------|
+| Checkout Pro | `mp-checkout-online` | Redirect-based payment with preferences |
+| Checkout Bricks | `mp-checkout-online` | Embeddable UI components (Payment Brick, Card Brick, etc.) |
+| Payments API | `mp-checkout-online` | Direct server-to-server payment with card tokenization |
+| 3D Secure | `mp-checkout-online` | Additional cardholder authentication |
+| Cross-Border Payments | `mp-checkout-online` | Accept payments from other countries |
+| Webhooks | `mp-notifications` | HMAC-signed webhook handling, IPN |
+| QR Attended / Dynamic | `mp-instore` | In-store QR code payments |
+| Point | `mp-instore` | Physical card reader devices |
+| Unified Orders | `mp-unified-orders` | Multi-payment orders, OU + QR |
+| Subscriptions | `mp-subscriptions` | Recurring billing, plans, preapprovals |
+| Wallet Connect | `mp-wallet` | Link user wallets, debt payments, massive links |
+| Money Out | `mp-money-out` | Disbursements, bank transfers |
+| Marketplace | `mp-marketplace` | Multi-seller platforms, splits, OAuth |
+| Security | `mp-security` | Tokenization, Supertoken, Vault, PCI |
+| Specialized | `mp-specialized` | Insurance, Yape (PE), Fintoc (CL) |
+| Reporting | `mp-reporting` | Settlement reports, reconciliation |
 
-A specialized agent for implementing, reviewing, and debugging Mercado Pago integrations. Covers Checkout Pro, Checkout Bricks, Payments API, webhooks, and OAuth flows.
+## Architecture
 
-### Commands
+```
+Skills contain (STABLE — rarely changes):
+├── What products are covered
+├── When to use this skill vs another
+├── End-to-end integration flows (step by step)
+├── Decision trees between variants
+├── Prerequisites and configuration
+├── Country availability
+├── Non-obvious gotchas and common errors
+├── Product-specific security checklist
+└── Instructions on WHAT to fetch from MCP and WHERE in docs
+
+MCP provides (DYNAMIC — always up to date):
+├── Exact endpoints and URLs
+├── Request/response payloads and schemas
+├── Code snippets per SDK/language
+├── Test data
+└── Error codes and messages
+```
+
+## Agent: `mp-integration-expert`
+
+A lightweight router that detects the target country and product, then delegates to the right skill + MCP. Covers all 7 countries: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay.
+
+## Commands
 
 | Command | Description |
 |---------|-------------|
 | `/mp-connect` | Connect to your Mercado Pago account — runs the secure token setup |
-| `/mp-review [area]` | Review your MP integration for correctness, security, and best practices. Optional focus: `security`, `webhooks`, `checkout`, `errors` |
-| `/mp-setup [lang] [type]` | Scaffold a new MP integration. Language: `node`, `python`, `java`. Type: `checkout-pro`, `bricks`, `payments-api` |
+| `/mp-review [scope]` | Review your MP integration. Scopes: `security`, `webhooks`, `checkout`, `qr`, `subscriptions`, `marketplace`, `errors`, `full` |
+| `/mp-setup [lang] [product]` | Scaffold a new integration. Products: `checkout-pro`, `bricks`, `payments-api`, `qr`, `point`, `subscriptions`, `marketplace` |
 
-### Skills
-
-| Skill | Description |
-|-------|-------------|
-| `mp-checkout` | Checkout Pro, Checkout Bricks, and Payments API patterns with working code templates |
-| `mp-notifications` | Webhook and IPN notification handling, HMAC-SHA256 signature validation, idempotency |
-
-### Hook: Credential Leak Prevention
+## Hook: Credential Leak Prevention
 
 Automatically scans code being written for hardcoded Mercado Pago credentials:
 - Access tokens (`TEST-*`, `APP_USR-*`)
@@ -53,9 +87,9 @@ Automatically scans code being written for hardcoded Mercado Pago credentials:
 
 Blocks the write and suggests using environment variables instead. Skips `.env` files where credentials belong.
 
-### MCP: Mercado Pago API
+## MCP: Mercado Pago API
 
-Connects Claude Code to the official Mercado Pago MCP server (`mcp.mercadopago.com`), providing live access to the Payments API, preference management, and developer documentation. Requires an Access Token — run `/mp-connect` or the setup script to configure.
+Connects Claude Code to the official Mercado Pago MCP server (`mcp.mercadopago.com`), providing live access to payment APIs, documentation, and developer tools. Requires an Access Token — run `/mp-connect` or the setup script to configure.
 
 ## Configuration
 

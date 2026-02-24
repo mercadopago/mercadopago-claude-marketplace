@@ -1,9 +1,9 @@
 {
   "name": "mp-developer",
-  "description": "Mercado Pago payment integration toolkit with expert agent, checkout and notification skills, credential protection hook, and live API docs via MCP",
-  "version": "1.0.0",
+  "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 11 product skills (online checkout, in-store QR/Point, subscriptions, marketplace, wallet, money-out, security, reporting, and more). Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
+  "version": "2.0.0",
   "author": { "name": "Mercado Pago Developer Experience" },
   "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
   "license": "MIT",
-  "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn"]
+  "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "wallet", "3ds", "fintech", "meli"]
 }
