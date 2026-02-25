@@ -109,7 +109,7 @@ python3 -m json.tool plugins/mp-developer/.claude-plugin/plugin.json
 # Hook compilation
 python3 -m py_compile plugins/mp-developer/hooks/validate_mp_credentials.py
 
-# Skill count (currently 11)
+# Skill count (currently 12)
 find plugins/mp-developer/skills -name "SKILL.md" | wc -l
 
 # Agent weight (should be < 200 lines)

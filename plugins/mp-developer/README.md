@@ -1,6 +1,6 @@
 # mp-developer
 
-Mercado Pago full-product integration toolkit for Claude Code. Hybrid architecture: 11 product skills provide stable integration intelligence (flows, decision trees, gotchas), while the MCP server provides live API data (endpoints, payloads, code snippets).
+Mercado Pago full-product integration toolkit for Claude Code. Hybrid architecture: 12 product skills provide stable integration intelligence (flows, decision trees, gotchas), while the MCP server provides live API data (endpoints, payloads, code snippets).
 
 ## Quick Start
 
@@ -42,6 +42,7 @@ Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
 | Security | `mp-security` | Tokenization, Supertoken, Vault, PCI |
 | Specialized | `mp-specialized` | Insurance, Yape (PE), Fintoc (CL) |
 | Reporting | `mp-reporting` | Settlement reports, reconciliation |
+| SDKs | `mp-sdks` | SDK selection, setup, migration, platform compatibility |
 
 ## Architecture
 

@@ -67,8 +67,13 @@ After determining the country, identify which product the developer needs by mat
 | 3DS standalone, PCI, tokenization, vault, supertoken, `card_token` | `mp-security` |
 | insurance, aseguradora, Yape, Fintoc | `mp-specialized` |
 | report, reporte, conciliation, settlement, `report_type` | `mp-reporting` |
+| SDK selection, `sdk-react`, `sdk-ios`, `sdk-android`, MercadoPago.js setup, SDK migration, "which SDK", platform compatibility | `mp-sdks` |
 
 If signals are ambiguous or span multiple products, ask the user to clarify before proceeding.
+
+### SDK Platform Detection
+
+If the question is specifically about SDK selection, setup, compatibility, or migration (not about a product flow), activate `mp-sdks`. If the question mentions a platform (React, iOS, Android) in the context of a product flow, activate the product skill — the SDK Installation Reference table already provides the install command.
 
 ## Delegation Protocol
 
@@ -105,6 +110,12 @@ Verify these points in every MP integration:
 | PHP | `composer require mercadopago/dx-php` |
 | Ruby | `gem install mercadopago-sdk` |
 | .NET | `dotnet add package MercadoPago` |
+| Go | `go get github.com/mercadopago/sdk-go` |
+| MercadoPago.js | `<script src="https://sdk.mercadopago.com/js/v2"></script>` |
+| React SDK | `npm install @mercadopago/sdk-react` |
+| Android SDK | Gradle: `com.mercadopago:sdk` (github.com/mercadopago) |
+| iOS SDK | SPM: `https://github.com/mercadopago/sdk-ios` |
+| All repos | `https://github.com/mercadopago` |
 
 ## Reference Links
 

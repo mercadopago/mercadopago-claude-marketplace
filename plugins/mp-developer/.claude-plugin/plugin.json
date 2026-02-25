@@ -1,6 +1,6 @@
 {
   "name": "mp-developer",
-  "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 11 product skills (online checkout, in-store QR/Point, subscriptions, marketplace, wallet, money-out, security, reporting, and more). Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
+  "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 12 product skills (online checkout, in-store QR/Point, subscriptions, marketplace, wallet, money-out, security, reporting, SDKs, and more). Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
   "version": "2.0.0",
   "author": { "name": "Mercado Pago Developer Experience" },
   "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
