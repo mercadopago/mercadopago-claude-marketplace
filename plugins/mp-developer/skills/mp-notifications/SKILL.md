@@ -1,11 +1,11 @@
 ---
 name: mp-notifications
 description: Mercado Pago webhook and IPN notification handling. Use when implementing webhook receivers, validating x-signature headers, handling notification retries, debugging missing notifications, or configuring notification types per product.
-tools: Read, Grep, Glob, Bash, WebFetch
-model: sonnet
-category: development
-tags: [None]
-version: 2.0.0
+metadata:
+  version: "2.0.0"
+  author: "Mercado Pago Developer Experience"
+  category: "development"
+  tags: "mercadopago, webhooks, ipn, notifications, signature, hmac, retry"
 ---
 
 # Mercado Pago Notifications

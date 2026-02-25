@@ -1,11 +1,11 @@
 ---
 name: mp-reporting
 description: Mercado Pago reporting and reconciliation. Covers settlement reports, account statements, and transaction reconciliation. Use when implementing financial reporting.
-tools: Read, Grep, Glob, Bash, WebFetch
-model: sonnet
-category: development
-tags: [None]
-version: 2.0.0
+metadata:
+  version: "2.0.0"
+  author: "Mercado Pago Developer Experience"
+  category: "development"
+  tags: "mercadopago, reports, reporting, reconciliation, settlement, conciliation"
 ---
 
 # mp-reporting

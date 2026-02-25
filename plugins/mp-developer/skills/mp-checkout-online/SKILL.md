@@ -1,11 +1,11 @@
 ---
 name: mp-checkout-online
 description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout Bricks, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
-tools: Read, Grep, Glob, Bash, WebFetch
-model: sonnet
-category: development
-tags: [payments, mercadopago, checkout, preference, bricks, payments, sdk, 3ds, cbp]
-version: 2.0.0
+metadata:
+  version: "2.0.0"
+  author: "Mercado Pago Developer Experience"
+  category: "development"
+  tags: "mercadopago, checkout, preference, bricks, payments, sdk, 3ds, cbp"
 ---
 
 # mp-checkout-online

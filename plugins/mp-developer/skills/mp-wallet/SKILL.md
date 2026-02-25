@@ -1,11 +1,11 @@
 ---
 name: mp-wallet
 description: Mercado Pago Wallet integrations. Covers Wallet Connect, debt payments, and massive payment links. Use when integrating with MP wallet features.
-tools: Read, Grep, Glob, Bash, WebFetch
-model: sonnet
-category: development
-tags: [None]
-version: 2.0.0
+metadata:
+  version: "2.0.0"
+  author: "Mercado Pago Developer Experience"
+  category: "development"
+  tags: "mercadopago, wallet, wallet-connect, debt, payment-link, link-masivo"
 ---
 
 # mp-wallet

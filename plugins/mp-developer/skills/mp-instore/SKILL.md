@@ -1,11 +1,11 @@
 ---
 name: mp-instore
 description: In-store payment integration for Mercado Pago. Covers QR Attended, QR Dynamic, Point devices, and Kiosk mode. Use when implementing face-to-face payment flows.
-tools: Read, Grep, Glob, Bash, WebFetch
-model: sonnet
-category: development
-tags: [None]
-version: 2.0.0
+metadata:
+  version: "2.0.0"
+  author: "Mercado Pago Developer Experience"
+  category: "development"
+  tags: "mercadopago, qr, point, pos, instore, presencial, kiosko"
 ---
 
 # mp-instore
