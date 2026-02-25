@@ -80,6 +80,16 @@ allowed-tools: [Read, Write, Edit, Bash]     # allowed-tools, NOT tools
 
 Only ONE skill is loaded per interaction. This keeps context lightweight.
 
+## WebFetch Budget
+
+When the MCP server is not available, the agent falls back to `WebFetch` for documentation. To prevent excessive context consumption:
+
+- **Maximum 2 WebFetch calls per interaction.** The skill already contains the integration intelligence — docs are only needed for specific endpoint details or code samples.
+- **Never fetch what's already in the skill.** Flows, decision trees, gotchas, prerequisites, and country availability are in the SKILL.md.
+- **Never re-fetch the same or similar pages.** One fetch for the main product guide, one for a secondary topic (error codes, test data, etc.) if needed.
+
+This rule is enforced in the agent's Delegation Protocol.
+
 ## Adding a New Product Skill
 
 1. Create `skills/mp-{product}/SKILL.md` with the standard skill frontmatter (NO `tools`, NO `model`)

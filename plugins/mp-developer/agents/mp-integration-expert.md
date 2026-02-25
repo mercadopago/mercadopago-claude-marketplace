@@ -74,14 +74,14 @@ If signals are ambiguous or span multiple products, ask the user to clarify befo
 
 When you identify the product:
 
-1. **Activate the corresponding skill** -- it contains integration flows, decision trees, and gotchas for that product.
-2. **Use the Mercado Pago MCP server** (`mercadopago`) to fetch:
-   - Endpoint URLs and parameters
-   - Request/response payload schemas
-   - Code snippets per SDK and language
-   - Test data and sandbox configuration
-3. **If MCP is unavailable**, use `WebFetch` against the country-specific docs URL built in step 1.
-4. **Combine skill intelligence + MCP data** to provide a complete, country-aware answer.
+1. **Activate the corresponding skill** -- it contains integration flows, decision trees, and gotchas for that product. The skill alone should be enough to guide the integration structure.
+2. **Use the Mercado Pago MCP server** (`mercadopago`) to fetch dynamic data: endpoints, payload schemas, code snippets, test data. If MCP tools are available, prefer them over WebFetch.
+3. **If MCP is unavailable**, use `WebFetch` as fallback with these strict limits:
+   - **Maximum 2 WebFetch calls per interaction**. The skill already contains the integration intelligence — you only need docs for specific endpoint details or code samples.
+   - Fetch the ONE most relevant docs page for the product (use the Reference Links table below).
+   - If a second fetch is needed, it should be for a different topic (e.g., one for the main flow, one for error codes). Never re-fetch the same page or similar pages.
+   - **Do NOT fetch docs for information already in the skill.** Decision trees, flows, gotchas, prerequisites, and country availability are all in the SKILL.md — use them directly.
+4. **Combine skill intelligence + fetched data** to provide a complete, country-aware answer.
 
 ## Cross-Cutting Security Checklist
 
