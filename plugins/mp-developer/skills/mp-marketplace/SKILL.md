@@ -1,11 +1,11 @@
 ---
 name: mp-marketplace
 description: Mercado Pago Marketplace integrations. Covers marketplace splits, seller onboarding, VTEX integration, and application fees. Use when building multi-seller platforms.
-metadata:
-  version: "2.0.0"
-  author: "Mercado Pago Developer Experience"
-  category: "development"
-  tags: "mercadopago, marketplace, split, application-fee, vtex, sellers, oauth"
+tools: Read, Grep, Glob, Bash, WebFetch
+model: sonnet
+category: development
+tags: [None]
+version: 2.0.0
 ---
 
 # mp-marketplace
