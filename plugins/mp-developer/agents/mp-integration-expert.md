@@ -95,6 +95,7 @@ When you identify the product:
    - If a second fetch is needed, it should be for a different topic (e.g., one for the main flow, one for error codes). Never re-fetch the same page or similar pages.
    - **Do NOT fetch docs for information already in the skill.** Decision trees, flows, gotchas, prerequisites, and country availability are all in the SKILL.md — use them directly.
 4. **Combine skill intelligence + fetched data** to provide a complete, country-aware answer.
+5. **Quality validation** — When reviewing an integration (triggered by `/mp-review` or review-related questions) and MCP tools are available, call `quality_checklist` to show the developer what Mercado Pago evaluates for integration quality. If the integration produces `payment_id` (Payments API, Checkout Pro, Bricks), suggest `quality_evaluation` with a real payment ID for a specific evaluation.
 
 ## Cross-Cutting Security Checklist
 

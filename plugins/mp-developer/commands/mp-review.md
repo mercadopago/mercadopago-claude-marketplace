@@ -22,6 +22,7 @@ If `$ARGUMENTS` is provided, narrow the review to that scope:
 - **subscriptions** — Plan setup, preapproval flow, invoice handling
 - **marketplace** — OAuth flow, split payments, application_fee, seller management
 - **errors** — Error handling, API error responses, retry logic, edge cases
+- **quality** — Integration quality checklist against Mercado Pago standards (requires MCP connection)
 - **full** — Complete review of all areas (default)
 
 If no argument is given, perform a full review.
@@ -38,7 +39,7 @@ If no argument is given, perform a full review.
    - HTTPS enforced for callback URLs
    - Server-side payment verification (never trust client-only status)
    - Idempotency keys used for payment creation
-   - Test/sandbox credentials separated from production
+   - Test user credentials separated from production (both use `APP_USR-` prefix)
 5. **Check product-specific correctness**:
    - **Checkout Pro**: Required preference fields, back_urls, auto_return, notification_url
    - **Bricks**: Public Key initialization, onSubmit handling, server-side processing
@@ -53,6 +54,25 @@ If no argument is given, perform a full review.
    - external_reference used for reconciliation
    - Country-specific requirements met (currency_id, payment methods)
 7. **Consult MCP** — Use the Mercado Pago MCP server for current API requirements and validate against latest specs
+8. **Quality checklist** — If the Mercado Pago MCP server is connected (`mcp__mercadopago__*` tools available), call `quality_checklist` to retrieve the official quality evaluation fields. Format the results as two tables:
+   - **Required fields**: fields the integration MUST implement to meet Mercado Pago quality standards
+   - **Best practices**: optional improvements and recommendations
+
+   This step runs automatically for `quality` and `full` scopes. For other scopes, skip it.
+
+   Additionally, suggest `quality_evaluation` when it is compatible with the developer's integration. To determine compatibility, follow this logic:
+
+   **Step 1 — Detect what ID the MCP tool requires**: Inspect the `quality_evaluation` tool parameters. Currently it requires `payment_id`. In the future, it may require `order_id` instead.
+
+   **Step 2 — Detect which API the integration uses**: Use `Grep` to determine if the codebase calls the Payments API (`/v1/payments`, `payment.create`, `mercadopago.payment`) or the Orders API (`/v1/orders`, `order.create`, `mercadopago.order`).
+
+   **Step 3 — Match tool requirement to integration type**:
+   - If tool requires `payment_id` AND integration uses Payments API → **suggest** `quality_evaluation`. The developer must complete a test payment first to obtain the ID.
+   - If tool requires `payment_id` AND integration uses Orders API → **do NOT suggest** `quality_evaluation` (incompatible). No action needed.
+   - If tool requires `order_id` AND integration uses Orders API → **suggest** `quality_evaluation`. The developer must complete a test order first.
+   - If tool requires `order_id` AND integration uses Payments API → **do NOT suggest** `quality_evaluation`. Instead, **suggest (do not force)** migrating to the Orders API, which is Mercado Pago's unified API going forward.
+
+   Never make `quality_evaluation` mandatory — it is always a suggestion.
 
 ### Output Format
 
@@ -74,4 +94,9 @@ If no argument is given, perform a full review.
 
 ### Recommendations
 - [Actionable improvements with references to specific skills/docs]
+
+### Quality Standards (when MCP is connected)
+- **Required fields**: [table from quality_checklist]
+- **Best practices**: [table from quality_checklist]
+- **Tip**: To evaluate a specific payment, provide a payment ID and we can run `quality_evaluation` for detailed results.
 ```
