@@ -35,7 +35,7 @@ If product is unclear, ask the user which MP product they want to integrate.
 
 ```
 # Mercado Pago Credentials
-# Get yours at: https://www.mercadopago.com.ar/developers/panel/app
+# Get yours at the Mercado Pago Developer Panel (Tus integraciones > Credenciales)
 MP_ACCESS_TOKEN=APP_USR-0000000000000000-000000-00000000000000000000000000000000-000000000
 MP_PUBLIC_KEY=APP_USR-00000000-0000-0000-0000-000000000000
 
@@ -99,7 +99,7 @@ After scaffolding, print a summary:
 
 ### Next steps:
 1. Copy `.env.example` to `.env` and add your credentials
-2. Get credentials at: https://www.mercadopago.com.ar/developers/panel/app
+2. Get credentials from the Mercado Pago Developer Panel (*Tus integraciones > Credenciales*)
 3. Run your server and test using the credentials of a **test user** (create one from the Dashboard or via the MCP tool `create_test_user`)
 4. For webhooks in local dev: `ngrok http <port>`
 ```
