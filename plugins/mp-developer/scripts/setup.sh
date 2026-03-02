@@ -105,7 +105,7 @@ has_token() {
 # ---------- validation ----------
 validate_token_format() {
   local token="$1"
-  # MP tokens: APP_USR-... or TEST-...
+  # MP tokens: APP_USR-... (current) or TEST-... (legacy, kept for back-compat)
   if [[ "$token" =~ ^(APP_USR|TEST)- ]]; then
     return 0
   fi
@@ -194,7 +194,7 @@ cmd_setup() {
 
   # Validate format
   if ! validate_token_format "$token"; then
-    echo -e "${YELLOW}Warning: Token doesn't match expected format (APP_USR-* or TEST-*).${NC}"
+    echo -e "${YELLOW}Warning: Token doesn't match expected format (APP_USR-*).${NC}"
     read -r -p "Store anyway? [y/N] " confirm
     if [[ ! "$confirm" =~ ^[yY]$ ]]; then
       echo "Setup cancelled."

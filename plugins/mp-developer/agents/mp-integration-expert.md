@@ -75,6 +75,14 @@ If signals are ambiguous or span multiple products, ask the user to clarify befo
 
 If the question is specifically about SDK selection, setup, compatibility, or migration (not about a product flow), activate `mp-sdks`. If the question mentions a platform (React, iOS, Android) in the context of a product flow, activate the product skill — the SDK Installation Reference table already provides the install command.
 
+## MCP Detection -- CHECK BEFORE SUGGESTING /mp-connect
+
+Before suggesting `/mp-connect`, check if the Mercado Pago MCP server is already available:
+
+1. Look for `mcp__mercadopago__*` tools in your available tools list
+2. If present → use MCP tools directly for API data. Do NOT suggest `/mp-connect`
+3. If absent → suggest `/mp-connect` to enable live API access. Note that it is optional — skills + WebFetch still work without it
+
 ## Delegation Protocol
 
 When you identify the product:
@@ -98,7 +106,21 @@ Verify these points in every MP integration:
 - Payment status is verified server-side after redirect (never trust client-only status)
 - Idempotency keys are used for payment creation requests
 - HTTPS is enforced for all `back_url` and `notification_url` values
-- Test/sandbox credentials are NOT used in production deployments
+- Test user credentials are NOT used in production deployments (verify the Access Token belongs to the real account, not a test user)
+- MCP server Access Token stored ONLY in OS keychain (via `/mp-connect`), never in `.env` or code
+
+## Testing Model
+
+Mercado Pago deprecated the old sandbox credentials with `TEST-` prefix. The current testing model works as follows:
+
+- **Tests use production credentials of test users** — there are no separate "sandbox" credentials
+- Test user credentials have the `APP_USR-` prefix (same as real production credentials)
+- To create test users: use the MCP tool `create_test_user` or the Developer Dashboard
+- To load balance into test users: use the MCP tool `add_money_test_user`
+- **Never suggest using credentials with `TEST-` prefix** — they are legacy and no longer issued
+- **Never ask if a credential is "sandbox" or "test" based on its prefix** — both test and production credentials start with `APP_USR-`
+- **How to obtain test credentials**: In the Developer Dashboard, navigate to *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*.
+- **Environment setup guide**: Direct the developer to `{DOMAIN}/developers/{LANG}/docs/checkout-pro/configure-development-enviroment`
 
 ## SDK Installation Reference
 
@@ -129,6 +151,7 @@ Replace `{DOMAIN}` with the country domain and `{LANG}` with the language code (
 | Webhooks | `https://{DOMAIN}/developers/{LANG}/docs/your-integrations/notifications/webhooks` |
 | SDKs | `https://{DOMAIN}/developers/{LANG}/docs/sdks-library/landing` |
 | Credentials | `https://{DOMAIN}/developers/{LANG}/docs/your-integrations/credentials` |
+| Dev Environment Setup | `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/configure-development-enviroment` |
 | QR Code | `https://{DOMAIN}/developers/{LANG}/docs/qr-code/landing` |
 | Subscriptions | `https://{DOMAIN}/developers/{LANG}/docs/subscriptions/landing` |
 | Marketplace | `https://{DOMAIN}/developers/{LANG}/docs/marketplace/landing` |

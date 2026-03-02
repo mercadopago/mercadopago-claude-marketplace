@@ -130,10 +130,12 @@ All 7 countries: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay.
 
 CBP: Requires specific country-pair approval.
 
-## Sandbox Testing
+## Testing
 
 - Use `sandbox_init_point` instead of `init_point` for Checkout Pro
-- Use TEST credentials (start with `TEST-`)
+- Use production credentials (`APP_USR-*`) of a **test user** — Mercado Pago no longer uses `TEST-` sandbox credentials
+- Create test users from the Developer Dashboard or via the MCP tool `create_test_user`
+- Load balance into test users with the MCP tool `add_money_test_user`
 - **For current test cards and test user emails**: Consult MCP server or fetch `{DOMAIN}/developers/{LANG}/docs/your-integrations/test/cards`
 
 ## What to Fetch from MCP

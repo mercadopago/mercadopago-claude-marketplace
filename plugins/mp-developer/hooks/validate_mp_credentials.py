@@ -2,8 +2,9 @@
 """
 MP Developer Plugin — Credential Leak Prevention Hook
 
-Scans tool inputs (Bash, Edit, Write, MultiEdit) for hardcoded
+Scans tool inputs (Bash, Edit, Write, MultiEdit, Read) for hardcoded
 Mercado Pago credentials and blocks them before they reach source files.
+Also blocks reading .env files to prevent credential exposure.
 
 Exit codes:
   0 — allow (no credentials detected)
@@ -86,7 +87,7 @@ def extract_text(tool_name: str, tool_input: dict) -> str:
 
 def get_file_path(tool_name: str, tool_input: dict) -> str:
     """Extract the target file path from a tool input."""
-    if tool_name in ("Write", "Edit", "MultiEdit"):
+    if tool_name in ("Write", "Edit", "MultiEdit", "Read"):
         return tool_input.get("file_path", "")
     return ""
 
@@ -98,6 +99,14 @@ def scan(text: str) -> list[tuple[str, str]]:
         for m in pattern.finditer(text):
             matches.append((name, m.group()))
     return matches
+
+
+def is_env_file(path: str) -> bool:
+    """Check if path is a .env file (not .env.example)."""
+    basename = os.path.basename(path)
+    if basename == ".env.example" or basename.endswith(".env.example"):
+        return False
+    return basename == ".env" or basename.startswith(".env.")
 
 
 # ---------- main ----------
@@ -116,9 +125,23 @@ def main():
     if settings.get("enabled", "true").lower() == "false":
         sys.exit(0)
 
-    # Skip .env files — credentials belong there
     file_path = get_file_path(tool_name, tool_input)
-    if file_path and os.path.basename(file_path).startswith(".env"):
+
+    # --- Read tool path: block .env reads (not .env.example) ---
+    if tool_name == "Read":
+        if file_path and is_env_file(file_path):
+            print(
+                f"BLOCKED: Reading .env files is not allowed to prevent credential exposure.\n"
+                f"If you need to see the expected variables, read .env.example instead.",
+                file=sys.stderr,
+            )
+            sys.exit(2)
+        sys.exit(0)
+
+    # --- Write/Edit/MultiEdit/Bash path: scan for credentials ---
+
+    # Skip .env files — credentials belong there
+    if file_path and is_env_file(file_path):
         sys.exit(0)
 
     # Extract and scan

@@ -36,8 +36,8 @@ If product is unclear, ask the user which MP product they want to integrate.
 ```
 # Mercado Pago Credentials
 # Get yours at: https://www.mercadopago.com.ar/developers/panel/app
-MP_ACCESS_TOKEN=TEST-0000000000000000-000000-00000000000000000000000000000000-000000000
-MP_PUBLIC_KEY=TEST-00000000-0000-0000-0000-000000000000
+MP_ACCESS_TOKEN=APP_USR-0000000000000000-000000-00000000000000000000000000000000-000000000
+MP_PUBLIC_KEY=APP_USR-00000000-0000-0000-0000-000000000000
 
 # Webhook Secret (from Dashboard → Webhooks)
 MP_WEBHOOK_SECRET=your_webhook_secret_here
@@ -45,6 +45,14 @@ MP_WEBHOOK_SECRET=your_webhook_secret_here
 # App Config
 APP_URL=http://localhost:3000
 ```
+
+### 2.5 Development Environment Guide
+
+After creating `.env.example`, guide the developer on how to obtain test credentials:
+
+- **Test credentials location**: In the Mercado Pago Developer Dashboard, navigate to: *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*.
+- **Environment setup docs**: Direct the developer to the country-specific guide at `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/configure-development-enviroment` (replace `{DOMAIN}` and `{LANG}` based on the detected country).
+- **Test users**: Create test users from the Dashboard or using the MCP tool `create_test_user`. Test user credentials use the same `APP_USR-` prefix as production credentials.
 
 ### 3. Ensure `.env` is in `.gitignore`
 
@@ -92,6 +100,6 @@ After scaffolding, print a summary:
 ### Next steps:
 1. Copy `.env.example` to `.env` and add your credentials
 2. Get credentials at: https://www.mercadopago.com.ar/developers/panel/app
-3. Run your server and test with sandbox credentials
+3. Run your server and test using the credentials of a **test user** (create one from the Dashboard or via the MCP tool `create_test_user`)
 4. For webhooks in local dev: `ngrok http <port>`
 ```

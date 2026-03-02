@@ -1,5 +1,5 @@
 {
-  "description": "Prevents Mercado Pago credentials from being written to source files",
+  "description": "Prevents Mercado Pago credentials from being written to source files and blocks reading .env files to prevent credential exposure",
   "hooks": {
     "PreToolUse": [
       {
@@ -10,7 +10,7 @@
             "timeout": 10
           }
         ],
-        "matcher": "Bash|Edit|Write|MultiEdit"
+        "matcher": "Bash|Edit|Write|MultiEdit|Read"
       }
     ]
   }

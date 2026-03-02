@@ -81,12 +81,12 @@ A lightweight router that detects the target country and product, then delegates
 ## Hook: Credential Leak Prevention
 
 Automatically scans code being written for hardcoded Mercado Pago credentials:
-- Access tokens (`TEST-*`, `APP_USR-*`)
+- Access tokens (`APP_USR-*` for production and test users, `TEST-*` legacy)
 - Client secrets
 - Bearer authorization headers
 - Webhook signing secrets
 
-Blocks the write and suggests using environment variables instead. Skips `.env` files where credentials belong.
+Blocks writes containing credentials and suggests using environment variables instead. Also blocks reading `.env` files to prevent credential exposure (`.env.example` remains readable).
 
 ## MCP: Mercado Pago API
 
