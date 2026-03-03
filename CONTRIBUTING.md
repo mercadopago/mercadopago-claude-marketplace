@@ -37,7 +37,7 @@ mkdir -p plugins/<your-plugin>/.claude-plugin
   "description": "Brief description of what the plugin does",
   "version": "1.0.0",
   "author": { "name": "Your Name or Team" },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["relevant", "keywords"]
 }
 ```
@@ -63,7 +63,7 @@ Add your plugin to the `plugins` array in `.claude-plugin/marketplace.json`:
   "description": "Brief description",
   "version": "1.0.0",
   "author": { "name": "Your Name" },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "category": "development",
   "keywords": ["keyword1", "keyword2"]
 }

@@ -1,60 +1,56 @@
 # mercadopago-claude-marketplace
 
-Public marketplace of Claude Code plugins for Mercado Pago payment integration development.
+**The official Claude Code plugin marketplace for Mercado Pago payment integrations.**
 
-## Available Plugins
+[![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
+[![Version: 2.0.0](https://img.shields.io/badge/version-2.0.0-green)](./CHANGELOG.md)
+[![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
+[![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
-| Plugin | Version | Description |
-|--------|---------|-------------|
-| [mp-developer](./plugins/mp-developer/) | 2.0.0 | Mercado Pago full-product integration toolkit — 11 product skills, expert routing agent, credential leak prevention, and live API docs via MCP |
+> [!WARNING]
+> **This project is under active development.** APIs, skill structures, and plugin interfaces may change between versions. Use in production integrations at your own discretion. Feedback and contributions are welcome.
+
+## Overview
+
+A Claude Code plugin that gives you an AI-powered integration assistant for the full Mercado Pago product suite. Ask questions, scaffold projects, review code, and get real-time API guidance — all from your terminal.
+
+- **12 product skills** covering the complete Mercado Pago ecosystem
+- **7 countries** supported: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay
+- **Hybrid architecture** — skills provide stable integration intelligence, MCP provides live API data
+- **Credential leak prevention** — hook scans every file write for hardcoded tokens
+- **Secure token storage** — Access Tokens stored in OS keychain (macOS Keychain / Linux secret-tool)
+- **3 slash commands** — `/mp-setup`, `/mp-review`, `/mp-connect`
 
 ## Installation
 
-### Add the marketplace
+### 1. Add the marketplace
 
 ```bash
 /plugin marketplace add https://github.com/mercadopago/mercadopago-claude-marketplace.git
 ```
 
-### Install a plugin
+### 2. Install the plugin
 
 ```bash
 /plugin install mp-developer@mercadopago-claude-marketplace
 ```
 
-## Setup — Connect Your Account
+### 3. Connect your account
 
-After installing, run the setup script from your **terminal** (not inside Claude Code):
+Run the setup script from your **terminal** (not inside Claude Code):
 
 ```bash
 bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mp-developer/*/scripts/setup.sh
 ```
 
-This stores your Access Token in the **OS keychain** (macOS Keychain / Linux secret-tool). Claude Code cannot read the keychain — only the MCP server process accesses it at startup.
+This stores your Access Token in the OS keychain. Claude Code cannot read the keychain directly — only the MCP server process accesses it at startup.
 
 Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
 
 Then restart Claude Code.
 
-## What's Included
-
-The `mp-developer` plugin covers the full Mercado Pago product suite:
-
-### Agent
-
-| Component | Name | Purpose |
-|-----------|------|---------|
-| Agent | `mp-integration-expert` | Routes to the correct product skill based on project signals. Detects country and product automatically. |
-
-### Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/mp-connect` | Securely connect to your Mercado Pago account |
-| `/mp-review [scope]` | Review an integration for correctness, security, and best practices |
-| `/mp-setup [lang] [product]` | Scaffold a new MP integration for any product |
-
-### Skills (11 product skills — hybrid architecture)
+## Product Coverage
 
 | Skill | Products Covered |
 |-------|-----------------|
@@ -69,18 +65,52 @@ The `mp-developer` plugin covers the full Mercado Pago product suite:
 | `mp-security` | 3D Secure, PCI, Supertoken, Vault, Card Tokenization |
 | `mp-specialized` | Insurance (AR), Yape (PE), Fintoc (CL) |
 | `mp-reporting` | Settlement Reports, Reconciliation, Account Statements |
+| `mp-sdks` | SDK Selection, Setup, Migration (Node, Python, Java, PHP, Ruby, .NET, Go, React, iOS, Android) |
 
-### Infrastructure
+## Commands
 
-| Component | Purpose |
-|-----------|---------|
-| Hook | Credential scanner — prevents hardcoded MP tokens from being written to source files |
-| MCP | Live Mercado Pago API access via MCP server (token from OS keychain) |
-| Setting | Per-project config via `.claude/mp-developer.local.md` |
+| Command | Purpose |
+|---------|---------|
+| `/mp-connect` | Securely connect to your Mercado Pago account |
+| `/mp-review [scope]` | Review an integration for correctness, security, and best practices |
+| `/mp-setup [lang] [product]` | Scaffold a new Mercado Pago integration for any product |
 
-## Hybrid Architecture
+## Architecture
 
-Skills contain **stable integration intelligence** (flows, decision trees, gotchas) that rarely changes. The MCP server provides **dynamic data** (endpoints, payloads, code snippets) that's always current. This keeps context lightweight while ensuring up-to-date information.
+```
+User question
+     |
+     v
++--------------------+
+| mp-integration-    |     1. Detect country (from project signals or ask)
+| expert (agent)     | --> 2. Detect product (from signal-to-skill routing)
++--------------------+     3. Load ONE relevant skill
+     |          |
+     v          v
++---------+  +-----+
+| Skill   |  | MCP |      Skill = stable flows, decision trees, gotchas
+| (1 of   |  |     |      MCP  = live endpoints, payloads, code snippets
+|  12)    |  |     |
++---------+  +-----+
+     |          |
+     v          v
++--------------------+
+|   Combined answer  |
++--------------------+
+```
+
+**Skills** contain integration intelligence that rarely changes: product flows, decision trees, prerequisites, country availability, and common gotchas. **MCP** provides dynamic data that must always be current: endpoint URLs, request/response schemas, SDK code snippets, and test credentials.
+
+Only one skill is loaded per interaction, keeping context lightweight.
+
+## Infrastructure
+
+| Component | Name | Purpose |
+|-----------|------|---------|
+| Agent | `mp-integration-expert` | Single router — detects country and product, loads the right skill |
+| Hook | `validate_mp_credentials` | Credential scanner — blocks hardcoded MP tokens from reaching source files |
+| MCP | `mercadopago` | Live Mercado Pago API access (token from OS keychain) |
+| CI | `validate.yml` | JSON validation, Python syntax checks, skill integrity |
 
 ## Requirements
 
@@ -94,4 +124,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on adding new plugins or
 
 ## License
 
-[MIT](./LICENSE)
+Copyright 2024-2025 Mercado Pago (MercadoLibre S.R.L.)
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full text.

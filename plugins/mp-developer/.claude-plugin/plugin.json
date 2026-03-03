@@ -4,6 +4,6 @@
   "version": "2.0.0",
   "author": { "name": "Mercado Pago Developer Experience" },
   "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "wallet", "3ds", "fintech", "meli"]
 }

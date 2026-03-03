@@ -11,11 +11,11 @@
     {
       "name": "mp-developer",
       "source": "./plugins/mp-developer",
-      "description": "Mercado Pago full-product integration toolkit. Covers online checkout (Pro, Bricks, API), in-store (QR, Point), subscriptions, marketplace, wallet, money-out, security (3DS, PCI), reporting, and specialized integrations. Hybrid architecture: 11 skills provide stable integration intelligence, MCP provides live API data.",
+      "description": "Mercado Pago full-product integration toolkit. Covers online checkout (Pro, Bricks, API), in-store (QR, Point), subscriptions, marketplace, wallet, money-out, security (3DS, PCI), reporting, SDKs, and specialized integrations. Hybrid architecture: 12 skills provide stable integration intelligence, MCP provides live API data.",
       "version": "2.0.0",
       "author": { "name": "Mercado Pago Developer Experience" },
       "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
-      "license": "MIT",
+      "license": "Apache-2.0",
       "category": "development",
       "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "wallet", "3ds", "fintech", "meli"]
     }
