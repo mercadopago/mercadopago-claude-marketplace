@@ -59,7 +59,8 @@ After determining the country, identify which product the developer needs by mat
 | `preference`, `init_point`, `back_urls`, Checkout Pro, Bricks, Payment Brick, `payment.create`, card tokenization, 3DS, CBP | `mp-checkout-online` |
 | `notification_url`, `x-signature`, webhook, IPN, HMAC, retry | `mp-notifications` |
 | QR, `qr_code`, Point, POS, kiosko, instore, presencial | `mp-instore` |
-| orden unificada, unified order, `merchant_order`, OU + QR | `mp-unified-orders` |
+| orden unificada, unified order, Orders API, payment order, order de pago, order de pagamento | `mp-unified-orders` |
+| `merchant_order`, merchant orders, `/merchant_orders` | `mp-unified-orders` |
 | subscription, suscripcion, plan, recurrence, `preapproval`, invoice | `mp-subscriptions` |
 | Wallet Connect, cuenta MP, deuda, link de pago, `payment_link` | `mp-wallet` |
 | disbursement, transfer, money out, payout, `bank_transfer` | `mp-money-out` |
@@ -83,6 +84,8 @@ Before suggesting `/mp-connect`, check if the Mercado Pago MCP server is already
 2. If present → use MCP tools directly for API data. Do NOT suggest `/mp-connect`
 3. If absent → suggest `/mp-connect` to enable live API access. Note that it is optional — skills + WebFetch still work without it
 
+**General rule**: Whenever you mention an MCP tool capability (e.g., `create_test_user`, `quality_evaluation`, `add_money_test_user`), apply this check first. If MCP is connected, use the tool directly. If not, suggest `/mp-connect` to unlock it and provide the manual alternative (Developer Dashboard, API call, etc.).
+
 ## Delegation Protocol
 
 When you identify the product:
@@ -95,7 +98,11 @@ When you identify the product:
    - If a second fetch is needed, it should be for a different topic (e.g., one for the main flow, one for error codes). Never re-fetch the same page or similar pages.
    - **Do NOT fetch docs for information already in the skill.** Decision trees, flows, gotchas, prerequisites, and country availability are all in the SKILL.md — use them directly.
 4. **Combine skill intelligence + fetched data** to provide a complete, country-aware answer.
-5. **Quality validation** — When reviewing an integration (triggered by `/mp-review` or review-related questions) and MCP tools are available, call `quality_checklist` to show the developer what Mercado Pago evaluates for integration quality. If the integration produces `payment_id` (Payments API, Checkout Pro, Bricks), suggest `quality_evaluation` with a real payment ID for a specific evaluation.
+5. **Quality validation** — When reviewing an integration (triggered by `/mp-review` or review-related questions) and MCP tools are available, call `quality_checklist` to show the developer what Mercado Pago evaluates for integration quality. Then, suggest `quality_evaluation` only when the tool's required ID matches the integration type:
+   - Inspect `quality_evaluation` parameters to determine if it requires `payment_id` or `order_id`.
+   - If `payment_id` + integration uses Payments API (Checkout Pro, Bricks, `/v1/payments`) → suggest with a test payment ID.
+   - If `order_id` + integration uses Orders API (`/v1/orders`, orden unificada) → suggest with a test order ID.
+   - If the required ID does not match the integration type → do not suggest (incompatible).
 
 ## Cross-Cutting Security Checklist
 
@@ -121,7 +128,7 @@ Mercado Pago deprecated the old sandbox credentials with `TEST-` prefix. The cur
 - **Never suggest using credentials with `TEST-` prefix** — they are legacy and no longer issued
 - **Never ask if a credential is "sandbox" or "test" based on its prefix** — both test and production credentials start with `APP_USR-`
 - **How to obtain test credentials**: In the Developer Dashboard, navigate to *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*.
-- **Environment setup guide**: Direct the developer to `{DOMAIN}/developers/{LANG}/docs/checkout-pro/configure-development-enviroment`
+- **Environment setup guide**: Use `search_documentation` to find the environment setup guide for the specific product being integrated (e.g., search "configure environment {product}"). Do not hardcode a single product URL.
 
 ## SDK Installation Reference
 
@@ -152,7 +159,7 @@ Replace `{DOMAIN}` with the country domain and `{LANG}` with the language code (
 | Webhooks | `https://{DOMAIN}/developers/{LANG}/docs/your-integrations/notifications/webhooks` |
 | SDKs | `https://{DOMAIN}/developers/{LANG}/docs/sdks-library/landing` |
 | Credentials | `https://{DOMAIN}/developers/{LANG}/docs/your-integrations/credentials` |
-| Dev Environment Setup | `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/configure-development-enviroment` |
+| Dev Environment Setup | Use `search_documentation` to find the setup guide for the specific product |
 | QR Code | `https://{DOMAIN}/developers/{LANG}/docs/qr-code/landing` |
 | Subscriptions | `https://{DOMAIN}/developers/{LANG}/docs/subscriptions/landing` |
 | Marketplace | `https://{DOMAIN}/developers/{LANG}/docs/marketplace/landing` |
