@@ -53,7 +53,7 @@ If no argument is given, perform a full review.
    - Error responses handled with user-friendly messages
    - external_reference used for reconciliation
    - Country-specific requirements met (currency_id, payment methods)
-7. **Consult MCP** — Use the Mercado Pago MCP server for current API requirements and validate against latest specs
+7. **Consult MCP** — Refer to the Mercado Pago MCP server to check current API requirements, validate your implementation against the latest specifications, and obtain best practice recommendations to enhance the quality of your development.
 8. **Quality checklist** — If the Mercado Pago MCP server is connected (`mcp__mercadopago__*` tools available), call `quality_checklist` to retrieve the official quality evaluation fields. Format the results as two tables:
    - **Required fields**: fields the integration MUST implement to meet Mercado Pago quality standards
    - **Best practices**: optional improvements and recommendations
