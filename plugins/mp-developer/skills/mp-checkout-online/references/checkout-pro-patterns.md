@@ -20,11 +20,10 @@ Set preference expiration with `expires`, `expiration_date_from`, `expiration_da
 
 Add shipping cost via `shipments.cost` and `shipments.mode`.
 
-## Init Point vs Sandbox Init Point
+## Init Point
 
-- `preference.init_point` -- Production checkout URL
-- `preference.sandbox_init_point` -- Sandbox/testing URL
-- Always use sandbox_init_point during development
+- `preference.init_point` -- Valid checkout URL
+- Always use init_point
 
 ## back_url Query Parameters
 
