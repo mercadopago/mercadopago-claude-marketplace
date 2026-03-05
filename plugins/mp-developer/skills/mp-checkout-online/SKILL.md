@@ -52,7 +52,7 @@ Developer needs to accept online payments
 ## Integration Flow: Checkout Pro
 
 1. Server: Create a preference with items, back_urls, notification_url
-2. Client: Redirect buyer to `init_point` (or `sandbox_init_point` for testing)
+2. Client: Redirect buyer to `init_point`.
 3. Buyer completes payment on MP checkout page
 4. MP redirects buyer to back_url with query params (collection_id, status, etc.)
 5. Server: Verify payment status via Payments API (NEVER trust redirect params alone)
@@ -93,6 +93,8 @@ Developer needs to accept online payments
 - 3DS adds an authentication step before payment processing
 - Required by some acquirers/issuers for fraud prevention
 - Adds an iframe challenge flow for the buyer
+- Only integrable for Check Out API or Check Out Bricks. Check Out PRO is already integrated by default
+- Always use `binary_mode: false`, otherwise the payment won't be able to show the challenge or `pending` status. 
 - **For endpoints, payloads, and implementation details**: Consult the MCP server or fetch docs at `{DOMAIN}/developers/{LANG}/docs/checkout-api/3ds`
 
 ## Cross-Border Payments (CBP) -- Skeleton
@@ -100,7 +102,7 @@ Developer needs to accept online payments
 - Allows accepting payments from buyers in countries different from the seller's
 - Requires specific configuration and approval
 - Currency conversion is handled by MP
-- **For endpoints, payloads, and implementation details**: Consult the MCP server or fetch docs at `{DOMAIN}/developers/{LANG}/docs/cross-border-payments`
+- **For endpoints, payloads, and implementation details**: Consult integrator or Key Account Manager. The product doesn't have public documentation yet.
 
 ## Payment Status Reference
 
@@ -132,7 +134,7 @@ CBP: Requires specific country-pair approval.
 
 ## Testing
 
-- Use `sandbox_init_point` instead of `init_point` for Checkout Pro
+- Use `init_point` for Checkout Pro
 - Use production credentials (`APP_USR-*`) of a **test user** — Mercado Pago no longer uses `TEST-` sandbox credentials
 - Create test users from the Developer Dashboard or via the MCP tool `create_test_user`
 - Load balance into test users with the MCP tool `add_money_test_user`
