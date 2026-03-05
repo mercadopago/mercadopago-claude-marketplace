@@ -1,8 +1,9 @@
 ---
 name: mp-specialized
 description: Specialized Mercado Pago integrations for specific industries and regional payment methods. Covers insurance payments, Yape (Peru), and Fintoc (Chile).
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, insurance, aseguradora, yape, fintoc, specialized"

@@ -1,8 +1,9 @@
 ---
 name: mp-subscriptions
 description: Mercado Pago Subscriptions and recurring payments. Covers subscription plans, preapprovals, invoices, and Click & Collect. Use when implementing recurring billing.
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, subscriptions, recurring, plan, preapproval, invoice, click-collect"

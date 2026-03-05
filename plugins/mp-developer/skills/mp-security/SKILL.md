@@ -1,8 +1,9 @@
 ---
 name: mp-security
 description: Mercado Pago security features. Covers 3D Secure standalone, PCI compliance, Supertoken, Vault, and card tokenization. Use when implementing advanced security features.
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, 3ds, pci, tokenization, supertoken, vault, security, card-token"

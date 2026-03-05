@@ -1,11 +1,13 @@
 ---
 name: mp-integration-expert
 description: Use when implementing, reviewing, or debugging any Mercado Pago payment integration. Routes to the correct product skill and uses the Mercado Pago MCP for live API data.
+license: Apache-2.0
+copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 tools: Read, Grep, Glob, Bash, WebFetch
 model: sonnet
 tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace]
 category: development
-version: 2.0.0
+version: 2.0.1
 ---
 
 # Mercado Pago Integration Expert

@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 2.0.0](https://img.shields.io/badge/version-2.0.0-green)](./CHANGELOG.md)
+[![Version: 2.0.1](https://img.shields.io/badge/version-2.0.1-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -130,6 +130,13 @@ Technical Support is avaliable within the [Developer's Website Support Section](
 
 ## License
 
-Copyright 2024-2025 Mercado Pago (MercadoLibre S.R.L.)
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this project except in compliance with the License.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full text.
+See the [LICENSE](./LICENSE) file for the full license text, and [NOTICE](./NOTICE)
+for attribution information.
+
+### Copyright
+
+Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)

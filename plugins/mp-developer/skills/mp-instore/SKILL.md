@@ -1,8 +1,9 @@
 ---
 name: mp-instore
 description: In-store payment integration for Mercado Pago. Covers QR Attended, QR Dynamic, Point devices, and Kiosk mode. Use when implementing face-to-face payment flows.
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, qr, point, pos, instore, presencial, kiosko"

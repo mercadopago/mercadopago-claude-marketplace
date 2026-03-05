@@ -25,7 +25,7 @@ tools: Read, Grep, Glob, Bash, WebFetch    # REQUIRED for agents
 model: sonnet                                # REQUIRED for agents
 tags: [...]
 category: development
-version: 2.0.0
+version: 2.0.1
 ---
 ```
 

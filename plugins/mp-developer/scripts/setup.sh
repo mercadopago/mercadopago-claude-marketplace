@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 #
+# SPDX-FileCopyrightText: (c) 2026 Mercado Pago (MercadoLibre S.R.L.)
+# SPDX-License-Identifier: Apache-2.0
+#
 # Mercado Pago MCP Server — Setup Script
 #
 # Stores the Access Token securely in the OS keychain.

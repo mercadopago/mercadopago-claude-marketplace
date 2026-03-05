@@ -1,5 +1,7 @@
 ---
 description: Connect Claude Code to your Mercado Pago account by configuring the MCP server with your Access Token
+license: Apache-2.0
+copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 allowed-tools: [Bash]
 ---
 
