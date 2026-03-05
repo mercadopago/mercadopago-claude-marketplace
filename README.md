@@ -122,6 +122,12 @@ Only one skill is loaded per interaction, keeping context lightweight.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on adding new plugins or improving existing ones.
 
+## Support
+
+You may find technical documentation about Mercado Pago's products and services on the [Developer's Website] (https://www.mercadopago.com.ar/developers/en)
+
+Technical Support is avaliable within the [Developer's Website Support Section](https://www.mercadopago.com.ar/developers/en/support/center)
+
 ## License
 
 Copyright 2024-2025 Mercado Pago (MercadoLibre S.R.L.)
