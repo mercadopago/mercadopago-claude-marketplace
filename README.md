@@ -124,7 +124,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on adding new plugins or
 
 ## Support
 
-You may find technical documentation about Mercado Pago's products and services on the [Developer's Website] (https://www.mercadopago.com.ar/developers/en)
+You may find technical documentation about Mercado Pago's products and services on the [Developer's Website](https://www.mercadopago.com.ar/developers/en)
 
 Technical Support is avaliable within the [Developer's Website Support Section](https://www.mercadopago.com.ar/developers/en/support/center)
 
