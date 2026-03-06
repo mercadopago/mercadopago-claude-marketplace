@@ -25,6 +25,14 @@ In-store payment integration for Mercado Pago. Covers QR in three modes—static
 
 Trigger on keywords: QR, qr_code, Point, POS, kiosko, instore, presencial, pago presencial, lector de tarjeta.
 
+**User intent signals:**
+- "I want to accept payments at my store / restaurant / event / market stall"
+- "I have a point-of-sale system" / "I have a POS"
+- "I want customers to scan a QR code to pay"
+- "I need a physical card reader"
+- "face-to-face payment" / "in-person payment"
+- "self-service kiosk" / "customer pays on their own"
+
 **NOT** for online payments -- redirect to `mp-checkout-online` instead.
 
 ## Decision Tree
