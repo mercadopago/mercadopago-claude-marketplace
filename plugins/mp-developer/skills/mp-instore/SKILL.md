@@ -94,13 +94,13 @@ Need in-store payments
 
 ## Prerequisites
 
-- Active Mercado Pago account with credentials (public key + access token).
-- Store and POS configured in the Mercado Pago Dashboard.
-- For Point: a physical device registered to the account.
+- Active Mercado Pago account with an application created in Your Integrations to obtain the access token.
+- Store and POS created via API.
+- For Point: a physical device registered in Mercado Pago and associated to a POS.
 
 ## Country Availability
 
-- **QR**: AR, BR, CL, CO, PE, UY
+- **QR**: AR, BR, CL, PE, UY
 - **Point**: AR, BR, MX, CL (device availability varies by country)
 
 ## What to Fetch from MCP
