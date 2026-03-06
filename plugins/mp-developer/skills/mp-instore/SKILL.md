@@ -107,10 +107,9 @@ Need in-store payments
 
 Use the MCP server to retrieve current data for:
 - Store and POS creation endpoints and payloads
-- Order creation payload schema for QR Attended and QR Dynamic
-- QR generation endpoints
-- Point device registration and payment intent APIs
-- Payment intent schema and status codes
+- Unified Orders API schema and endpoints (for QR Static, QR Dynamic, QR Hybrid and Point)
+- Point device registration and operating mode configuration API
+- Order status codes and webhook payload examples
 
 ## What to Fetch from Docs
 
