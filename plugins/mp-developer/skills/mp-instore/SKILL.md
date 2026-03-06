@@ -101,7 +101,16 @@ Need in-store payments
 ## Country Availability
 
 - **QR**: AR, BR, CL, PE, UY
-- **Point**: AR, BR, MX, CL (device availability varies by country)
+- **Point**: AR, BR, MX, CL
+
+**Point devices by country:**
+
+| Country | Available Devices |
+|---------|------------------|
+| AR | Smart 2, Smart Pro 2, Plus |
+| BR | Smart 2, Smart Pro 2, Smart Pro 3 |
+| CL | Smart 2 |
+| MX | Smart 2, Smart Pro 2 |
 
 ## What to Fetch from MCP
 
