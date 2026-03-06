@@ -15,7 +15,7 @@ In-store payment integration for Mercado Pago. Covers QR in three modes—static
 
 ## Products Covered
 
-- **QR Static**: A fixed code linked to a point of sale. The order is assigned to this permanent code.
+- **QR Static**: A fixed code linked to a point of sale (also known as attended mode). The order is assigned to this permanent code.
 - **QR Dynamic**: Generates a unique QR code per transaction, single-use.
 - **QR Hybrid**: Allows payment using either a static QR or a dynamic QR for the same order.
 - **Point PDV**: Payment device operated by a seller at the point of sale.
@@ -40,12 +40,12 @@ Trigger on keywords: QR, qr_code, Point, POS, kiosko, instore, presencial, pago 
 ```
 Need in-store payments
 |-- Fixed POS / cashier?
-|   |-- Cashier creates order --> QR Attended
-|   +-- Each transaction gets unique QR --> QR Dynamic
-|-- Need physical card reader?
-|   +-- Point device (Smart, Plus, Mini)
-+-- Self-service terminal?
-    +-- Kiosk mode
+|   |-- Cashier creates order, fixed QR at POS --> QR Static (attended)
+|   |-- Each transaction gets unique QR --> QR Dynamic
+|   +-- Need both static and dynamic at the same POS --> QR Hybrid
++-- Need physical card reader?
+    |-- Seller operates the device --> Point PDV
+    +-- Customer pays on their own --> Point Self-Service (Kiosk)
 ```
 
 ## Integration Flow: QR Attended
