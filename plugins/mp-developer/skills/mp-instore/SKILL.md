@@ -6,7 +6,7 @@ metadata:
   version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
-  tags: "mercadopago, qr, point, pos, instore, presencial, kiosko"
+  tags: "mercadopago, qr, point, pos, instore, presencial, kiosko, pagos presenciales, terminal, dispositivo, self-service, terminal de pago"
 ---
 
 # mp-instore
