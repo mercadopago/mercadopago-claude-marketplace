@@ -64,6 +64,15 @@ Need in-store payments
 4. Mercado Pago processes the payment.
 5. Receive webhook notification with payment result.
 
+## Integration Flow: QR Hybrid
+
+1. Create a Store and a POS in Mercado Pago (one-time setup). The static QR code is generated when the POS is created.
+2. Create an order via the Unified Orders API. The order is linked to the static QR of the POS and a unique dynamic QR is generated simultaneously.
+3. Display either the static or dynamic QR to the buyer.
+4. Buyer scans one of the QR codes with the Mercado Pago app.
+5. Mercado Pago processes the payment. The other QR is automatically invalidated.
+6. Receive webhook notification with payment result.
+
 ## Integration Flow: Point
 
 1. Register the physical device in the Mercado Pago dashboard.
