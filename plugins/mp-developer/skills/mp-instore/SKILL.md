@@ -6,19 +6,20 @@ metadata:
   version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
-  tags: "mercadopago, qr, point, pos, instore, presencial, kiosko, pagos presenciales, terminal, dispositivo, self-service, terminal de pago"
+  tags: "mercadopago, qr, point, pos, instore, presencial, kiosko, pagos presenciales, terminal, dispositivo, self-service, terminal de pago, lectores de tarjeta"
 ---
 
 # mp-instore
 
-In-store payment integration for Mercado Pago. Covers QR Attended, QR Dynamic, Point devices, and Kiosk mode.
+In-store payment integration for Mercado Pago. Covers QR in three modes—static, dynamic, and hybrid—and Point devices, which can operate in point-of-sale mode or kiosk mode (self-service).
 
 ## Products Covered
 
-- **QR Attended**: Cashier creates order, buyer scans a fixed QR at the point of sale.
-- **QR Dynamic**: Generate a unique QR per transaction. Single-use, displayed to the buyer.
-- **Point**: Physical card reader devices (Smart, Plus, Mini) for card-present payments.
-- **Kiosk**: Self-service payment terminals where the customer initiates and completes the payment.
+- **QR Static**: A fixed code linked to a point of sale. The order is assigned to this permanent code.
+- **QR Dynamic**: Generates a unique QR code per transaction, single-use.
+- **QR Hybrid**: Allows payment using either a static QR or a dynamic QR for the same order.
+- **Point PDV**: Payment device operated by a seller at the point of sale.
+- **Point Self-Service**: Device in self-service mode (also known as kiosk mode), where the customer completes the payment on their own.
 
 ## When to Use This Skill
 
