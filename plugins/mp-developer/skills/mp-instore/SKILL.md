@@ -75,18 +75,22 @@ Need in-store payments
 
 ## Integration Flow: Point
 
-1. Register the physical device in the Mercado Pago dashboard.
-2. Create a payment intent via the Point API.
-3. The device processes the card (chip, swipe, or contactless).
-4. Receive the result via API polling or webhook.
+1. Create a Store and a POS in Mercado Pago (one-time setup).
+2. Register the physical device and associate it to the POS.
+3. Set the operating mode of the device via the Point API (`PDV` or `SELF_SERVICE`).
+4. Create an order via the Unified Orders API.
+5. The device processes the card (chip, swipe, or contactless).
+6. Receive the result via webhook.
 
 ## Gotchas
 
 - QR codes are tied to a specific POS identified by `store_id` + `external_pos_id`. Do not reuse QR codes across POS terminals.
-- Point devices need firmware updates before first use. Ensure the device is on the latest firmware.
-- QR Attended requires the order to be created BEFORE the buyer scans. If the buyer scans first, there is no order to pay.
-- The notification type for Point is `point_integration_wh`, which is different from standard payment webhooks.
-- QR Dynamic QR codes are single-use. Once scanned (or expired), they cannot be reused.
+- QR Static requires the order to be created BEFORE the buyer scans. If the buyer scans first, there is no order to pay.
+- QR Dynamic codes are single-use. Once scanned (or expired), they cannot be reused.
+- QR Hybrid: if the buyer pays with one of the two QR codes, the other is automatically invalidated.
+- When changing the operating mode of a Point device (`PDV` ↔ `SELF_SERVICE` ↔ `STANDALONE`), the device must be restarted for the change to take effect. Note: `STANDALONE` refers to non-integrated mode (device operates independently, without API integration).
+- A POS can only have one Point device associated in integrated mode (`PDV` or `SELF_SERVICE`).
+- Point webhook topic is `order`, same as QR products.
 
 ## Prerequisites
 
