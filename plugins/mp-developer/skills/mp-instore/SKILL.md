@@ -77,7 +77,7 @@ Need in-store payments
 
 ## Country Availability
 
-- **QR**: AR, BR, MX, CL, CO, PE, UY
+- **QR**: AR, BR, CL, CO, PE, UY
 - **Point**: AR, BR, MX, CL (device availability varies by country)
 
 ## What to Fetch from MCP
