@@ -48,20 +48,21 @@ Need in-store payments
     +-- Customer pays on their own --> Point Self-Service (Kiosk)
 ```
 
-## Integration Flow: QR Attended
+## Integration Flow: QR Static (Attended)
 
-1. Create a QR code for a POS (one-time setup).
-2. Create an order associated to that POS.
+1. Create a Store and a POS in Mercado Pago (one-time setup). The QR code is generated when the POS is created.
+2. Create an order associated to that POS via the Unified Orders API.
 3. Buyer scans the QR code with the Mercado Pago app.
 4. Mercado Pago processes the payment.
 5. Receive webhook notification with payment result.
 
 ## Integration Flow: QR Dynamic
 
-1. Create an order that includes the QR data payload.
-2. Display the generated QR to the buyer (on screen or printed).
+1. Create an order via the Unified Orders API. The response includes the QR data to display.
+2. Display the generated QR to the buyer (on screen or printed). Note: the QR expires after a set time — refresh if needed.
 3. Buyer scans with the Mercado Pago app.
-4. Receive webhook notification with payment result.
+4. Mercado Pago processes the payment.
+5. Receive webhook notification with payment result.
 
 ## Integration Flow: Point
 
