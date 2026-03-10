@@ -77,7 +77,7 @@ Developer needs to accept online payments
 
 **Gotcha**: Always include `requestOptions.idempotencyKey` when creating payments.
 
-## Integration Flow: Payments API (Direct)
+## Integration Flow: Checkout API (Direct)
 
 1. Client: Tokenize card using MercadoPago.js `cardForm` or `createCardToken`
 2. Client: Send token + payment details to server
