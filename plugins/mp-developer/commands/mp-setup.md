@@ -1,6 +1,8 @@
 ---
 description: Scaffold a new Mercado Pago integration — supports all MP products including online checkout, in-store, subscriptions, marketplace, and more
 argument-hint: "[node|python|java] [checkout-pro|bricks|checkout-api|orders|qr|subscriptions|marketplace|point]"
+license: Apache-2.0
+copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 allowed-tools: [Read, Write, Edit, Bash]
 ---
 

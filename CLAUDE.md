@@ -25,7 +25,7 @@ tools: Read, Grep, Glob, Bash, WebFetch    # REQUIRED for agents
 model: sonnet                                # REQUIRED for agents
 tags: [...]
 category: development
-version: 2.0.0
+version: 2.0.1
 ---
 ```
 
@@ -36,7 +36,7 @@ version: 2.0.0
 name: mp-checkout-online
 description: ...
 metadata:                                    # metadata block ONLY
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "..."

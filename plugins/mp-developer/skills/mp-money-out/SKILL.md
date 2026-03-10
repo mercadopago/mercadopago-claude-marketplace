@@ -1,8 +1,9 @@
 ---
 name: mp-money-out
 description: Mercado Pago money-out operations. Covers disbursements and bank transfers. Use when implementing payouts, withdrawals, or transfers from MP accounts.
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, disbursement, transfer, money-out, payout, bank-transfer"

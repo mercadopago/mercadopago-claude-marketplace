@@ -35,6 +35,7 @@ jobs:
       - name: Validate settings.json
         run: python3 -m json.tool .claude/settings.json > /dev/null
 
+
       - name: Python hook syntax check
         run: python3 -m py_compile plugins/mp-developer/hooks/validate_mp_credentials.py
 

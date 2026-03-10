@@ -1,8 +1,9 @@
 ---
 name: mp-orders
 description: Mercado Pago Orders (Orden Unificada). Use when implementing order flows, combining online+offline payments, or integrating with QR.
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, orders, orden-unificada, merchant-order, ou-qr"

@@ -1,6 +1,8 @@
 ---
 description: Review a Mercado Pago payment integration for correctness, security, and best practices — supports all MP products
 argument-hint: "[security|webhooks|checkout|qr|point|subscriptions|marketplace|errors|quality|full]"
+license: Apache-2.0
+copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 allowed-tools: [Read, Grep, Glob, WebFetch, Bash]
 ---
 
@@ -102,6 +104,7 @@ If no argument is given, perform a full review.
 - [Actionable improvements with references to specific skills/docs]
 
 ### Quality Standards (when MCP is connected)
+
 
 #### Required Fields
 | # | Field | Description | Status |

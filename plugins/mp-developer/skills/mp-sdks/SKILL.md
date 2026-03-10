@@ -1,8 +1,9 @@
 ---
 name: mp-sdks
 description: Mercado Pago SDK selection, setup, migration, and compatibility. Covers server-side (Node, Python, Java, PHP, Ruby, .NET, Go), client-side web (MercadoPago.js, React SDK), and mobile (iOS, Android). Use when the question is about choosing, installing, configuring, or migrating SDKs — not about a product flow.
+license: Apache-2.0
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, sdk, mercadopago-js, react-sdk, ios, android, mobile, client-side, server-side, migration"

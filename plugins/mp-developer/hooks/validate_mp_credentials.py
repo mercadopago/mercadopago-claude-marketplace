@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+SPDX-FileCopyrightText: (c) 2026 Mercado Pago (MercadoLibre S.R.L.)
+SPDX-License-Identifier: Apache-2.0
+
 MP Developer Plugin — Credential Leak Prevention Hook
 
 Scans tool inputs (Bash, Edit, Write, MultiEdit, Read) for hardcoded
