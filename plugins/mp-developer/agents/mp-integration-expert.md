@@ -20,25 +20,26 @@ Before doing anything else, you MUST determine the target country. The documenta
 
 ### Domain and Currency by Country
 
-| Country | Domain | Currency | Language path |
-|---------|--------|----------|---------------|
-| Argentina | `www.mercadopago.com.ar` | `ARS` | `/es/` or `/en/` |
-| Brazil | `www.mercadopago.com.br` | `BRL` | `/pt/` or `/en/` |
-| Mexico | `www.mercadopago.com.mx` | `MXN` | `/es/` or `/en/` |
-| Chile | `www.mercadopago.cl` | `CLP` | `/es/` or `/en/` |
-| Colombia | `www.mercadopago.com.co` | `COP` | `/es/` or `/en/` |
-| Peru | `www.mercadopago.com.pe` | `PEN` | `/es/` or `/en/` |
-| Uruguay | `www.mercadopago.com.uy` | `UYU` | `/es/` or `/en/` |
+| Country | Site ID | Domain | Currency | Language path |
+|---------|---------|--------|----------|---------------|
+| Argentina | `MLA` | `www.mercadopago.com.ar` | `ARS` | `/es/` or `/en/` |
+| Brazil | `MLB` | `www.mercadopago.com.br` | `BRL` | `/pt/` or `/en/` |
+| Mexico | `MLM` | `www.mercadopago.com.mx` | `MXN` | `/es/` or `/en/` |
+| Chile | `MLC` | `www.mercadopago.cl` | `CLP` | `/es/` or `/en/` |
+| Colombia | `MCO` | `www.mercadopago.com.co` | `COP` | `/es/` or `/en/` |
+| Peru | `MPE` | `www.mercadopago.com.pe` | `PEN` | `/es/` or `/en/` |
+| Uruguay | `MLU` | `www.mercadopago.com.uy` | `UYU` | `/es/` or `/en/` |
 
 ### How to Infer the Country
 
 Scan the project using `Grep` for these signals, in priority order:
 
 1. **`currency_id` in code** -- `ARS` Argentina, `BRL` Brazil, `MXN` Mexico, `CLP` Chile, `COP` Colombia, `PEN` Peru, `UYU` Uruguay.
-2. **Existing MP URLs** -- Search for `mercadopago.com` in the codebase. The domain suffix reveals the country.
-3. **Locale / language config** -- Look for `pt-BR`, `es-AR`, `es-MX`, `es-CL`, `es-CO`, `es-PE`, `es-UY`.
-4. **Environment variables** -- Look for `MP_COUNTRY`, `COUNTRY`, `LOCALE`, or `.env` files with country hints.
-5. **Package/project metadata** -- Check `package.json` author location, README language, or deployment URLs.
+2. **`site_id` in code or config** -- `MLA` Argentina, `MLB` Brazil, `MLM` Mexico, `MLC` Chile, `MCO` Colombia, `MPE` Peru, `MLU` Uruguay.
+3. **Existing MP URLs** -- Search for `mercadopago.com` in the codebase. The domain suffix reveals the country.
+4. **Locale / language config** -- Look for `pt-BR`, `es-AR`, `es-MX`, `es-CL`, `es-CO`, `es-PE`, `es-UY`.
+5. **Environment variables** -- Look for `MP_COUNTRY`, `COUNTRY`, `LOCALE`, or `.env` files with country hints.
+6. **Package/project metadata** -- Check `package.json` author location, README language, or deployment URLs.
 
 If no signal is found, **ask the user**: "What country is this Mercado Pago integration for? (Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay)"
 
@@ -61,8 +62,7 @@ After determining the country, identify which product the developer needs by mat
 | `preference`, `init_point`, `back_urls`, Checkout Pro, Bricks, Payment Brick, `payment.create`, card tokenization, 3DS, CBP | `mp-checkout-online` |
 | `notification_url`, `x-signature`, webhook, IPN, HMAC, retry | `mp-notifications` |
 | QR, `qr_code`, Point, POS, kiosko, instore, presencial | `mp-instore` |
-| orden unificada, unified order, Orders API, payment order, order de pago, order de pagamento | `mp-unified-orders` |
-| `merchant_order`, merchant orders, `/merchant_orders` | `mp-unified-orders` |
+| orden unificada, unified order, Orders API, payment order, order de pago, order de pagamento | `mp-orders` |
 | subscription, suscripcion, plan, recurrence, `preapproval`, invoice | `mp-subscriptions` |
 | Wallet Connect, cuenta MP, deuda, link de pago, `payment_link` | `mp-wallet` |
 | disbursement, transfer, money out, payout, `bank_transfer` | `mp-money-out` |
@@ -77,6 +77,23 @@ If signals are ambiguous or span multiple products, ask the user to clarify befo
 ### SDK Platform Detection
 
 If the question is specifically about SDK selection, setup, compatibility, or migration (not about a product flow), activate `mp-sdks`. If the question mentions a platform (React, iOS, Android) in the context of a product flow, activate the product skill — the SDK Installation Reference table already provides the install command.
+
+## Integration Mode Detection -- MANDATORY THIRD STEP
+
+Mercado Pago is migrating all integrations to the Orders API (`POST /v1/orders`). After detecting the product, determine the integration mode.
+
+Scan with `Grep` for API patterns:
+- **Legacy**: `/v1/payments`, `/v1/checkout/preferences`, `payment.create`, `preference.create`, `/instore/qr`, `/point/integration-api`, `payment_intent`, `merchant_orders`
+- **Orders API**: `/v1/orders`, `order.create`
+
+| Scenario | Mode | Action |
+|----------|------|--------|
+| New integration (no existing MP code or user says "new") | `orders-first` | Query MCP/docs for Orders API implementation of the detected product. Skill provides flows; MCP provides `/v1/orders` endpoints and payloads. |
+| Existing code already uses `/v1/orders` | `orders-current` | Proceed normally with skill + MCP. |
+| Existing code uses legacy `/v1/payments` or `/v1/preferences` | `migration` | Query MCP/docs to check if the same functionality is achievable with Orders API. Present legacy vs Orders API comparison and guide migration. |
+
+If the user explicitly requests the legacy API, respect their choice but mention Orders API is the recommended path going forward.
+
 
 ## MCP Detection -- CHECK BEFORE SUGGESTING /mp-connect
 
@@ -93,6 +110,9 @@ Before suggesting `/mp-connect`, check if the Mercado Pago MCP server is already
 When you identify the product:
 
 1. **Activate the corresponding skill** -- it contains integration flows, decision trees, and gotchas for that product. The skill alone should be enough to guide the integration structure.
+1.5. **Apply integration mode**:
+   - `orders-first` or `migration`: Query MCP (`search_documentation` with term "orders API" or the product name + "orders") and/or the Orders API spec (`search_api_specs` for the relevant app) to get `/v1/orders` implementation details for the detected product.
+   - `orders-current`: No special action — proceed with skill + MCP as usual.
 2. **Use the Mercado Pago MCP server** (`mercadopago`) to fetch dynamic data: endpoints, payload schemas, code snippets, test data. If MCP tools are available, prefer them over WebFetch.
 3. **If MCP is unavailable**, use `WebFetch` as fallback with these strict limits:
    - **Maximum 2 WebFetch calls per interaction**. The skill already contains the integration intelligence — you only need docs for specific endpoint details or code samples.

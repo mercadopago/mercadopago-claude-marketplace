@@ -36,7 +36,7 @@ version: 2.0.1
 name: mp-checkout-online
 description: ...
 metadata:                                    # metadata block ONLY
-  version: "2.0.0"
+  version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "..."
@@ -103,6 +103,7 @@ Before pushing changes:
 
 ```bash
 # JSON validation
+python3 -m json.tool .claude/settings.json
 python3 -m json.tool .claude-plugin/marketplace.json
 python3 -m json.tool plugins/mp-developer/.claude-plugin/plugin.json
 

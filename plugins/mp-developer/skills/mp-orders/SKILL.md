@@ -1,22 +1,22 @@
 ---
-name: mp-unified-orders
-description: Mercado Pago Unified Orders (Orden Unificada). Use when implementing unified order flows, combining online+offline payments, or integrating OU with QR.
+name: mp-orders
+description: Mercado Pago Orders (Orden Unificada). Use when implementing order flows, combining online+offline payments, or integrating with QR.
 license: Apache-2.0
 metadata:
   version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
-  tags: "mercadopago, unified-order, orden-unificada, merchant-order, ou-qr"
+  tags: "mercadopago, orders, orden-unificada, merchant-order, ou-qr"
 ---
 
-# mp-unified-orders
+# mp-orders
 
-Mercado Pago Unified Orders (Orden Unificada). Covers unified order flows, multi-payment orders, and OU + QR integration.
+Mercado Pago Orders (Orden Unificada). Covers order flows, multi-payment orders, and OU + QR integration.
 
 ## Products Covered
 
-- **Unified Order**: A single order that supports multiple payment methods and partial payments. The `merchant_order` entity tracks the overall order state.
-- **OU + QR**: Unified order combined with QR payment flow, enabling in-store payments within the unified order framework.
+- **Orders**: A single order that supports multiple payment methods and partial payments. The `merchant_order` entity tracks the overall order state.
+- **OU + QR**: Order combined with QR payment flow, enabling in-store payments within the unified order framework.
 
 ## When to Use This Skill
 
@@ -69,5 +69,5 @@ Use the MCP server to retrieve current data for:
 
 ## What to Fetch from Docs
 
-- `{DOMAIN}/developers/{LANG}/docs/unified-orders/landing` (if available)
+- `{DOMAIN}/developers/{LANG}/docs/orders/landing` (if available)
 - `{DOMAIN}/developers/{LANG}/reference/merchant_orders`

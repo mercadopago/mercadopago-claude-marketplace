@@ -57,7 +57,7 @@ Then restart Claude Code.
 | `mp-checkout-online` | Checkout Pro, Checkout Bricks, Payments API, 3DS, Cross-Border Payments |
 | `mp-notifications` | Webhooks (v2), IPN (legacy), HMAC validation |
 | `mp-instore` | QR Attended, QR Dynamic, Point devices, Kiosk |
-| `mp-unified-orders` | Unified Orders, OU + QR |
+| `mp-orders` | Orders, OU + QR |
 | `mp-subscriptions` | Subscription Plans, Preapprovals, Invoices |
 | `mp-wallet` | Wallet Connect, Debt Payments, Massive Payment Links |
 | `mp-money-out` | Disbursements, Bank Transfers |

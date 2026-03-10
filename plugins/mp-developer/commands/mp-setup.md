@@ -1,6 +1,6 @@
 ---
 description: Scaffold a new Mercado Pago integration — supports all MP products including online checkout, in-store, subscriptions, marketplace, and more
-argument-hint: "[node|python|java] [checkout-pro|bricks|payments-api|qr|subscriptions|marketplace|point]"
+argument-hint: "[node|python|java] [checkout-pro|bricks|checkout-api|orders|qr|subscriptions|marketplace|point]"
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 allowed-tools: [Read, Write, Edit, Bash]
@@ -19,8 +19,9 @@ You are setting up a Mercado Pago integration from scratch. Follow these steps:
 If `$ARGUMENTS` is provided, parse it for language and product type:
 - Languages: `node`, `python`, `java`
 - Products:
-  - **Online**: `checkout-pro`, `bricks`, `payments-api`
+  - **Online**: `checkout-pro`, `bricks`, `checkout-api`
   - **In-Store**: `qr`, `point`
+  - **Orders**: `orders`
   - **Recurring**: `subscriptions`
   - **Platform**: `marketplace`
 
@@ -69,16 +70,24 @@ Run the appropriate install command:
 
 ### 5. Scaffold Integration Files
 
-Use the Mercado Pago MCP server to get current code templates for the selected product and language. If MCP is unavailable, use the corresponding skill for integration patterns:
+Since `/mp-setup` scaffolds new integrations, **always default to the Orders API** (`POST /v1/orders`) when querying the MCP server for code templates. The Orders API is Mercado Pago's recommended path for all new integrations.
+
+1. Query MCP (`search_documentation`) for Orders API implementation of the selected product (e.g., "orders API checkout-pro", "orders API QR").
+2. If MCP returns Orders API templates → use them.
+3. If Orders API is not yet available for the product, or MCP is unavailable → fall back to the legacy skill patterns in the table below.
+4. If the user explicitly requests the legacy approach, respect their choice but mention Orders API is recommended.
+
+Legacy fallback — use the corresponding skill for integration patterns when Orders API templates are not available:
 
 | Product | Skill | Key files to scaffold |
 |---------|-------|-----------------------|
 | checkout-pro | mp-checkout-online | Preference route, back_url handler, webhook receiver |
 | bricks | mp-checkout-online | Preference route, Brick HTML, process route, webhook |
-| payments-api | mp-checkout-online | Payment route, tokenization frontend, webhook |
+| checkout-api | mp-checkout-online | Payment route, tokenization frontend, webhook |
 | qr | mp-instore | Store/POS setup, order creation route, webhook |
-| point | mp-instore | Device registration, payment intent route, webhook |
+| point | mp-instore | Device registration, order, webhook |
 | subscriptions | mp-subscriptions | Plan creation, subscription URL/route, invoice webhook |
+| orders | mp-orders | Order creation route, multi-payment handler, webhook receiver |
 | marketplace | mp-marketplace | OAuth route, split payment route, seller management, webhook |
 
 For every product, always scaffold:

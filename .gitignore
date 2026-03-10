@@ -10,6 +10,7 @@ Thumbs.db
 
 # Claude Code local overrides
 .claude/*.local.md
+.claude/settings.local.json
 
 # Python
 __pycache__/
