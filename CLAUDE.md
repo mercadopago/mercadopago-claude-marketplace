@@ -103,6 +103,7 @@ Before pushing changes:
 
 ```bash
 # JSON validation
+python3 -m json.tool .claude/settings.json
 python3 -m json.tool .claude-plugin/marketplace.json
 python3 -m json.tool plugins/mp-developer/.claude-plugin/plugin.json
 

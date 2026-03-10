@@ -34,7 +34,7 @@ Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
 | Webhooks | `mp-notifications` | HMAC-signed webhook handling, IPN |
 | QR Attended / Dynamic | `mp-instore` | In-store QR code payments |
 | Point | `mp-instore` | Physical card reader devices |
-| Unified Orders | `mp-unified-orders` | Multi-payment orders, OU + QR |
+| Orders | `mp-orders` | Orders, OU + QR |
 | Subscriptions | `mp-subscriptions` | Recurring billing, plans, preapprovals |
 | Wallet Connect | `mp-wallet` | Link user wallets, debt payments, massive links |
 | Money Out | `mp-money-out` | Disbursements, bank transfers |
@@ -76,7 +76,7 @@ A lightweight router that detects the target country and product, then delegates
 |---------|-------------|
 | `/mp-connect` | Connect to your Mercado Pago account — runs the secure token setup |
 | `/mp-review [scope]` | Review your MP integration. Scopes: `security`, `webhooks`, `checkout`, `qr`, `subscriptions`, `marketplace`, `errors`, `full` |
-| `/mp-setup [lang] [product]` | Scaffold a new integration. Products: `checkout-pro`, `bricks`, `payments-api`, `qr`, `point`, `subscriptions`, `marketplace` |
+| `/mp-setup [lang] [product]` | Scaffold a new integration. Products: `checkout-pro`, `bricks`, `checkout-api`, `orders`, `qr`, `point`, `subscriptions`, `marketplace` |
 
 ## Hook: Credential Leak Prevention
 

@@ -1,6 +1,6 @@
 ---
 description: Review a Mercado Pago payment integration for correctness, security, and best practices — supports all MP products
-argument-hint: "[security|webhooks|checkout|qr|subscriptions|marketplace|errors|full]"
+argument-hint: "[security|webhooks|checkout|qr|point|subscriptions|marketplace|errors|quality|full]"
 allowed-tools: [Read, Grep, Glob, WebFetch, Bash]
 ---
 
@@ -19,6 +19,7 @@ If `$ARGUMENTS` is provided, narrow the review to that scope:
 - **webhooks** — Notification handling, signature validation, idempotency, retry handling
 - **checkout** — Preference creation, back_urls, payment flow, Bricks setup
 - **qr** — QR code setup, store/POS configuration, order creation
+- **point** — Device registration, payment intents, firmware, Point webhook (`point_integration_wh`)
 - **subscriptions** — Plan setup, preapproval flow, invoice handling
 - **marketplace** — OAuth flow, split payments, application_fee, seller management
 - **errors** — Error handling, API error responses, retry logic, edge cases
@@ -45,6 +46,7 @@ If no argument is given, perform a full review.
    - **Bricks**: Public Key initialization, onSubmit handling, server-side processing
    - **Payments API**: Token handling, payer data, installments, issuer_id
    - **QR**: Store/POS setup, order fields, QR lifecycle
+   - **Point**: Device registration, payment intent creation, firmware compliance, `point_integration_wh` notification handling
    - **Subscriptions**: Plan configuration, preapproval flow, invoice handling
    - **Marketplace**: OAuth flow, split configuration, application_fee limits
    - **Webhooks**: 200 response before processing, idempotency, async processing
@@ -53,10 +55,14 @@ If no argument is given, perform a full review.
    - Error responses handled with user-friendly messages
    - external_reference used for reconciliation
    - Country-specific requirements met (currency_id, payment methods)
-7. **Consult MCP** — Refer to the Mercado Pago MCP server to check current API requirements, validate your implementation against the latest specifications, and obtain best practice recommendations to enhance the quality of your development.
-8. **Quality checklist** — If the Mercado Pago MCP server is connected (`mcp__mercadopago__*` tools available), call `quality_checklist` to retrieve the official quality evaluation fields. Format the results as two tables:
-   - **Required fields**: fields the integration MUST implement to meet Mercado Pago quality standards
-   - **Best practices**: optional improvements and recommendations
+7. **Consult MCP** — Use the Mercado Pago MCP server for current API requirements and validate against latest specs
+8. **Quality checklist** — If the Mercado Pago MCP server is connected (`mcp__mercadopago__*` tools available), call `quality_checklist` to retrieve the official quality evaluation fields. Then:
+   - Iterate through **every item** returned by the tool — do not summarize or skip any.
+   - For each item, check the codebase (`Grep`/`Read`) to determine if it is **Implemented**, **Missing**, or **Partial**.
+   - Render the full results as two tables in the output (see Output Format):
+     - **Required fields**: fields the integration MUST implement to meet Mercado Pago quality standards.
+     - **Best practices**: optional improvements and recommendations.
+   - Add a **Summary** line: "X/Y required fields implemented, Z/W best practices adopted."
 
    This step runs automatically for `quality` and `full` scopes. For other scopes, skip it.
 
@@ -79,7 +85,7 @@ If no argument is given, perform a full review.
 ```
 ## MP Integration Review
 
-**Scope**: [full | security | webhooks | checkout | qr | subscriptions | marketplace | errors]
+**Scope**: [full | security | webhooks | checkout | qr | point | subscriptions | marketplace | errors | quality]
 **Products detected**: [list of MP products found in the codebase]
 **Files analyzed**: [list of files]
 
@@ -96,7 +102,20 @@ If no argument is given, perform a full review.
 - [Actionable improvements with references to specific skills/docs]
 
 ### Quality Standards (when MCP is connected)
-- **Required fields**: [table from quality_checklist]
-- **Best practices**: [table from quality_checklist]
-- **Tip**: To evaluate a specific payment, provide a payment ID and we can run `quality_evaluation` for detailed results.
+
+#### Required Fields
+| # | Field | Description | Status |
+|---|-------|-------------|--------|
+| 1 | [field name] | [what the checklist says] | [Implemented / Missing / Partial] |
+| 2 | ... | ... | ... |
+
+#### Best Practices
+| # | Practice | Description | Status |
+|---|----------|-------------|--------|
+| 1 | [practice name] | [what the checklist says] | [Implemented / Missing / Partial] |
+| 2 | ... | ... | ... |
+
+**Summary**: X/Y required fields implemented, Z/W best practices adopted.
+
+> **Tip**: To evaluate a specific payment, provide a payment ID and we can run `quality_evaluation` for detailed results.
 ```

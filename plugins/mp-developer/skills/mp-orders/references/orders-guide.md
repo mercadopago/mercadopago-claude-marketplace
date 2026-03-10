@@ -1,8 +1,8 @@
-# Unified Order Reference
+# Orders Reference
 
 ## Concept
 
-A Unified Order (Orden Unificada) allows a single order to be paid with multiple payment methods or in multiple installments. The `merchant_order` entity is the container that tracks the overall order state and aggregates all associated payments.
+An Order (Orden Unificada) allows a single order to be paid with multiple payment methods or in multiple installments. The `merchant_order` entity is the container that tracks the overall order state and aggregates all associated payments.
 
 ## merchant_order vs payment
 

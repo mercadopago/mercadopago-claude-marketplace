@@ -32,6 +32,9 @@ jobs:
       - name: Validate hooks.json
         run: python3 -m json.tool plugins/mp-developer/hooks/hooks.json > /dev/null
 
+      - name: Validate settings.json
+        run: python3 -m json.tool .claude/settings.json > /dev/null
+
       - name: Python hook syntax check
         run: python3 -m py_compile plugins/mp-developer/hooks/validate_mp_credentials.py
 
@@ -63,6 +66,7 @@ jobs:
             "plugins/mp-developer/.mcp.json"
             "plugins/mp-developer/hooks/hooks.json"
             "plugins/mp-developer/hooks/validate_mp_credentials.py"
+            ".claude/settings.json"
             "plugins/mp-developer/agents/mp-integration-expert.md"
             "plugins/mp-developer/commands/mp-review.md"
             "plugins/mp-developer/commands/mp-setup.md"

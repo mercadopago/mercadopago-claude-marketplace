@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(plugins/**)",
+      "Read(CLAUDE.md)",
+      "Read(CONTRIBUTING.md)",
+      "Read(README.md)",
+      "Read(.claude-plugin/**)",
+      "Read(.github/**)",
+      "Bash(python3 -m json.tool *)",
+      "Bash(python3 -m py_compile *)",
+      "Bash(find plugins/mp-developer/skills *)",
+      "Bash(wc -l *)",
+      "Bash(grep -l *)",
+      "Bash(head *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "mcp__plugin_mp-developer_mercadopago__search_documentation",
+      "mcp__plugin_mp-developer_mercadopago__quality_checklist",
+      "mcp__plugin_mp-developer_mercadopago__quality_evaluation",
+      "mcp__plugin_mp-developer_mercadopago__notifications_history",
+      "mcp__plugin_mp-developer_mercadopago__application_list",
+      "mcp__plugin_mp-developer_mercadopago__create_test_user",
+      "mcp__plugin_mp-developer_mercadopago__add_money_test_user"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Bash(rm -rf *)",
+      "Bash(rm -r *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -f *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}
