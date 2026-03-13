@@ -33,6 +33,7 @@ Trigger on keywords: QR, qr_code, Point, POS, kiosko, instore, presencial, pago 
 - "face-to-face payment" / "in-person payment"
 - "self-service kiosk" / "customer pays on their own"
 
+
 **NOT** for online payments -- redirect to `mp-checkout-online` instead.
 
 ## Decision Tree
