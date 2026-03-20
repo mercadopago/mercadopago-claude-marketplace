@@ -13,6 +13,7 @@ function createCard(component) {
   card.className = 'card';
   card.setAttribute('role', 'button');
   card.setAttribute('tabindex', '0');
+  card.setAttribute('data-type', component.type);
 
   const version = component.version ? `v${component.version}` : '';
   const tags = (component.tags || []).slice(0, 4);
