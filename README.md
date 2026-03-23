@@ -11,6 +11,20 @@
 > [!WARNING]
 > **This project is under active development.** APIs, skill structures, and plugin interfaces may change between versions. Use in production integrations at your own discretion. Feedback and contributions are welcome.
 
+<div align="center">
+
+### Explore the Component Catalog
+
+[![Browse Components](https://img.shields.io/badge/%F0%9F%94%8D_Browse_Components-mercadopago--claude--marketplace.vercel.app-3483fa?style=for-the-badge&logoColor=white)](https://mercadopago-claude-marketplace.vercel.app/)
+
+> **12 skills** · **1 agent** · **3 commands** · **1 hook** — all browsable in a visual catalog.
+>
+> Search, filter, and explore every component with detailed metadata and direct links to source code.
+
+</div>
+
+---
+
 ## Overview
 
 A Claude Code plugin that gives you an AI-powered integration assistant for the full Mercado Pago product suite. Ask questions, scaffold projects, review code, and get real-time API guidance — all from your terminal.
