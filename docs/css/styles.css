@@ -408,6 +408,10 @@ a:hover {
   color: var(--hook);
   background: var(--hook-bg);
 }
+.badge-sub-skill {
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.1);
+}
 
 .card-description {
   font-size: 0.8125rem;
@@ -491,6 +495,23 @@ a:hover {
   color: var(--text-primary);
 }
 
+.modal-back {
+  background: none;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  padding: 4px 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+.modal-back:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
 .modal-name {
   font-family: var(--font-mono);
   font-size: 1.25rem;
@@ -550,6 +571,56 @@ a:hover {
 .modal-refs li {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
+}
+
+/* Sub-skills in modal */
+.modal-subskills {
+  margin-bottom: 20px;
+}
+.modal-subskills h3 {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.subskill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.subskill-item {
+  background: rgba(20,20,53,0.5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.subskill-item:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.05);
+}
+.subskill-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.subskill-name {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.subskill-description {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .modal-actions {

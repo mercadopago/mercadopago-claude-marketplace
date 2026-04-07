@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-03-20T19:58:39.652257+00:00",
+  "generated_at": "2026-04-07T01:17:52.561359+00:00",
   "plugin": {
     "name": "mp-developer",
-    "version": "2.0.1",
-    "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 12 product skills (online checkout, in-store QR/Point, subscriptions, marketplace, wallet, money-out, security, reporting, SDKs, and more). Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
+    "version": "3.0.0",
+    "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 13 product skills. Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
     "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
     "license": "Apache-2.0",
     "author": "Mercado Pago Developer Experience",
@@ -24,23 +24,111 @@
     ]
   },
   "stats": {
-    "total": 17,
-    "skills": 12,
+    "total": 19,
+    "skills": 13,
     "agents": 1,
     "commands": 3,
-    "hooks": 1
+    "hooks": 2
   },
   "components": [
     {
+      "name": "mp-checkout-bricks",
+      "type": "skill",
+      "description": "Checkout Bricks integration for Mercado Pago. Routes to specialized sub-skills for Payment Brick, Card Payment Brick, Wallet Brick, and Status Screen Brick. Use when implementing embedded payment UI components.",
+      "version": "1.0.0",
+      "tags": [
+        "mercadopago",
+        "bricks",
+        "payment",
+        "card-payment",
+        "wallet",
+        "status-screen",
+        "checkout",
+        "embedded"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-checkout-bricks/SKILL.md",
+      "references": [
+        "references/rules-bricks-setup.md",
+        "references/rules-errors.md",
+        "references/rules-payment.md",
+        "references/rules-preference.md"
+      ],
+      "subSkills": [
+        {
+          "name": "card-payment",
+          "type": "skill",
+          "description": "Card-only payment form with PCI-compliant tokenization, brand detection, and installment selection. Use when: Card Payment Brick, card-only, só cartão, solo tarjeta, credit card form, debit card form, formulário de cartão, tokenizar cartão, tokenizar tarjeta.",
+          "version": "1.0.0",
+          "tags": [],
+          "license": "",
+          "path": "plugins/mp-developer/skills/mp-checkout-bricks/card-payment/SKILL.md",
+          "references": [
+            "references/customization.md",
+            "references/rules-callbacks.md",
+            "references/snippets.md",
+            "references/troubleshooting.md"
+          ]
+        },
+        {
+          "name": "payment",
+          "type": "skill",
+          "description": "All-in-one payment form: cards, Pix, Boleto, OXXO, PSE, Yape, cash methods, installments, and MercadoPago wallet. Use when: Payment Brick, multiple payment methods, formulário de pagamento, métodos de pago, Pix, Boleto, OXXO, checkout completo, all-in-one checkout, aceitar vários meios de pagamento, aceptar múltiples medios de pago.",
+          "version": "1.0.0",
+          "tags": [],
+          "license": "",
+          "path": "plugins/mp-developer/skills/mp-checkout-bricks/payment/SKILL.md",
+          "references": [
+            "references/customization.md",
+            "references/rules-callbacks.md",
+            "references/rules-initialization.md",
+            "references/rules-payment-methods.md",
+            "references/snippets.md",
+            "references/troubleshooting.md"
+          ]
+        },
+        {
+          "name": "status-screen",
+          "type": "skill",
+          "description": "Payment result screen (approved/pending/rejected) with automatic 3DS challenge handling. Requires a payment_id from MercadoPago Payments API. Use when: Status Screen Brick, show payment result, mostrar resultado, resultado del pago, 3DS challenge, tela de status, post-payment screen.",
+          "version": "1.0.0",
+          "tags": [],
+          "license": "",
+          "path": "plugins/mp-developer/skills/mp-checkout-bricks/status-screen/SKILL.md",
+          "references": [
+            "references/customization.md",
+            "references/rules-3ds.md",
+            "references/rules-backurl.md",
+            "references/rules-status.md",
+            "references/snippets.md",
+            "references/troubleshooting.md"
+          ]
+        },
+        {
+          "name": "wallet",
+          "type": "skill",
+          "description": "One-click pay button for logged-in MercadoPago users using saved cards, balance, or Mercado Crédito. Use when: Wallet Brick, pay with MercadoPago, pagar com Mercado Pago, pagar con Mercado Pago, botão MercadoPago, one-click payment, carteira digital.",
+          "version": "1.0.0",
+          "tags": [],
+          "license": "",
+          "path": "plugins/mp-developer/skills/mp-checkout-bricks/wallet/SKILL.md",
+          "references": [
+            "references/customization.md",
+            "references/snippets.md",
+            "references/troubleshooting.md"
+          ]
+        }
+      ]
+    },
+    {
       "name": "mp-checkout-online",
       "type": "skill",
-      "description": "Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout Bricks, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.",
+      "description": "Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.",
       "version": "2.0.1",
       "tags": [
         "mercadopago",
         "checkout",
         "preference",
-        "bricks",
         "payments",
         "sdk",
         "3ds",
@@ -49,7 +137,6 @@
       "license": "Apache-2.0",
       "path": "plugins/mp-developer/skills/mp-checkout-online/SKILL.md",
       "references": [
-        "references/bricks-patterns.md",
         "references/checkout-pro-patterns.md"
       ]
     },
@@ -341,10 +428,19 @@
     {
       "name": "validate_mp_credentials",
       "type": "hook",
-      "description": "Prevents Mercado Pago credentials from being written to source files and blocks reading .env files to prevent credential exposure",
+      "description": "Mercado Pago developer plugin hooks",
       "trigger": "PreToolUse",
       "matcher": "Bash|Edit|Write|MultiEdit|Read",
       "hook_type": "command",
+      "path": "plugins/mp-developer/hooks/hooks.json"
+    },
+    {
+      "name": "quality_check_after_bricks_finished",
+      "type": "hook",
+      "description": "Mercado Pago developer plugin hooks",
+      "trigger": "PostToolUse",
+      "matcher": "Skill(mercadopago:payment|mercadopago:card-payment|mercadopago:wallet|mercadopago:status-screen)",
+      "hook_type": "prompt",
       "path": "plugins/mp-developer/hooks/hooks.json"
     }
   ]

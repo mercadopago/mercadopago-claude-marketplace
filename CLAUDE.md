@@ -110,14 +110,14 @@ python3 -m json.tool plugins/mp-developer/.claude-plugin/plugin.json
 # Hook compilation
 python3 -m py_compile plugins/mp-developer/hooks/validate_mp_credentials.py
 
-# Skill count (currently 12)
+# Skill count (currently 13)
 find plugins/mp-developer/skills -name "SKILL.md" | wc -l
 
 # Agent weight (should be < 200 lines)
 wc -l plugins/mp-developer/agents/mp-integration-expert.md
 
 # CRITICAL: No skill should have 'tools:' in frontmatter
-grep -l "^tools:" plugins/mp-developer/skills/*/SKILL.md && echo "ERROR: skills must not have tools field" || echo "OK"
+grep -rl "^tools:" plugins/mp-developer/skills/*/SKILL.md plugins/mp-developer/skills/*/*/SKILL.md && echo "ERROR: skills must not have tools field" || echo "OK"
 
 # All skills have valid YAML frontmatter
 for f in plugins/mp-developer/skills/*/SKILL.md; do head -1 "$f"; done

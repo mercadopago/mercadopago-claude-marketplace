@@ -82,7 +82,7 @@ Legacy fallback — use the corresponding skill for integration patterns when Or
 | Product | Skill | Key files to scaffold |
 |---------|-------|-----------------------|
 | checkout-pro | mp-checkout-online | Preference route, back_url handler, webhook receiver |
-| bricks | mp-checkout-online | Preference route, Brick HTML, process route, webhook |
+| bricks | mp-checkout-bricks | Brick component page, payment processing route, webhook receiver |
 | checkout-api | mp-checkout-online | Payment route, tokenization frontend, webhook |
 | qr | mp-instore | Store/POS setup, order creation route, webhook |
 | point | mp-instore | Device registration, order, webhook |

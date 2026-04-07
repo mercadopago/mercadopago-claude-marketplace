@@ -44,7 +44,7 @@ function createCard(component) {
   return card;
 }
 
-function createDetailModal(component) {
+function createDetailModal(component, hasBack = false) {
   const sourceUrl = `${REPO_URL}/blob/main/${component.path}`;
 
   let metaRows = '';
@@ -87,13 +87,35 @@ function createDetailModal(component) {
     </div>
   ` : '';
 
+  const subSkills = component.subSkills || [];
+  const subSkillsHtml = subSkills.length ? `
+    <div class="modal-subskills">
+      <h3>Sub-Skills</h3>
+      <div class="subskill-list">
+        ${subSkills.map((s, i) => `
+          <div class="subskill-item" role="button" tabindex="0" data-index="${i}">
+            <div class="subskill-header">
+              <span class="badge badge-sub-skill">sub-skill</span>
+              <span class="subskill-name">${escapeHtml(s.name)}</span>
+            </div>
+            <div class="subskill-description">${escapeHtml(s.description)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  const backHtml = hasBack ? `<button class="modal-back">&larr; Back</button>` : '';
+
   return `
+    ${backHtml}
     <span class="${getBadgeClass(component.type)}">${component.type}</span>
     <h2 class="modal-name">${escapeHtml(component.name)}</h2>
     <p class="modal-description">${escapeHtml(component.description)}</p>
     <div class="modal-meta">${metaRows}</div>
     ${tagsHtml}
     ${refsHtml}
+    ${subSkillsHtml}
     <div class="modal-actions">
       <a href="${sourceUrl}" target="_blank" rel="noopener" class="btn btn-primary">
         View Source

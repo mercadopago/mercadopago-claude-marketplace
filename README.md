@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 2.0.1](https://img.shields.io/badge/version-2.0.1-green)](./CHANGELOG.md)
+[![Version: 3.0.0](https://img.shields.io/badge/version-3.0.0-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -17,7 +17,7 @@
 
 [![Browse Components](https://img.shields.io/badge/%F0%9F%94%8D_Browse_Components-mercadopago--claude--marketplace.vercel.app-3483fa?style=for-the-badge&logoColor=white)](https://mercadopago-claude-marketplace.vercel.app/)
 
-> **12 skills** · **1 agent** · **3 commands** · **1 hook** — all browsable in a visual catalog.
+> **13 skills** · **1 agent** · **3 commands** · **1 hook** — all browsable in a visual catalog.
 >
 > Search, filter, and explore every component with detailed metadata and direct links to source code.
 
@@ -29,7 +29,7 @@
 
 A Claude Code plugin that gives you an AI-powered integration assistant for the full Mercado Pago product suite. Ask questions, scaffold projects, review code, and get real-time API guidance — all from your terminal.
 
-- **12 product skills** covering the complete Mercado Pago ecosystem
+- **13 product skills** covering the complete Mercado Pago ecosystem
 - **7 countries** supported: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay
 - **Hybrid architecture** — skills provide stable integration intelligence, MCP provides live API data
 - **Credential leak prevention** — hook scans every file write for hardcoded tokens
@@ -68,7 +68,8 @@ Then restart Claude Code.
 
 | Skill | Products Covered |
 |-------|-----------------|
-| `mp-checkout-online` | Checkout Pro, Checkout Bricks, Payments API, 3DS, Cross-Border Payments |
+| `mp-checkout-online` | Checkout Pro, Payments API, 3DS, Cross-Border Payments |
+| `mp-checkout-bricks` | Payment Brick, Card Payment Brick, Wallet Brick, Status Screen Brick |
 | `mp-notifications` | Webhooks (v2), IPN (legacy), HMAC validation |
 | `mp-instore` | QR Attended, QR Dynamic, Point devices, Kiosk |
 | `mp-orders` | Orders, OU + QR |

@@ -19,7 +19,8 @@ You are performing a Mercado Pago integration review. Use the product-specific s
 If `$ARGUMENTS` is provided, narrow the review to that scope:
 - **security** — Credential handling, token storage, HTTPS enforcement, HMAC validation
 - **webhooks** — Notification handling, signature validation, idempotency, retry handling
-- **checkout** — Preference creation, back_urls, payment flow, Bricks setup
+- **checkout** — Preference creation, back_urls, payment flow
+- **bricks** — Bricks setup, SDK JS initialization and customization, callbacks handling, troubleshooting common erros
 - **qr** — QR code setup, store/POS configuration, order creation
 - **point** — Device registration, payment intents, firmware, Point webhook (`point_integration_wh`)
 - **subscriptions** — Plan setup, preapproval flow, invoice handling
@@ -45,7 +46,7 @@ If no argument is given, perform a full review.
    - Test user credentials separated from production (both use `APP_USR-` prefix)
 5. **Check product-specific correctness**:
    - **Checkout Pro**: Required preference fields, back_urls, auto_return, notification_url
-   - **Bricks**: Public Key initialization, onSubmit handling, server-side processing
+   - **Bricks**: SDK initialization, container div before `create()`, onSubmit sends formData to backend, server-side payment with token, amount consistency between Brick and server
    - **Payments API**: Token handling, payer data, installments, issuer_id
    - **QR**: Store/POS setup, order fields, QR lifecycle
    - **Point**: Device registration, payment intent creation, firmware compliance, `point_integration_wh` notification handling

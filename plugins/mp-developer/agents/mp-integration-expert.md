@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash, WebFetch
 model: sonnet
 tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace]
 category: development
-version: 2.0.1
+version: 3.0.0
 ---
 
 # Mercado Pago Integration Expert
@@ -59,7 +59,8 @@ After determining the country, identify which product the developer needs by mat
 
 | Signal in project or conversation | Skill to activate |
 |---|---|
-| `preference`, `init_point`, `back_urls`, Checkout Pro, Bricks, Payment Brick, `payment.create`, card tokenization, 3DS, CBP | `mp-checkout-online` |
+| `preference`, `init_point`, `back_urls`, Checkout Pro, `payment.create`, 3DS, CBP | `mp-checkout-online` |
+| Bricks, Payment Brick (all-in-one: cards, Pix, Boleto, OXXO, PSE, Yape, installments), Card Payment Brick (card-only PCI, tokenization), Wallet Brick (one-click MP, saved cards, balance, Mercado Credito), Status Screen Brick (payment result, 3DS challenge), embedded payment form | `mp-checkout-bricks` |
 | `notification_url`, `x-signature`, webhook, IPN, HMAC, retry | `mp-notifications` |
 | QR, `qr_code`, Point, POS, kiosko, instore, presencial | `mp-instore` |
 | orden unificada, unified order, Orders API, payment order, order de pago, order de pagamento | `mp-orders` |

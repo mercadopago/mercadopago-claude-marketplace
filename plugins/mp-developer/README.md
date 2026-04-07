@@ -1,6 +1,6 @@
 # mp-developer
 
-Mercado Pago full-product integration toolkit for Claude Code. Hybrid architecture: 12 product skills provide stable integration intelligence (flows, decision trees, gotchas), while the MCP server provides live API data (endpoints, payloads, code snippets).
+Mercado Pago full-product integration toolkit for Claude Code. Hybrid architecture: 13 product skills provide stable integration intelligence (flows, decision trees, gotchas), while the MCP server provides live API data (endpoints, payloads, code snippets).
 
 ## Quick Start
 
@@ -27,7 +27,7 @@ Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
 | Product | Skill | Description |
 |---------|-------|-------------|
 | Checkout Pro | `mp-checkout-online` | Redirect-based payment with preferences |
-| Checkout Bricks | `mp-checkout-online` | Embeddable UI components (Payment Brick, Card Brick, etc.) |
+| Checkout Bricks | `mp-checkout-bricks` | Payment Brick, Card Payment Brick, Wallet Brick, Status Screen Brick |
 | Payments API | `mp-checkout-online` | Direct server-to-server payment with card tokenization |
 | 3D Secure | `mp-checkout-online` | Additional cardholder authentication |
 | Cross-Border Payments | `mp-checkout-online` | Accept payments from other countries |

@@ -1,12 +1,12 @@
 ---
 name: mp-checkout-online
-description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout Bricks, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
+description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
 license: Apache-2.0
 metadata:
-  version: "2.0.1"
+  version: "3.0.0"
   author: "Mercado Pago Developer Experience"
   category: "development"
-  tags: "mercadopago, checkout, preference, bricks, payments, sdk, 3ds, cbp"
+  tags: "mercadopago, checkout, preference, payments, sdk, 3ds, cbp"
 ---
 
 # mp-checkout-online
@@ -16,14 +16,13 @@ Online checkout integration intelligence for Mercado Pago. This skill contains s
 ## Products Covered
 
 - **Checkout Pro**: Redirect-based, preference-driven. Best for fast integration.
-- **Checkout Bricks**: Embeddable UI components (Payment Brick, Card Payment Brick, Status Screen Brick). Best for custom UX.
 - **Payments API**: Direct server-to-server payment creation with card tokenization. Full control.
 - **3D Secure (3DS)**: Additional cardholder authentication layer. Required by some acquirers.
 - **Cross-Border Payments (CBP)**: Accept payments from buyers in other countries.
 
 ## When to Use This Skill
 
-Use when the conversation mentions: preference, init_point, back_urls, Checkout Pro, Bricks, Payment Brick, payment.create, card tokenization, 3DS, cross-border.
+Use when the conversation mentions: preference, init_point, back_urls, Checkout Pro, payment.create, card tokenization, 3DS, cross-border.
 
 Do NOT use for: QR/Point (use mp-instore), subscriptions (use mp-subscriptions), marketplace splits (use mp-marketplace).
 
@@ -35,12 +34,6 @@ Developer needs to accept online payments
 +-- Wants fastest integration, OK with redirect?
 |   +-- YES --> Checkout Pro
 |       +-- Create preference --> redirect to init_point
-|
-+-- Wants embedded UI within their page?
-|   +-- YES --> Checkout Bricks
-|       +-- Need full payment form? --> Payment Brick
-|       +-- Need only card form? --> Card Payment Brick
-|       +-- Need payment status display? --> Status Screen Brick
 |
 +-- Wants full control over payment flow?
 |   +-- YES --> Payments API
@@ -62,20 +55,6 @@ Developer needs to accept online payments
 **Key fields for preference**: items[].title, items[].unit_price, items[].quantity (required). back_urls, auto_return, notification_url, statement_descriptor, external_reference (recommended).
 
 **Gotcha**: `currency_id` must match the country. ARS for Argentina, BRL for Brazil, etc. See agent country detection.
-
-## Integration Flow: Checkout Bricks
-
-1. Server: Create preference (for Payment Brick) or setup amount
-2. Client: Initialize MercadoPago JS SDK with PUBLIC_KEY
-3. Client: Create brick instance in a container div
-4. Client: Handle onSubmit callback -- POST form data to server
-5. Server: Create payment via Payments API with token from Brick
-6. Server: Return status to brick for display
-7. Server: Process webhook notification
-
-**Gotcha**: The Brick's onSubmit sends `formData` including a `token` for card payments. Use this token server-side.
-
-**Gotcha**: Always include `requestOptions.idempotencyKey` when creating payments.
 
 ## Integration Flow: Checkout API (Direct)
 
@@ -148,7 +127,6 @@ When helping a developer, use the Mercado Pago MCP server (`mercadopago`) to get
 - Current SDK initialization code per language
 - Preference creation endpoint and full payload schema
 - Payment creation endpoint and payload schema
-- Brick initialization parameters and callbacks
 - 3DS configuration endpoints
 - Test card numbers and test user patterns
 - Current error codes and messages

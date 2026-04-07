@@ -73,6 +73,7 @@ jobs:
             "plugins/mp-developer/commands/mp-setup.md"
             "plugins/mp-developer/skills/mp-checkout-online/SKILL.md"
             "plugins/mp-developer/skills/mp-notifications/SKILL.md"
+            "plugins/mp-developer/skills/mp-checkout-bricks/SKILL.md"
             "plugins/mp-developer/PLUGIN_SETTINGS.md"
             "plugins/mp-developer/README.md"
             "README.md"

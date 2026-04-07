@@ -89,8 +89,34 @@ def parse_tags(raw) -> list:
     return []
 
 
+def _parse_skill(skill_file: Path) -> dict:
+    """Parse a single SKILL.md into a component dict."""
+    skill_dir = skill_file.parent
+    text = skill_file.read_text(encoding="utf-8")
+    fm = parse_frontmatter(text)
+    meta = fm.get("metadata", {})
+
+    refs_dir = skill_dir / "references"
+    references = []
+    if refs_dir.is_dir():
+        references = sorted(
+            f"references/{f.name}" for f in refs_dir.iterdir() if f.suffix == ".md"
+        )
+
+    return {
+        "name": fm.get("name", skill_dir.name),
+        "type": "skill",
+        "description": fm.get("description", ""),
+        "version": meta.get("version", fm.get("version", "")),
+        "tags": parse_tags(meta.get("tags", fm.get("tags", []))),
+        "license": fm.get("license", ""),
+        "path": str(skill_file.relative_to(ROOT)),
+        "references": references,
+    }
+
+
 def collect_skills() -> list:
-    """Collect all skills from plugins/mp-developer/skills/*/SKILL.md."""
+    """Collect top-level skills, nesting sub-skills inside their parent."""
     components = []
     skills_dir = PLUGIN_DIR / "skills"
     if not skills_dir.exists():
@@ -101,28 +127,19 @@ def collect_skills() -> list:
         if not skill_file.is_file():
             continue
 
-        text = skill_file.read_text(encoding="utf-8")
-        fm = parse_frontmatter(text)
-        meta = fm.get("metadata", {})
+        entry = _parse_skill(skill_file)
 
-        # Collect reference files
-        refs_dir = skill_dir / "references"
-        references = []
-        if refs_dir.is_dir():
-            references = sorted(
-                f"references/{f.name}" for f in refs_dir.iterdir() if f.suffix == ".md"
-            )
+        # Collect sub-skills (e.g. mp-checkout-bricks/payment/SKILL.md)
+        sub_skills = []
+        for sub_dir in sorted(skill_dir.iterdir()):
+            sub_file = sub_dir / "SKILL.md"
+            if sub_dir.is_dir() and sub_file.is_file():
+                sub_skills.append(_parse_skill(sub_file))
 
-        components.append({
-            "name": fm.get("name", skill_dir.name),
-            "type": "skill",
-            "description": fm.get("description", ""),
-            "version": meta.get("version", fm.get("version", "")),
-            "tags": parse_tags(meta.get("tags", fm.get("tags", []))),
-            "license": fm.get("license", ""),
-            "path": str(skill_file.relative_to(ROOT)),
-            "references": references,
-        })
+        if sub_skills:
+            entry["subSkills"] = sub_skills
+
+        components.append(entry)
 
     return components
 
@@ -259,10 +276,10 @@ def main():
     )
 
     print(f"Generated {OUTPUT} with {len(all_components)} components:")
-    print(f"  Skills:   {len(skills)}")
-    print(f"  Agents:   {len(agents)}")
-    print(f"  Commands: {len(commands)}")
-    print(f"  Hooks:    {len(hooks)}")
+    print(f"  Skills:     {len(skills)}")
+    print(f"  Agents:     {len(agents)}")
+    print(f"  Commands:   {len(commands)}")
+    print(f"  Hooks:      {len(hooks)}")
 
 
 if __name__ == "__main__":
