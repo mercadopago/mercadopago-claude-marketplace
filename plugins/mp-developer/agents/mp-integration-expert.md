@@ -95,6 +95,10 @@ Scan with `Grep` for API patterns:
 
 If the user explicitly requests the legacy API, respect their choice but mention Orders API is the recommended path going forward.
 
+### Products not yet on Orders API
+
+The following products still use the Payments API and are NOT subject to the orders-first or migration modes:
+- **Checkout Bricks** (`mp-checkout-bricks`): Uses `POST /v1/payments` via the Brick's server-side flow. When Bricks is the detected product, skip integration mode detection and proceed with the Payments API as documented in the skill.
 
 ## MCP Detection -- CHECK BEFORE SUGGESTING /mp-connect
 
