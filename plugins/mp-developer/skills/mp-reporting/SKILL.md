@@ -13,13 +13,13 @@ metadata:
 
 ## Products Covered
 
-- **Settlement Reports**: Money available reports with release dates
-- **Account Statement**: All account movements (in/out)
+- **Released Money Report**: Money released and available for withdrawal, with release dates
+- **Account Balance Report**: Current account balance, all movements (in/out)
 - **Transaction Reconciliation**: Match payments with orders via external_reference
 
 ## When to Use
 
-Use this skill when the query involves: report, reporte, conciliation, settlement, reconciliation, financial reporting.
+Use this skill when the query involves: report, reporte, conciliation, settlement, reconciliation, financial reporting, relatório.
 
 **NOT** for payment processing -- use mp-checkout-online instead.
 
@@ -28,9 +28,9 @@ Use this skill when the query involves: report, reporte, conciliation, settlemen
 ```
 Need financial data
 ├── When will money be available?
-│   └── Settlement Report (available_money)
-├── All account movements?
-│   └── Account Statement report
+│   └── Released Money Report
+├── Current balance and all movements?
+│   └── Account Balance Report
 ├── Match payments to orders?
 │   └── Reconciliation via external_reference
 └── Automated report generation?

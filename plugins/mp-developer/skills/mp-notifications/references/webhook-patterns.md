@@ -14,6 +14,8 @@
 | point_integration_wh | Point device event |
 | chargeback.created | Chargeback initiated |
 | chargeback.updated | Chargeback status changed |
+| order.created | Order created (Orders API) |
+| order.updated | Order status changed (Orders API) |
 | delivery.created | Delivery created |
 | delivery.updated | Delivery updated |
 

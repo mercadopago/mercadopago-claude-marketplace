@@ -1,12 +1,12 @@
 ---
 name: mp-checkout-online
-description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout Bricks, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
+description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout Bricks, Checkout API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
 license: Apache-2.0
 metadata:
   version: "2.0.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
-  tags: "mercadopago, checkout, preference, bricks, payments, sdk, 3ds, cbp"
+  tags: "mercadopago, checkout, preference, bricks, checkout-api, sdk, 3ds, cbp"
 ---
 
 # mp-checkout-online
@@ -16,14 +16,14 @@ Online checkout integration intelligence for Mercado Pago. This skill contains s
 ## Products Covered
 
 - **Checkout Pro**: Redirect-based, preference-driven. Best for fast integration.
-- **Checkout Bricks**: Embeddable UI components (Payment Brick, Card Payment Brick, Status Screen Brick). Best for custom UX.
-- **Payments API**: Direct server-to-server payment creation with card tokenization. Full control.
+- **Checkout Bricks**: Embeddable UI components (Payment Brick, Card Payment Brick, Wallet Brick, Status Screen Brick). Can be combined in the same page. Best for custom UX.
+- **Checkout API**: Direct server-to-server payment creation. Supports cards (with tokenization), bank transfers, cash/offline methods, and wallets. Full control, full customization.
 - **3D Secure (3DS)**: Additional cardholder authentication layer. Required by some acquirers.
 - **Cross-Border Payments (CBP)**: Accept payments from buyers in other countries.
 
 ## When to Use This Skill
 
-Use when the conversation mentions: preference, init_point, back_urls, Checkout Pro, Bricks, Payment Brick, payment.create, card tokenization, 3DS, cross-border.
+Use when the conversation mentions: preference, init_point, back_urls, Checkout Pro, Checkout API, Bricks, Payment Brick, payment.create, card tokenization, 3DS, cross-border, online payments, checkout customization, redirection, on-site checkout.
 
 Do NOT use for: QR/Point (use mp-instore), subscriptions (use mp-subscriptions), marketplace splits (use mp-marketplace).
 
@@ -42,9 +42,10 @@ Developer needs to accept online payments
 |       +-- Need only card form? --> Card Payment Brick
 |       +-- Need payment status display? --> Status Screen Brick
 |
-+-- Wants full control over payment flow?
-|   +-- YES --> Payments API
-|       +-- Tokenize card client-side --> create payment server-side
++-- Wants full control over payment flow (on-site checkout)?
+|   +-- YES --> Checkout API
+|       +-- Cards: tokenize client-side --> create payment server-side
+|       +-- Non-card methods (Pix, Boleto, OXXO, PSE, etc.): create payment directly
 |
 +-- Needs 3DS authentication?
     +-- Add 3DS to any of the above flows
@@ -77,24 +78,33 @@ Developer needs to accept online payments
 
 **Gotcha**: Always include `requestOptions.idempotencyKey` when creating payments.
 
-## Integration Flow: Checkout API (Direct)
+## Integration Flow: Checkout API
 
+### Card payments
 1. Client: Tokenize card using MercadoPago.js `cardForm` or `createCardToken`
 2. Client: Send token + payment details to server
 3. Server: Create payment with token, transaction_amount, payment_method_id, installments, payer
 4. Server: Return status to client
 5. Server: Process webhook for definitive status
 
+### Non-card payments (Pix, Boleto, OXXO, PSE, bank transfers, etc.)
+1. Client: Collect payer details (email, identification, address as needed)
+2. Server: Create payment directly with `payment_method_id` and payer data (no tokenization needed)
+3. Server: Return transaction details to client (e.g., QR code for Pix, ticket URL for Boleto/OXXO)
+4. Server: Process webhook for definitive status
+
 **Gotcha**: Card tokens are single-use and expire in 7 days.
 
-**Gotcha**: `issuer_id` is required for some payment methods.
+**Gotcha**: `issuer_id` is required for some card payment methods.
+
+**Gotcha**: Available payment methods vary by country. Consult MCP (`search_documentation`) for the current list per country.
 
 ## 3D Secure (3DS) -- Skeleton
 
 - 3DS adds an authentication step before payment processing
 - Required by some acquirers/issuers for fraud prevention
 - Adds an iframe challenge flow for the buyer
-- Only integrable for Check Out API or Check Out Bricks. Check Out PRO is already integrated by default
+- Only integrable for Checkout API or Checkout Bricks. Checkout Pro is already integrated by default
 - Always use `binary_mode: false`, otherwise the payment won't be able to show the challenge or `pending` status. 
 - **For endpoints, payloads, and implementation details**: Consult the MCP server or fetch docs at `{DOMAIN}/developers/{LANG}/docs/checkout-api/3ds`
 
@@ -137,8 +147,9 @@ CBP: Requires specific country-pair approval.
 
 - Use `init_point` for Checkout Pro
 - Use production credentials (`APP_USR-*`) of a **test user** — Mercado Pago no longer uses `TEST-` sandbox credentials
-- Create test users from the Developer Dashboard or via the MCP tool `create_test_user`
-- Load balance into test users with the MCP tool `add_money_test_user`
+- For automated test credentials: access the Developer Dashboard > application details > test credentials (available directly without creating test users)
+- Create test users from the Developer Dashboard or via the MCP tool `create_test_user` if needed
+- Load balance into seller test users with the MCP tool `add_money_test_user`
 - **For current test cards and test user emails**: Consult MCP server or fetch `{DOMAIN}/developers/{LANG}/docs/your-integrations/test/cards`
 
 ## What to Fetch from MCP
@@ -148,7 +159,6 @@ When helping a developer, use the Mercado Pago MCP server (`mercadopago`) to get
 - Current SDK initialization code per language
 - Preference creation endpoint and full payload schema
 - Payment creation endpoint and payload schema
-- Brick initialization parameters and callbacks
 - 3DS configuration endpoints
 - Test card numbers and test user patterns
 - Current error codes and messages
@@ -159,6 +169,6 @@ If MCP is unavailable:
 
 - `{DOMAIN}/developers/{LANG}/docs/checkout-pro/landing` -- Checkout Pro guide
 - `{DOMAIN}/developers/{LANG}/docs/checkout-bricks/landing` -- Bricks guide
-- `{DOMAIN}/developers/{LANG}/docs/checkout-api/landing` -- Payments API guide
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api/landing` -- Checkout API guide (note: this path may redirect to Orders API docs in some countries)
 - `{DOMAIN}/developers/{LANG}/docs/checkout-api/3ds` -- 3DS guide
 - `{DOMAIN}/developers/{LANG}/docs/your-integrations/test/cards` -- Test cards

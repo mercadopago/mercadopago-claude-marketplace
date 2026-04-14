@@ -23,4 +23,12 @@
 - Instant confirmation (vs traditional bank transfer delay)
 - Requires Fintoc-specific configuration in MP Dashboard
 
+## PSE (Colombia)
+
+- Bank transfer method for Colombia
+- Integration through MP Checkout API or Bricks
+- Buyer selects bank and authenticates via PSE
+- Requires payer identification (CC) and entity_type
+- Callback URL required for bank redirect flow
+
 **For API endpoints, configuration steps, and current availability**: Consult MCP server.

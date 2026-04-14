@@ -26,6 +26,7 @@ Do NOT use for: payment creation (-> mp-checkout-online), QR notifications (-> m
 | Subscriptions | plan.created, plan.updated, subscription.created, subscription.updated, invoice.created, invoice.updated |
 | Point / In-Store | point_integration_wh |
 | Marketplace | payment.created, payment.updated (with marketplace context) |
+| Orders API | order.created, order.updated |
 | Chargebacks | chargeback.created, chargeback.updated |
 | Delivery | delivery.created, delivery.updated |
 
@@ -134,9 +135,10 @@ Format: `GET https://yoursite.com/ipn?topic=payment&id=123456789`
 ## What to Fetch from MCP
 - Current webhook payload structure per event type
 - Available event types for subscription
-- Webhook configuration API endpoints
+- Webhook configuration API endpoints (use `save_webhook` to configure, `notifications_history` to check delivery)
 - Code examples per language for signature validation
 - Error codes for webhook-related issues
+- Use the Dashboard's webhook simulation feature or MCP tools to test notification delivery
 
 ## What to Fetch from Docs (WebFetch fallback)
 - `{DOMAIN}/developers/{LANG}/docs/your-integrations/notifications/webhooks`

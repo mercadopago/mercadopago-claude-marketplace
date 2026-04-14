@@ -96,12 +96,12 @@ Need in-store payments
 ## Prerequisites
 
 - Active Mercado Pago account with an application created in Your Integrations to obtain the access token.
-- Store and POS created via API.
-- For Point: a physical device registered in Mercado Pago and associated to a POS.
+- Store and POS created via API (required for both QR and Point products).
+- For Point: a physical terminal registered on the account and associated to a POS.
 
 ## Country Availability
 
-- **QR**: AR, BR, CL, PE, UY
+- **QR**: AR, BR, CL, UY
 - **Point**: AR, BR, MX, CL
 
 **Point devices by country:**

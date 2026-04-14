@@ -15,45 +15,49 @@ Mercado Pago Orders (Orden Unificada). Covers order flows, multi-payment orders,
 
 ## Products Covered
 
-- **Orders**: A single order that supports multiple payment methods and partial payments. The `merchant_order` entity tracks the overall order state.
-- **OU + QR**: Order combined with QR payment flow, enabling in-store payments within the unified order framework.
+- **Orders API**: The new unified order system (`POST /v1/orders`). Supports multiple payment methods, partial payments, and QR integration. Recommended for all new integrations.
+- **Orders + QR**: Order combined with QR payment flow, enabling in-store payments within the Orders API framework.
+- **merchant_orders (Legacy)**: The older order entity from the legacy API. If you find `merchant_orders` in existing code, consider migrating to the Orders API.
 
 ## When to Use This Skill
 
-Trigger on keywords: unified order, orden unificada, merchant_order, OU + QR, multi-payment, multiple payment methods on one order.
+Trigger on keywords: Orders API, order de pago, order de pagamento, multi-payment, multiple payment methods on one order.
 
 ## Decision Tree
 
 ```
 Need flexible order management
-|-- Single order with multiple payment methods?
-|   +-- Unified Order
-|-- Need unified order paid via QR in-store?
-|   +-- OU + QR flow
+|-- New integration?
+|   +-- Use Orders API (POST /v1/orders)
+|-- Existing code uses merchant_orders?
+|   +-- Legacy -- consider migration to Orders API
+|-- Need order paid via QR in-store?
+|   +-- Orders + QR flow (via Orders API)
 +-- Simple single-payment order?
     +-- Use mp-checkout-online instead
 ```
 
 ## Integration Flow
 
-1. Create a unified order with items, amounts, and configuration.
+1. Create an order via `POST /v1/orders` with items, amounts, and configuration.
 2. Associate one or more payment methods to the order.
 3. Process payment(s) -- each payment is tracked individually.
-4. Receive webhooks per payment event.
-5. Reconcile via the `merchant_order` entity, which aggregates all payments.
+4. Receive webhooks per payment event (`order.created`, `order.updated`).
+5. Reconcile via the order entity, which aggregates all payments.
 
 ## Gotchas
 
-- Unified orders can have **partial payments**. The `merchant_order` is not closed until the full amount is covered.
-- The `merchant_order.status` reflects the aggregate state across all its payments.
+- Orders can have **partial payments**. The order is not closed until the full amount is covered.
+- The order status reflects the aggregate state across all its payments.
 - Each individual payment within the order has its own independent status lifecycle.
-- When using OU + QR, the QR flow follows the same rules as `mp-instore` but is wrapped in the unified order context.
-- Modifying a unified order after payments have started may not be possible -- check the current state before attempting updates.
+- When using Orders + QR, the QR flow follows the same rules as `mp-instore` but is wrapped in the order context.
+- Modifying an order after payments have started may not be possible -- check the current state before attempting updates.
+- **Legacy note**: If you encounter `merchant_orders` in existing code, this is the old API. The Orders API (`/v1/orders`) is the recommended replacement.
 
 ## Prerequisites
 
 - Active Mercado Pago account with credentials (public key + access token).
-- Understanding of the `merchant_order` concept and how it relates to individual payments.
+- Understanding of the Orders API and how orders relate to individual payments.
 
 ## Country Availability
 
@@ -62,12 +66,11 @@ Need flexible order management
 ## What to Fetch from MCP
 
 Use the MCP server to retrieve current data for:
-- Unified order creation endpoints and payload schemas
-- `merchant_order` query and status endpoints
-- OU + QR integration flow specifics
+- Orders API creation endpoints and payload schemas (`POST /v1/orders`)
+- Order query and status endpoints
+- Orders + QR integration flow specifics
 - Payment association endpoints
 
 ## What to Fetch from Docs
 
-- `{DOMAIN}/developers/{LANG}/docs/orders/landing` (if available)
-- `{DOMAIN}/developers/{LANG}/reference/merchant_orders`
+- `{DOMAIN}/developers/{LANG}/docs/orders/landing`

@@ -16,7 +16,7 @@ metadata:
 - **Marketplace Checkout**: Collect payments on behalf of sellers
 - **Split Payments**: Distribute funds between marketplace and seller
 - **Seller Onboarding**: OAuth-based seller connection
-- **VTEX Integration**: MP on VTEX platform
+- **Platform Integrations (e.g., VTEX)**: MP as payment provider on e-commerce platforms. VTEX is the most common platform integration request.
 - **Application Fees**: Marketplace commission on each payment
 
 ## When to Use
@@ -34,8 +34,8 @@ Building a marketplace
 │   └── Seller processes payment → Application Fee
 ├── Need to onboard sellers?
 │   └── OAuth flow → get seller access_token
-├── Using VTEX?
-│   └── MP VTEX integration module
+├── Using an e-commerce platform (VTEX, etc.)?
+│   └── Platform-specific MP module. Consult MCP/docs for setup.
 └── Need to manage seller payouts?
     └── Combine with mp-money-out skill
 ```

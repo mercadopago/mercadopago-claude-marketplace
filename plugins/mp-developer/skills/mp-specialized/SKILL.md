@@ -16,10 +16,12 @@ metadata:
 - **Insurance Payments (Aseguradoras)**: Specialized billing for insurance companies (Argentina)
 - **Yape (Peru)**: Mobile wallet integration
 - **Fintoc (Chile)**: Bank transfer via Fintoc
+- **PSE (Colombia)**: Bank transfer via PSE
+- **Other regional methods**: Pix (Brazil) is natively supported in Checkout API/Bricks. For the full list of available payment methods per country, consult MCP (`search_documentation`).
 
 ## When to Use
 
-Use this skill when the query involves: insurance, aseguradora, Yape, Fintoc, specialized payment method.
+Use this skill when the query involves: insurance, aseguradora, Yape, Fintoc, PSE, specialized payment method, regional payment method.
 
 For general checkout, use mp-checkout-online instead.
 
@@ -31,8 +33,12 @@ Specialized integration
 │   └── Insurance payment flow (special approval required)
 ├── Accept Yape payments (Peru)?
 │   └── Yape integration via MP
-└── Accept bank transfers via Fintoc (Chile)?
-    └── Fintoc integration via MP
+├── Accept bank transfers via Fintoc (Chile)?
+│   └── Fintoc integration via MP
+├── Accept PSE bank transfers (Colombia)?
+│   └── PSE integration via MP
+└── Other regional method?
+    └── Consult MCP (search_documentation) for availability
 ```
 
 ## Gotchas
@@ -51,6 +57,7 @@ Specialized integration
 - Insurance: AR
 - Yape: PE
 - Fintoc: CL
+- PSE: CO
 
 ## What to Fetch from MCP/Docs
 

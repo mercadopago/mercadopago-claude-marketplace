@@ -13,6 +13,8 @@ Connect Claude Code to the Mercado Pago API by storing your Access Token securel
 
 The Mercado Pago MCP server requires an Access Token to authenticate API requests. The token is stored in your OS keychain — Claude Code cannot read it directly; only the MCP server process accesses it at startup.
 
+> **Note**: Mercado Pago also supports OAuth-based authentication for marketplace flows (where sellers authorize access to their accounts). This command configures the primary Access Token for the MCP server. For OAuth-based marketplace integrations, see the `mp-marketplace` skill.
+
 ### Pre-check: Is MCP already connected?
 
 Before running setup, check if the Mercado Pago MCP server is already connected:

@@ -1,23 +1,25 @@
-# Orders Reference
+# Orders API Reference
 
 ## Concept
 
-An Order (Orden Unificada) allows a single order to be paid with multiple payment methods or in multiple installments. The `merchant_order` entity is the container that tracks the overall order state and aggregates all associated payments.
+The Orders API (`POST /v1/orders`) is Mercado Pago's unified order system. A single order can be paid with multiple payment methods or in multiple installments. The order entity tracks the overall state and aggregates all associated payments.
 
-## merchant_order vs payment
+**Legacy note**: The older `merchant_orders` API is a different, legacy system. If you encounter `merchant_orders` in existing code, consider migrating to the Orders API.
+
+## Order vs Payment
 
 | Entity | Role | Cardinality |
 |--------|------|-------------|
-| `merchant_order` | The container. Holds total_amount, items, and references to multiple payments. | One per order |
-| `payment` | An individual payment. Can be a partial amount of the total. | One or many per merchant_order |
+| `order` | The container. Holds total_amount, items, and references to multiple payments. | One per order |
+| `payment` | An individual payment. Can be a partial amount of the total. | One or many per order |
 
-- The `merchant_order` status depends on the aggregate of its payments.
-- A single `merchant_order` can have payments from different methods (card, wallet, cash).
+- The order status depends on the aggregate of its payments.
+- A single order can have payments from different methods (card, wallet, cash).
 
 ## Status Mapping
 
-| merchant_order status | Meaning |
-|-----------------------|---------|
+| Order status | Meaning |
+|-------------|---------|
 | opened | Order created, awaiting payments |
 | closed | Fully paid (sum of approved payments >= total_amount) |
 | expired | Order expired without receiving full payment |
@@ -32,11 +34,11 @@ pending --> approved --> (refunded)
         --> cancelled
 ```
 
-The `merchant_order` transitions to `closed` only when the sum of `approved` payments covers the `total_amount`.
+The order transitions to `closed` only when the sum of `approved` payments covers the `total_amount`.
 
 ## Key Fields
 
-**merchant_order**:
+**order**:
 - `id`: Mercado Pago internal ID.
 - `external_reference`: Your internal order ID.
 - `total_amount`: Full amount of the order.
@@ -44,12 +46,12 @@ The `merchant_order` transitions to `closed` only when the sum of `approved` pay
 - `payments`: Array of associated payment objects.
 - `status`: Aggregate status (opened, closed, expired).
 
-## OU + QR Flow
+## Orders + QR Flow
 
-When combining unified orders with QR:
-1. Create the unified order first.
+When combining orders with QR:
+1. Create the order via Orders API first.
 2. Generate or associate a QR payment to the order.
-3. The QR payment becomes one of the payments within the `merchant_order`.
+3. The QR payment becomes one of the payments within the order.
 4. Additional payments can be added if needed to cover the total.
 
 **For API endpoints, payload schemas, and current field validations**: Consult MCP server.

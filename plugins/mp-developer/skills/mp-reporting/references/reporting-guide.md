@@ -4,9 +4,8 @@
 
 | Report | Content | Format |
 |--------|---------|--------|
-| Settlement | Available money, release dates | CSV |
-| Account Statement | All movements (in/out) | CSV |
-| Available Balance | Current balance details | CSV |
+| Released Money | Available money, release dates | CSV |
+| Account Balance | Current balance, all movements (in/out) | CSV |
 
 ## Reconciliation Strategy
 

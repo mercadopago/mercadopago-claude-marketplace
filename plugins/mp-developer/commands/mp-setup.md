@@ -53,7 +53,7 @@ APP_URL=http://localhost:3000
 
 After creating `.env.example`, guide the developer on how to obtain test credentials:
 
-- **Test credentials location**: In the Mercado Pago Developer Dashboard, navigate to: *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*.
+- **Test credentials location**: In the Mercado Pago Developer Dashboard, navigate to: *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*. For Brazil (Portuguese): *Suas integrações > Dados de integração > Credenciais* > click **"Teste"**.
 - **Environment setup docs**: Direct the developer to the country-specific guide at `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/configure-development-enviroment` (replace `{DOMAIN}` and `{LANG}` based on the detected country).
 - **Test users**: Create test users from the Dashboard or using the MCP tool `create_test_user`. Test user credentials use the same `APP_USR-` prefix as production credentials.
 

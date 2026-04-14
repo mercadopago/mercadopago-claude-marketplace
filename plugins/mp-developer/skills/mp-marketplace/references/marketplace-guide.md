@@ -31,7 +31,9 @@ Varies by country and agreement. Typically:
 - Cannot be negative
 - Set per-payment, not globally
 
-## VTEX Integration
+## Platform Integrations (e.g., VTEX)
+
+VTEX is the most common e-commerce platform integration. Other platforms may have their own MP modules.
 
 - Configure via VTEX admin panel
 - MP acts as payment provider

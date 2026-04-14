@@ -59,17 +59,17 @@ After determining the country, identify which product the developer needs by mat
 
 | Signal in project or conversation | Skill to activate |
 |---|---|
-| `preference`, `init_point`, `back_urls`, Checkout Pro, Bricks, Payment Brick, `payment.create`, card tokenization, 3DS, CBP | `mp-checkout-online` |
+| `preference`, `init_point`, `back_urls`, Checkout Pro, Checkout API, Bricks, Payment Brick, `payment.create`, card tokenization, 3DS, CBP, on-site checkout | `mp-checkout-online` |
 | `notification_url`, `x-signature`, webhook, IPN, HMAC, retry | `mp-notifications` |
 | QR, `qr_code`, Point, POS, kiosko, instore, presencial | `mp-instore` |
-| orden unificada, unified order, Orders API, payment order, order de pago, order de pagamento | `mp-orders` |
+| Orders API, payment order, order de pago, order de pagamento | `mp-orders` |
 | subscription, suscripcion, plan, recurrence, `preapproval`, invoice | `mp-subscriptions` |
 | Wallet Connect, cuenta MP, deuda, link de pago, `payment_link` | `mp-wallet` |
 | disbursement, transfer, money out, payout, `bank_transfer` | `mp-money-out` |
 | marketplace, split, `application_fee`, VTEX, sellers | `mp-marketplace` |
 | 3DS standalone, PCI, tokenization, vault, supertoken, `card_token` | `mp-security` |
-| insurance, aseguradora, Yape, Fintoc | `mp-specialized` |
-| report, reporte, conciliation, settlement, `report_type` | `mp-reporting` |
+| insurance, aseguradora, Yape, Fintoc, PSE | `mp-specialized` |
+| report, reporte, conciliation, settlement, `report_type`, relatório | `mp-reporting` |
 | SDK selection, `sdk-react`, `sdk-ios`, `sdk-android`, MercadoPago.js setup, SDK migration, "which SDK", platform compatibility | `mp-sdks` |
 
 If signals are ambiguous or span multiple products, ask the user to clarify before proceeding.
@@ -149,7 +149,7 @@ Mercado Pago deprecated the old sandbox credentials with `TEST-` prefix. The cur
 - To load balance into test users: use the MCP tool `add_money_test_user`
 - **Never suggest using credentials with `TEST-` prefix** — they are legacy and no longer issued
 - **Never ask if a credential is "sandbox" or "test" based on its prefix** — both test and production credentials start with `APP_USR-`
-- **How to obtain test credentials**: In the Developer Dashboard, navigate to *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*.
+- **How to obtain test credentials**: In the Developer Dashboard, navigate to *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*. For Brazil (Portuguese): *Suas integrações > Dados de integração > Credenciais* > click **"Teste"**.
 - **Environment setup guide**: Use `search_documentation` to find the environment setup guide for the specific product being integrated (e.g., search "configure environment {product}"). Do not hardcode a single product URL.
 
 ## SDK Installation Reference
@@ -185,6 +185,9 @@ Replace `{DOMAIN}` with the country domain and `{LANG}` with the language code (
 | QR Code | `https://{DOMAIN}/developers/{LANG}/docs/qr-code/landing` |
 | Subscriptions | `https://{DOMAIN}/developers/{LANG}/docs/subscriptions/landing` |
 | Marketplace | `https://{DOMAIN}/developers/{LANG}/docs/marketplace/landing` |
+| Checkout API | `https://{DOMAIN}/developers/{LANG}/docs/checkout-api/landing` |
+| Point | `https://{DOMAIN}/developers/{LANG}/docs/mp-point/landing` |
+| Orders | `https://{DOMAIN}/developers/{LANG}/docs/orders/landing` |
 | Wallet Connect | `https://{DOMAIN}/developers/{LANG}/docs/wallet-connect/landing` |
 
 Always use the country-specific links when sharing documentation with the user.

@@ -19,6 +19,8 @@ Business Account
 - Each store has: `name`, `external_id`, `location` (address, lat/lng).
 - Each POS has: `name`, `external_id`, `fixed_amount` (bool), store association.
 - QR is generated per POS. One POS = one QR code.
+- Store and POS are required for both QR and Point products. For Point, the physical device is also associated to a POS.
+- Device and feature availability varies by country. Use the MCP server (`search_documentation`) for the latest availability.
 
 ## Point Device Models
 
