@@ -1,0 +1,351 @@
+{
+  "generated_at": "2026-03-20T19:58:39.652257+00:00",
+  "plugin": {
+    "name": "mp-developer",
+    "version": "2.0.1",
+    "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 12 product skills (online checkout, in-store QR/Point, subscriptions, marketplace, wallet, money-out, security, reporting, SDKs, and more). Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
+    "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
+    "license": "Apache-2.0",
+    "author": "Mercado Pago Developer Experience",
+    "keywords": [
+      "mercadopago",
+      "payments",
+      "checkout",
+      "webhooks",
+      "ipn",
+      "qr",
+      "point",
+      "subscriptions",
+      "marketplace",
+      "wallet",
+      "3ds",
+      "fintech",
+      "meli"
+    ]
+  },
+  "stats": {
+    "total": 17,
+    "skills": 12,
+    "agents": 1,
+    "commands": 3,
+    "hooks": 1
+  },
+  "components": [
+    {
+      "name": "mp-checkout-online",
+      "type": "skill",
+      "description": "Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout Bricks, Payments API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "checkout",
+        "preference",
+        "bricks",
+        "payments",
+        "sdk",
+        "3ds",
+        "cbp"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-checkout-online/SKILL.md",
+      "references": [
+        "references/bricks-patterns.md",
+        "references/checkout-pro-patterns.md"
+      ]
+    },
+    {
+      "name": "mp-instore",
+      "type": "skill",
+      "description": "In-store payment integration for Mercado Pago. Covers QR Attended, QR Dynamic, Point devices, and Kiosk mode. Use when implementing face-to-face payment flows.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "qr",
+        "point",
+        "pos",
+        "instore",
+        "presencial",
+        "kiosko",
+        "pagos presenciales",
+        "terminal",
+        "dispositivo",
+        "self-service",
+        "terminal de pago",
+        "lectores de tarjeta"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-instore/SKILL.md",
+      "references": [
+        "references/instore-integration-guide.md"
+      ]
+    },
+    {
+      "name": "mp-marketplace",
+      "type": "skill",
+      "description": "Mercado Pago Marketplace integrations. Covers marketplace splits, seller onboarding, VTEX integration, and application fees. Use when building multi-seller platforms.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "marketplace",
+        "split",
+        "application-fee",
+        "vtex",
+        "sellers",
+        "oauth"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-marketplace/SKILL.md",
+      "references": [
+        "references/marketplace-guide.md"
+      ]
+    },
+    {
+      "name": "mp-money-out",
+      "type": "skill",
+      "description": "Mercado Pago money-out operations. Covers disbursements and bank transfers. Use when implementing payouts, withdrawals, or transfers from MP accounts.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "disbursement",
+        "transfer",
+        "money-out",
+        "payout",
+        "bank-transfer"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-money-out/SKILL.md",
+      "references": [
+        "references/money-out-guide.md"
+      ]
+    },
+    {
+      "name": "mp-notifications",
+      "type": "skill",
+      "description": "Mercado Pago webhook and IPN notification handling. Use when implementing webhook receivers, validating x-signature headers, handling notification retries, debugging missing notifications, or configuring notification types per product.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "webhooks",
+        "ipn",
+        "notifications",
+        "signature",
+        "hmac",
+        "retry"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-notifications/SKILL.md",
+      "references": [
+        "references/webhook-patterns.md"
+      ]
+    },
+    {
+      "name": "mp-orders",
+      "type": "skill",
+      "description": "Mercado Pago Orders (Orden Unificada). Use when implementing order flows, combining online+offline payments, or integrating with QR.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "orders",
+        "orden-unificada",
+        "merchant-order",
+        "ou-qr"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-orders/SKILL.md",
+      "references": [
+        "references/orders-guide.md"
+      ]
+    },
+    {
+      "name": "mp-reporting",
+      "type": "skill",
+      "description": "Mercado Pago reporting and reconciliation. Covers settlement reports, account statements, and transaction reconciliation. Use when implementing financial reporting.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "reports",
+        "reporting",
+        "reconciliation",
+        "settlement",
+        "conciliation"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-reporting/SKILL.md",
+      "references": [
+        "references/reporting-guide.md"
+      ]
+    },
+    {
+      "name": "mp-sdks",
+      "type": "skill",
+      "description": "Mercado Pago SDK selection, setup, migration, and compatibility. Covers server-side (Node, Python, Java, PHP, Ruby, .NET, Go), client-side web (MercadoPago.js, React SDK), and mobile (iOS, Android). Use when the question is about choosing, installing, configuring, or migrating SDKs — not about a product flow.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "sdk",
+        "mercadopago-js",
+        "react-sdk",
+        "ios",
+        "android",
+        "mobile",
+        "client-side",
+        "server-side",
+        "migration"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-sdks/SKILL.md",
+      "references": [
+        "references/sdk-compatibility.md"
+      ]
+    },
+    {
+      "name": "mp-security",
+      "type": "skill",
+      "description": "Mercado Pago security features. Covers 3D Secure standalone, PCI compliance, Supertoken, Vault, and card tokenization. Use when implementing advanced security features.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "3ds",
+        "pci",
+        "tokenization",
+        "supertoken",
+        "vault",
+        "security",
+        "card-token"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-security/SKILL.md",
+      "references": [
+        "references/security-guide.md"
+      ]
+    },
+    {
+      "name": "mp-specialized",
+      "type": "skill",
+      "description": "Specialized Mercado Pago integrations for specific industries and regional payment methods. Covers insurance payments, Yape (Peru), and Fintoc (Chile).",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "insurance",
+        "aseguradora",
+        "yape",
+        "fintoc",
+        "specialized"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-specialized/SKILL.md",
+      "references": [
+        "references/specialized-guide.md"
+      ]
+    },
+    {
+      "name": "mp-subscriptions",
+      "type": "skill",
+      "description": "Mercado Pago Subscriptions and recurring payments. Covers subscription plans, preapprovals, invoices, and Click & Collect. Use when implementing recurring billing.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "subscriptions",
+        "recurring",
+        "plan",
+        "preapproval",
+        "invoice",
+        "click-collect"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-subscriptions/SKILL.md",
+      "references": [
+        "references/subscriptions-guide.md"
+      ]
+    },
+    {
+      "name": "mp-wallet",
+      "type": "skill",
+      "description": "Mercado Pago Wallet integrations. Covers Wallet Connect, debt payments, and massive payment links. Use when integrating with MP wallet features.",
+      "version": "2.0.1",
+      "tags": [
+        "mercadopago",
+        "wallet",
+        "wallet-connect",
+        "debt",
+        "payment-link",
+        "link-masivo"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/skills/mp-wallet/SKILL.md",
+      "references": [
+        "references/wallet-guide.md"
+      ]
+    },
+    {
+      "name": "mp-integration-expert",
+      "type": "agent",
+      "description": "Use when implementing, reviewing, or debugging any Mercado Pago payment integration. Routes to the correct product skill and uses the Mercado Pago MCP for live API data.",
+      "version": "2.0.1",
+      "tags": [
+        "payments",
+        "mercadopago",
+        "checkout",
+        "webhooks",
+        "sdk",
+        "fintech",
+        "qr",
+        "subscriptions",
+        "marketplace"
+      ],
+      "license": "Apache-2.0",
+      "tools": "Read, Grep, Glob, Bash, WebFetch",
+      "model": "sonnet",
+      "path": "plugins/mp-developer/agents/mp-integration-expert.md"
+    },
+    {
+      "name": "/mp-connect",
+      "type": "command",
+      "description": "Connect Claude Code to your Mercado Pago account by configuring the MCP server with your Access Token",
+      "argument_hint": "",
+      "allowed_tools": [
+        "Bash"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/commands/mp-connect.md"
+    },
+    {
+      "name": "/mp-review",
+      "type": "command",
+      "description": "Review a Mercado Pago payment integration for correctness, security, and best practices — supports all MP products",
+      "argument_hint": "[security|webhooks|checkout|qr|point|subscriptions|marketplace|errors|quality|full]",
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "Bash"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/commands/mp-review.md"
+    },
+    {
+      "name": "/mp-setup",
+      "type": "command",
+      "description": "Scaffold a new Mercado Pago integration — supports all MP products including online checkout, in-store, subscriptions, marketplace, and more",
+      "argument_hint": "[node|python|java] [checkout-pro|bricks|checkout-api|orders|qr|subscriptions|marketplace|point]",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash"
+      ],
+      "license": "Apache-2.0",
+      "path": "plugins/mp-developer/commands/mp-setup.md"
+    },
+    {
+      "name": "validate_mp_credentials",
+      "type": "hook",
+      "description": "Prevents Mercado Pago credentials from being written to source files and blocks reading .env files to prevent credential exposure",
+      "trigger": "PreToolUse",
+      "matcher": "Bash|Edit|Write|MultiEdit|Read",
+      "hook_type": "command",
+      "path": "plugins/mp-developer/hooks/hooks.json"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "buildCommand": "python3 scripts/generate_catalog.py",
+  "outputDirectory": "docs",
+  "headers": [
+    {
+      "source": "/components.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    }
+  ]
+}
