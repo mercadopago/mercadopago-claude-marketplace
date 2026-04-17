@@ -87,6 +87,17 @@ Visual themes, labels, and layout options.
 
 ---
 
+### 8. Run quality gates (MANDATORY before Implementation Report)
+
+Before generating the report, run both checks for this brick:
+
+1. `mcp__mercadopago__quality_checklist`
+2. `mcp__mercadopago__quality_evaluation`
+
+Both must complete successfully before moving to the Implementation Report.
+
+---
+
 ## Implementation Report
 
 **🛑 MANDATORY FINAL STEP — ALWAYS GENERATE THIS REPORT BEFORE ENDING THE SKILL**
@@ -103,6 +114,7 @@ After implementation is complete, generate and output a consolidated report:
 - [x] Step 4: Brick rendered
 - [x] Step 5: Callbacks implemented
 - [x] Step 6: Server-side payment created
+- [x] Quality gates completed (`mcp__mercadopago__quality_checklist` + `mcp__mercadopago__quality_evaluation`)
 - [x] Implementation Report generated
 
 ### 📋 Optional (Can be done later)

@@ -12,17 +12,6 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Skill(mercadopago:mp-checkout-bricks)",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "A Checkout Bricks skill was just used. After completing the full implementation, run mcp__mercadopago__quality_checklist for the brick used, then mcp__mercadopago__quality_evaluation. Both must complete successfully before you finish."
-          }
-        ]
-      }
     ]
   }
 }
