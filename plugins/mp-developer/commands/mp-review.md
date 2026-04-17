@@ -20,7 +20,7 @@ If `$ARGUMENTS` is provided, narrow the review to that scope:
 - **security** — Credential handling, token storage, HTTPS enforcement, HMAC validation
 - **webhooks** — Notification handling, signature validation, idempotency, retry handling
 - **checkout** — Preference creation, back_urls, payment flow
-- **bricks** — Bricks setup, SDK JS initialization and customization, callbacks handling, troubleshooting common erros
+- **bricks** — Bricks setup, SDK JS initialization and customization, callbacks handling, troubleshooting common errors
 - **qr** — QR code setup, store/POS configuration, order creation
 - **point** — Device registration, payment intents, firmware, Point webhook (`point_integration_wh`)
 - **subscriptions** — Plan setup, preapproval flow, invoice handling
