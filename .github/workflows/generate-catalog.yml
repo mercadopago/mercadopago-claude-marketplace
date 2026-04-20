@@ -4,11 +4,11 @@ on:
   push:
     branches: [main, feature/views]
     paths:
-      - 'plugins/mp-developer/skills/*/SKILL.md'
-      - 'plugins/mp-developer/agents/*.md'
-      - 'plugins/mp-developer/commands/*.md'
-      - 'plugins/mp-developer/hooks/**'
-      - 'plugins/mp-developer/.claude-plugin/plugin.json'
+      - 'plugins/mercadopago/skills/*/SKILL.md'
+      - 'plugins/mercadopago/agents/*.md'
+      - 'plugins/mercadopago/commands/*.md'
+      - 'plugins/mercadopago/hooks/**'
+      - 'plugins/mercadopago/.claude-plugin/plugin.json'
       - 'scripts/generate_catalog.py'
 
 jobs:

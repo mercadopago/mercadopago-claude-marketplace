@@ -47,7 +47,7 @@ A Claude Code plugin that gives you an AI-powered integration assistant for the 
 ### 2. Install the plugin
 
 ```bash
-/plugin install mp-developer@mercadopago-claude-marketplace
+/plugin install mercadopago@mercadopago-claude-marketplace
 ```
 
 ### 3. Connect your account
@@ -55,7 +55,7 @@ A Claude Code plugin that gives you an AI-powered integration assistant for the 
 Run the setup script from your **terminal** (not inside Claude Code):
 
 ```bash
-bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mp-developer/*/scripts/setup.sh
+bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mercadopago/*/scripts/setup.sh
 ```
 
 This stores your Access Token in the OS keychain. Claude Code cannot read the keychain directly — only the MCP server process accesses it at startup.

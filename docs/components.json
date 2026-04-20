@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-23T22:13:10.560821+00:00",
+  "generated_at": "2026-04-20T21:48:20.200156+00:00",
   "plugin": {
-    "name": "mp-developer",
+    "name": "mercadopago",
     "version": "3.0.0",
     "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 13 product skills. Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
     "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
@@ -50,7 +50,7 @@
       "license": "Apache-2.0",
       "tools": "Read, Grep, Glob, Bash, WebFetch",
       "model": "sonnet",
-      "path": "plugins/mp-developer/agents/mp-integration-expert.md"
+      "path": "plugins/mercadopago/agents/mp-integration-expert.md"
     },
     {
       "name": "mp-checkout-bricks",
@@ -68,7 +68,7 @@
         "embedded"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-checkout-bricks/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-checkout-bricks/SKILL.md",
       "references": [
         "references/rules-bricks-setup.md",
         "references/rules-errors.md",
@@ -91,7 +91,7 @@
         "cbp"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-checkout-online/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-checkout-online/SKILL.md",
       "references": [
         "references/checkout-pro-patterns.md"
       ]
@@ -117,7 +117,7 @@
         "lectores de tarjeta"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-instore/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-instore/SKILL.md",
       "references": [
         "references/instore-integration-guide.md"
       ]
@@ -137,7 +137,7 @@
         "oauth"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-marketplace/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-marketplace/SKILL.md",
       "references": [
         "references/marketplace-guide.md"
       ]
@@ -156,7 +156,7 @@
         "bank-transfer"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-money-out/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-money-out/SKILL.md",
       "references": [
         "references/money-out-guide.md"
       ]
@@ -176,7 +176,7 @@
         "retry"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-notifications/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-notifications/SKILL.md",
       "references": [
         "references/webhook-patterns.md"
       ]
@@ -194,7 +194,7 @@
         "ou-qr"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-orders/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-orders/SKILL.md",
       "references": [
         "references/orders-guide.md"
       ]
@@ -213,7 +213,7 @@
         "conciliation"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-reporting/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-reporting/SKILL.md",
       "references": [
         "references/reporting-guide.md"
       ]
@@ -236,7 +236,7 @@
         "migration"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-sdks/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-sdks/SKILL.md",
       "references": [
         "references/sdk-compatibility.md"
       ]
@@ -257,7 +257,7 @@
         "card-token"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-security/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-security/SKILL.md",
       "references": [
         "references/security-guide.md"
       ]
@@ -276,7 +276,7 @@
         "specialized"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-specialized/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-specialized/SKILL.md",
       "references": [
         "references/specialized-guide.md"
       ]
@@ -296,7 +296,7 @@
         "click-collect"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-subscriptions/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-subscriptions/SKILL.md",
       "references": [
         "references/subscriptions-guide.md"
       ]
@@ -315,7 +315,7 @@
         "link-masivo"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/skills/mp-wallet/SKILL.md",
+      "path": "plugins/mercadopago/skills/mp-wallet/SKILL.md",
       "references": [
         "references/wallet-guide.md"
       ]
@@ -329,7 +329,7 @@
         "Bash"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/commands/mp-connect.md"
+      "path": "plugins/mercadopago/commands/mp-connect.md"
     },
     {
       "name": "/mp-review",
@@ -344,7 +344,7 @@
         "Bash"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/commands/mp-review.md"
+      "path": "plugins/mercadopago/commands/mp-review.md"
     },
     {
       "name": "/mp-setup",
@@ -358,7 +358,7 @@
         "Bash"
       ],
       "license": "Apache-2.0",
-      "path": "plugins/mp-developer/commands/mp-setup.md"
+      "path": "plugins/mercadopago/commands/mp-setup.md"
     },
     {
       "name": "validate_mp_credentials",
@@ -367,7 +367,7 @@
       "trigger": "PreToolUse",
       "matcher": "Bash|Edit|Write|MultiEdit|Read",
       "hook_type": "command",
-      "path": "plugins/mp-developer/hooks/hooks.json"
+      "path": "plugins/mercadopago/hooks/hooks.json"
     }
   ]
 }

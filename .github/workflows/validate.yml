@@ -24,25 +24,25 @@ jobs:
         run: python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
 
       - name: Validate plugin.json
-        run: python3 -m json.tool plugins/mp-developer/.claude-plugin/plugin.json > /dev/null
+        run: python3 -m json.tool plugins/mercadopago/.claude-plugin/plugin.json > /dev/null
 
       - name: Validate .mcp.json
-        run: python3 -m json.tool plugins/mp-developer/.mcp.json > /dev/null
+        run: python3 -m json.tool plugins/mercadopago/.mcp.json > /dev/null
 
       - name: Validate hooks.json
-        run: python3 -m json.tool plugins/mp-developer/hooks/hooks.json > /dev/null
+        run: python3 -m json.tool plugins/mercadopago/hooks/hooks.json > /dev/null
 
       - name: Validate settings.json
         run: python3 -m json.tool .claude/settings.json > /dev/null
 
 
       - name: Python hook syntax check
-        run: python3 -m py_compile plugins/mp-developer/hooks/validate_mp_credentials.py
+        run: python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
 
       - name: Test hook blocks real token
         run: |
           RESULT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"app.js","content":"const token = \"TEST-123456789012-123456-abc12345678901234567890123456789-U123456\""}}' \
-            | python3 plugins/mp-developer/hooks/validate_mp_credentials.py; echo $?)
+            | python3 plugins/mercadopago/hooks/validate_mp_credentials.py; echo $?)
           if [ "$RESULT" != "2" ]; then
             echo "ERROR: Hook should have blocked real token (expected exit 2, got $RESULT)"
             exit 1
@@ -52,7 +52,7 @@ jobs:
       - name: Test hook allows env var reference
         run: |
           EXIT_CODE=$(echo '{"tool_name":"Write","tool_input":{"file_path":"app.js","content":"const token = process.env.MP_ACCESS_TOKEN"}}' \
-            | python3 plugins/mp-developer/hooks/validate_mp_credentials.py; echo $?)
+            | python3 plugins/mercadopago/hooks/validate_mp_credentials.py; echo $?)
           if [ "$EXIT_CODE" != "0" ]; then
             echo "ERROR: Hook should have allowed env var reference (expected exit 0, got $EXIT_CODE)"
             exit 1
@@ -63,19 +63,19 @@ jobs:
         run: |
           files=(
             ".claude-plugin/marketplace.json"
-            "plugins/mp-developer/.claude-plugin/plugin.json"
-            "plugins/mp-developer/.mcp.json"
-            "plugins/mp-developer/hooks/hooks.json"
-            "plugins/mp-developer/hooks/validate_mp_credentials.py"
+            "plugins/mercadopago/.claude-plugin/plugin.json"
+            "plugins/mercadopago/.mcp.json"
+            "plugins/mercadopago/hooks/hooks.json"
+            "plugins/mercadopago/hooks/validate_mp_credentials.py"
             ".claude/settings.json"
-            "plugins/mp-developer/agents/mp-integration-expert.md"
-            "plugins/mp-developer/commands/mp-review.md"
-            "plugins/mp-developer/commands/mp-setup.md"
-            "plugins/mp-developer/skills/mp-checkout-online/SKILL.md"
-            "plugins/mp-developer/skills/mp-notifications/SKILL.md"
-            "plugins/mp-developer/skills/mp-checkout-bricks/SKILL.md"
-            "plugins/mp-developer/PLUGIN_SETTINGS.md"
-            "plugins/mp-developer/README.md"
+            "plugins/mercadopago/agents/mp-integration-expert.md"
+            "plugins/mercadopago/commands/mp-review.md"
+            "plugins/mercadopago/commands/mp-setup.md"
+            "plugins/mercadopago/skills/mp-checkout-online/SKILL.md"
+            "plugins/mercadopago/skills/mp-notifications/SKILL.md"
+            "plugins/mercadopago/skills/mp-checkout-bricks/SKILL.md"
+            "plugins/mercadopago/PLUGIN_SETTINGS.md"
+            "plugins/mercadopago/README.md"
             "README.md"
             "CONTRIBUTING.md"
           )

@@ -4,7 +4,7 @@ This plugin supports per-project configuration via a local settings file.
 
 ## Configuration File
 
-Create `.claude/mp-developer.local.md` in your project root to customize plugin behavior:
+Create `.claude/mercadopago.local.md` in your project root to customize plugin behavior:
 
 ```markdown
 ---
@@ -30,7 +30,7 @@ enabled: false
 
 ### Notes
 
-- The settings file must be at `.claude/mp-developer.local.md` relative to your project root
+- The settings file must be at `.claude/mercadopago.local.md` relative to your project root
 - The file uses YAML frontmatter (between `---` fences)
 - Restart Claude Code after modifying settings
 - `.claude/*.local.md` files are typically in `.gitignore` — they are personal, not shared

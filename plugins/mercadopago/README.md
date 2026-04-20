@@ -1,4 +1,4 @@
-# mp-developer
+# mercadopago
 
 Mercado Pago full-product integration toolkit for Claude Code. Hybrid architecture: 13 product skills provide stable integration intelligence (flows, decision trees, gotchas), while the MCP server provides live API data (endpoints, payloads, code snippets).
 
@@ -8,7 +8,7 @@ After installing the plugin, connect it to your Mercado Pago account:
 
 ```bash
 # Run from your terminal (not inside Claude Code)
-bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mp-developer/*/scripts/setup.sh
+bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mercadopago/*/scripts/setup.sh
 ```
 
 The setup script will:

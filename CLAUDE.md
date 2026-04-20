@@ -105,22 +105,22 @@ Before pushing changes:
 # JSON validation
 python3 -m json.tool .claude/settings.json
 python3 -m json.tool .claude-plugin/marketplace.json
-python3 -m json.tool plugins/mp-developer/.claude-plugin/plugin.json
+python3 -m json.tool plugins/mercadopago/.claude-plugin/plugin.json
 
 # Hook compilation
-python3 -m py_compile plugins/mp-developer/hooks/validate_mp_credentials.py
+python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
 
 # Skill count (currently 13)
-find plugins/mp-developer/skills -name "SKILL.md" | wc -l
+find plugins/mercadopago/skills -name "SKILL.md" | wc -l
 
 # Agent weight (should be < 200 lines)
-wc -l plugins/mp-developer/agents/mp-integration-expert.md
+wc -l plugins/mercadopago/agents/mp-integration-expert.md
 
 # CRITICAL: No skill should have 'tools:' in frontmatter
-grep -rl "^tools:" plugins/mp-developer/skills/*/SKILL.md plugins/mp-developer/skills/*/*/SKILL.md && echo "ERROR: skills must not have tools field" || echo "OK"
+grep -rl "^tools:" plugins/mercadopago/skills/*/SKILL.md plugins/mercadopago/skills/*/*/SKILL.md && echo "ERROR: skills must not have tools field" || echo "OK"
 
 # All skills have valid YAML frontmatter
-for f in plugins/mp-developer/skills/*/SKILL.md; do head -1 "$f"; done
+for f in plugins/mercadopago/skills/*/SKILL.md; do head -1 "$f"; done
 ```
 
 ## pre-commit

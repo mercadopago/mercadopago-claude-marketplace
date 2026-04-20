@@ -1,5 +1,5 @@
 {
-  "name": "mp-developer",
+  "name": "mercadopago",
   "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 13 product skills. Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
   "version": "3.0.0",
   "author": { "name": "Mercado Pago Developer Experience" },
