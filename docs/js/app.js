@@ -93,64 +93,18 @@ function applyFilters() {
 }
 
 /* ===== Modal ===== */
-const modalStack = [];
-
 function openModal(component) {
-  modalStack.length = 0;
-  showModal(component);
-}
-
-function showModal(component) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
-  modalStack.push(component);
-  content.innerHTML = createDetailModal(component, modalStack.length > 1);
+  content.innerHTML = createDetailModal(component);
   overlay.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
-
-  // Back button
-  const backBtn = content.querySelector('.modal-back');
-  if (backBtn) {
-    backBtn.addEventListener('click', closeModal);
-  }
-
-  bindSubSkillClicks(content, component);
-}
-
-function bindSubSkillClicks(content, parent) {
-  content.querySelectorAll('.subskill-item').forEach(item => {
-    const idx = parseInt(item.dataset.index, 10);
-    const subSkill = (parent.subSkills || [])[idx];
-    if (!subSkill) return;
-    const handler = () => showModal(subSkill);
-    item.addEventListener('click', handler);
-    item.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        handler();
-      }
-    });
-  });
 }
 
 function closeModal() {
-  if (modalStack.length > 1) {
-    modalStack.pop();
-    const prev = modalStack[modalStack.length - 1];
-    const content = document.getElementById('modal-content');
-    content.innerHTML = createDetailModal(prev, modalStack.length > 1);
-    bindSubSkillClicks(content, prev);
-
-    const backBtn = content.querySelector('.modal-back');
-    if (backBtn) {
-      backBtn.addEventListener('click', closeModal);
-    }
-    return;
-  }
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('hidden');
   document.body.style.overflow = '';
-  modalStack.length = 0;
 }
 
 // Close on overlay click

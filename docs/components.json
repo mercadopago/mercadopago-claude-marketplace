@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-16T02:39:25.810103+00:00",
+  "generated_at": "2026-04-20T21:41:49.794614+00:00",
   "plugin": {
     "name": "mp-developer",
     "version": "3.0.0",
@@ -24,11 +24,11 @@
     ]
   },
   "stats": {
-    "total": 19,
+    "total": 18,
     "skills": 13,
     "agents": 1,
     "commands": 3,
-    "hooks": 2
+    "hooks": 1
   },
   "components": [
     {
@@ -367,15 +367,6 @@
       "trigger": "PreToolUse",
       "matcher": "Bash|Edit|Write|MultiEdit|Read",
       "hook_type": "command",
-      "path": "plugins/mp-developer/hooks/hooks.json"
-    },
-    {
-      "name": "",
-      "type": "hook",
-      "description": "Mercado Pago developer plugin hooks",
-      "trigger": "PostToolUse",
-      "matcher": "Skill(mercadopago:mp-checkout-bricks)",
-      "hook_type": "prompt",
       "path": "plugins/mp-developer/hooks/hooks.json"
     }
   ]
