@@ -3,7 +3,7 @@
 SPDX-FileCopyrightText: (c) 2026 Mercado Pago (MercadoLibre S.R.L.)
 SPDX-License-Identifier: Apache-2.0
 
-MP Developer Plugin — Credential Leak Prevention Hook
+Mercado Pago Plugin — Credential Leak Prevention Hook
 
 Scans tool inputs (Bash, Edit, Write, MultiEdit, Read) for hardcoded
 Mercado Pago credentials and blocks them before they reach source files.
@@ -13,7 +13,7 @@ Exit codes:
   0 — allow (no credentials detected)
   2 — block (credential pattern matched)
 
-Reads optional per-project settings from .claude/mp-developer.local.md
+Reads optional per-project settings from .claude/mercadopago.local.md
 to allow disabling the hook with `enabled: false` in frontmatter.
 """
 
@@ -45,8 +45,8 @@ PATTERNS = {
 # ---------- helpers ----------
 
 def read_settings() -> dict:
-    """Read per-project .claude/mp-developer.local.md frontmatter."""
-    settings_path = os.path.join(os.getcwd(), ".claude", "mp-developer.local.md")
+    """Read per-project .claude/mercadopago.local.md frontmatter."""
+    settings_path = os.path.join(os.getcwd(), ".claude", "mercadopago.local.md")
     if not os.path.isfile(settings_path):
         return {}
 

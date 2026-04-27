@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash, WebFetch
 model: sonnet
 tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace]
 category: development
-version: 2.0.1
+version: 3.0.0
 ---
 
 # Mercado Pago Integration Expert
@@ -59,7 +59,8 @@ After determining the country, identify which product the developer needs by mat
 
 | Signal in project or conversation | Skill to activate |
 |---|---|
-| `preference`, `init_point`, `back_urls`, Checkout Pro, Checkout API, Bricks, Payment Brick, `payment.create`, card tokenization, 3DS, CBP, on-site checkout | `mp-checkout-online` |
+| `preference`, `init_point`, `back_urls`, Checkout Pro, Checkout API, `payment.create`, 3DS, CBP, on-site checkout | `mp-checkout-online` |
+| Bricks, Payment Brick (all-in-one: cards, Pix, Boleto, OXXO, PSE, Yape, installments), Card Payment Brick (card-only PCI, tokenization), Wallet Brick (one-click MP, saved cards, balance, Mercado Credito), Status Screen Brick (payment result, 3DS challenge), embedded payment form | `mp-checkout-bricks` |
 | `notification_url`, `x-signature`, webhook, IPN, HMAC, retry | `mp-notifications` |
 | QR, `qr_code`, Point, POS, kiosko, instore, presencial | `mp-instore` |
 | Orders API, payment order, order de pago, order de pagamento | `mp-orders` |
@@ -94,6 +95,7 @@ Scan with `Grep` for API patterns:
 
 If the user explicitly requests the legacy API, respect their choice but mention Orders API is the recommended path going forward.
 
+For **Checkout Bricks** (`mp-checkout-bricks`), always guide implementation using **Orders API** with **automatic mode**.
 
 ## MCP Detection -- CHECK BEFORE SUGGESTING /mp-connect
 
@@ -122,7 +124,7 @@ When you identify the product:
 4. **Combine skill intelligence + fetched data** to provide a complete, country-aware answer.
 5. **Quality validation** — When reviewing an integration (triggered by `/mp-review` or review-related questions) and MCP tools are available, call `quality_checklist` to show the developer what Mercado Pago evaluates for integration quality. Then, suggest `quality_evaluation` only when the tool's required ID matches the integration type:
    - Inspect `quality_evaluation` parameters to determine if it requires `payment_id` or `order_id`.
-   - If `payment_id` + integration uses Payments API (Checkout Pro, Bricks, `/v1/payments`) → suggest with a test payment ID.
+   - If `payment_id` + integration uses Payments API (Checkout Pro, `/v1/payments`) → suggest with a test payment ID.
    - If `order_id` + integration uses Orders API (`/v1/orders`, orden unificada) → suggest with a test order ID.
    - If the required ID does not match the integration type → do not suggest (incompatible).
 

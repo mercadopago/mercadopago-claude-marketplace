@@ -1,0 +1,9 @@
+{
+  "name": "mercadopago",
+  "description": "Mercado Pago full-product integration toolkit. Expert agent routes to 13 product skills. Hybrid architecture: skills provide integration intelligence, MCP provides live API data.",
+  "version": "3.0.0",
+  "author": { "name": "Mercado Pago Developer Experience" },
+  "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
+  "license": "Apache-2.0",
+  "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "wallet", "3ds", "fintech", "meli"]
+}

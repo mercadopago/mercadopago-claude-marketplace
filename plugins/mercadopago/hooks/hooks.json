@@ -1,16 +1,16 @@
 {
-  "description": "Prevents Mercado Pago credentials from being written to source files and blocks reading .env files to prevent credential exposure",
+  "description": "Mercado Pago developer plugin hooks",
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "Bash|Edit|Write|MultiEdit|Read",
         "hooks": [
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/validate_mp_credentials.py",
             "timeout": 10
           }
-        ],
-        "matcher": "Bash|Edit|Write|MultiEdit|Read"
+        ]
       }
     ]
   }

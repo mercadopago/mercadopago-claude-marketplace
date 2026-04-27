@@ -408,7 +408,6 @@ a:hover {
   color: var(--hook);
   background: var(--hook-bg);
 }
-
 .card-description {
   font-size: 0.8125rem;
   color: var(--text-secondary);
