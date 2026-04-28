@@ -46,7 +46,7 @@ One agent, four skills, one MCP. The plugin is an **orchestrator**, not a docume
               │  notifications_history… │
               │  create_test_user         │
               │  add_money_test_user      │
-              │  get_application          │
+              │  application_list         │
               └───────────────────────────┘
 ```
 

@@ -33,7 +33,7 @@ The MCP plugin always exposes two bootstrap tools — `mcp__plugin_mercadopago_m
 
 The only reliable check is whether the **data tools** are present in your capabilities right now. The data tools are:
 
-- `mcp__plugin_mercadopago_mercadopago__get_application`
+- `mcp__plugin_mercadopago_mercadopago__application_list`
 - `mcp__plugin_mercadopago_mercadopago__search_documentation`
 - `mcp__plugin_mercadopago_mercadopago__quality_checklist`
 - `mcp__plugin_mercadopago_mercadopago__create_test_user`
@@ -42,24 +42,26 @@ The only reliable check is whether the **data tools** are present in your capabi
 
 ### How to verify
 
-1. Check whether `mcp__plugin_mercadopago_mercadopago__get_application` is callable from your current tool list. If the tool name is not visible in your capabilities (or is only available as a deferred name without a schema), the MCP is **not** authenticated.
-2. As a secondary signal, attempt one call to `get_application`. If it errors with an auth/unauthenticated/`401`/`403` style response, the MCP is **not** authenticated.
+1. Check whether `mcp__plugin_mercadopago_mercadopago__application_list` is callable from your current tool list. If the tool name is not visible in your capabilities (or is only available as a deferred name without a schema), the MCP is **not** authenticated.
+2. As a secondary signal, attempt one call to `application_list`. If it errors with an auth/unauthenticated/`401`/`403` style response, the MCP is **not** authenticated.
 
 If either check fails, **stop**. Do not load any skill, do not fall back to WebFetch, do not improvise. Tell the user:
 
 > The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** (status will read **needs authentication**), press **Enter** on **Authenticate**, and complete the OAuth flow in the browser. Then ask again.
 
-Only when `get_application` is callable AND returns a real application payload (with `site_id`, etc.) is the MCP truly connected. Continue with Step 1.
+Only when `application_list` is callable AND returns a real list (with at least one application: `AppID`, `AppName`, `AppDescription`) is the MCP truly connected. Continue with Step 1.
 
 ## Step 1 — Country resolution (always in this order)
 
 `mp-integrate` needs the country before generating any code. `mp-webhooks`, `mp-test-setup`, and `mp-review` may need it for country-scoped queries. **Always resolve country in this exact priority order — never ask the developer if an earlier step already answered it.**
 
-### 1.a — Ask the MCP (mandatory first attempt)
+### 1.a — Heuristic from `application_list`
 
-The OAuth-authenticated MCP knows which Mercado Pago application the developer is logged into, and that application is bound to a country. Call the MCP application-info tool (`mcp__plugin_mercadopago_mercadopago__get_application` — also exposed as `application_list` in some catalogs) **before** scanning the project or asking.
+Important: **`application_list` does NOT return a country field today.** Its response only includes `AppID`, `AppName`, and `AppDescription`. The OAuth flow knows the country (the access token is bound to a user in a specific site), but the MCP does not currently surface it.
 
-If it returns a `site_id` (or an equivalent country/country_id field), map it and stop:
+What we can do with the response:
+
+- **Name heuristic only.** If `AppName` or `AppDescription` contains a token matching `(MLA|MLB|MLM|MLC|MCO|MPE|MLU)` case-insensitively, map it (e.g. `"Villa mco"` → MCO → Colombia). Many developers name their apps with the site code as a suffix; some don't.
 
 | Site ID | Country | Site ID | Country |
 |---------|---------|---------|---------|
@@ -68,7 +70,7 @@ If it returns a `site_id` (or an equivalent country/country_id field), map it an
 | MLM | Mexico (MX) | MPE | Peru (PE) |
 | MLU | Uruguay (UY) | | |
 
-Only if the call fails or the response doesn't carry a country, fall through to 1.b.
+If the heuristic matches, use it. If it doesn't match, fall through to 1.b.
 
 ### 1.b — Project signals (fallback)
 
@@ -79,13 +81,13 @@ Only if the call fails or the response doesn't carry a country, fall through to 
 | 3 | Existing `mercadopago.com.<tld>` URLs | The TLD reveals the country (`.com.ar`, `.com.br`, `.com.mx`, `.cl`, `.com.co`, `.com.pe`, `.com.uy`) |
 | 4 | Locale strings (`pt-BR`, `es-AR`, etc.) | Standard ISO mapping |
 
-### 1.c — Ask the developer (last resort)
+### 1.c — Ask the developer with `AskUserQuestion`
 
-Only if 1.a and 1.b yield nothing, ask: "What country is this Mercado Pago integration for? (Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay)"
+If 1.a (name heuristic) and 1.b (repo signals) yield nothing, ask the developer with the **`AskUserQuestion` picker**, never as a numbered text block. Use `header="Country"` with the 4 most-common options as buttons (`AR`, `BR`, `MX`, `CO`) — the picker auto-adds an "Other" option for the rest.
 
-**The expected and overwhelmingly common path is 1.a** — the OAuth-authenticated MCP knows the country. Reaching 1.c (asking the developer) usually means OAuth was not completed properly; consider suggesting `/mp-connect` again before asking.
+Once resolved, pass the country to the skill via `country=` and **persist it** to `.mp-integrate-progress.md` so subsequent runs in the same project don't re-ask.
 
-Country domains and currencies live inside `mp-integrate` — do not duplicate the table here. Pass the resolved country to the skill via the `country=` flag so it does not ask again.
+Country domains and currencies live inside `mp-integrate` — do not duplicate the table here.
 
 ## Step 2 — Mode (only if the product supports a choice)
 

@@ -22,13 +22,13 @@ This skill is the single entry point for building a Mercado Pago integration. It
 
 `ListMcpResourcesTool` is **not** a reliable check — this MCP returns "No resources found" whether authenticated or not. The bootstrap tools `authenticate` / `complete_authentication` are **always** present and prove nothing.
 
-The reliable check: is `mcp__plugin_mercadopago_mercadopago__get_application` callable from the current tool list AND does it return a real payload?
+The reliable check: is `mcp__plugin_mercadopago_mercadopago__application_list` callable from the current tool list AND does it return at least one application?
 
 - If the tool is not in your capabilities, or it returns an auth error → the MCP is NOT connected. Stop, do not run the wizard, do not call AskUserQuestion. Tell the user:
 
   > The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** (status reads **needs authentication**), press **Enter** on **Authenticate**, and complete OAuth in the browser. Then ask again.
 
-- If `get_application` returns successfully → the MCP is connected. Continue, and **save the response** — its `site_id` is what you'll use in Step 2 instead of asking the developer for the country.
+- If `application_list` returns successfully → the MCP is connected. Save the response (`AppID`, `AppName`, `AppDescription`). The MCP **does not** return `site_id` today, so the country is resolved separately in Step 1.a.
 
 ---
 
@@ -56,21 +56,23 @@ The reliable check: is `mcp__plugin_mercadopago_mercadopago__get_application` ca
 
 For every dimension, attempt these resolution sources **in order**:
 
-| Dimension | 1st: MCP | 2nd: repo signals | 3rd: ask |
-|-----------|----------|-------------------|----------|
-| `country` | `get_application` → `site_id` (this almost always succeeds — it's the authoritative source) | `currency_id`, `site_id` literals, `mercadopago.com.<tld>` URLs, locale strings | `AskUserQuestion` (last resort only) |
-| `sdk` | — | **MUST run `Glob` for**: `package.json`, `pyproject.toml`, `requirements.txt`, `pom.xml`, `build.gradle`, `build.gradle.kts`, `composer.json`, `Gemfile`, `*.csproj`, `Program.cs`, `go.mod`. Mapping: `package.json` → `node`, `pyproject.toml`/`requirements.txt` → `python`, `pom.xml`/`build.gradle*` → `java`, `composer.json` → `php`, `Gemfile` → `ruby`, `*.csproj`/`Program.cs` → `dotnet`, `go.mod` → `go`. **Single manifest match → resolved, do NOT ask.** Multiple manifests (real polyglot monorepo) → ask. No manifest at all → ask. | `AskUserQuestion` |
-| `client` | — | **MUST inspect** `package.json` deps and project files: `react`/`next` → `react`, `react-native`/`expo` → `react-native`, iOS Xcode project (`*.xcodeproj`) → `ios`, Android `build.gradle` with `com.android.application` → `android`, `pubspec.yaml` → `flutter`. Single match → resolved, do NOT ask. Otherwise → ask, but only if the product has a client component. | `AskUserQuestion` |
-| `lang` | `get_application` may carry locale | derive from country (BR→pt, others→es) | almost never asked — defaulted from country |
-| `mode` | — | `Grep` for `/v1/orders` / `order.create` → `orders`; `/v1/payments` / `payment.create` → `payments`; `/v1/checkout/preferences` / `preference.create` → `preferences`. Single hit → resolved. Plus the Product Matrix may pin mode to a single allowed value (e.g. `checkout-pro` → always `preferences`); when pinned, **do NOT ask**. | `AskUserQuestion` (only when matrix allows >1 AND grep didn't disambiguate) |
+| Dimension | 1st: MCP heuristic | 2nd: repo signals | 3rd: persisted | 4th: ask |
+|-----------|--------------------|-------------------|----------------|----------|
+| `country` | Match `(MLA\|MLB\|MLM\|MLC\|MCO\|MPE\|MLU)` (case-insensitive) inside `AppName` or `AppDescription` from the `application_list` response (e.g. `"Villa mco"` → MCO → Colombia). The MCP does NOT return `site_id`, so this regex on the app name is the only MCP-derived signal. | `currency_id`, `site_id` literals in code, `mercadopago.com.<tld>` URLs, locale strings | Read `country=` from `.mp-integrate-progress.md` if it exists from a prior run. | `AskUserQuestion` (with the country picker) |
+| `sdk` | — | **MUST run `Glob` for**: `package.json`, `pyproject.toml`, `requirements.txt`, `pom.xml`, `build.gradle`, `build.gradle.kts`, `composer.json`, `Gemfile`, `*.csproj`, `Program.cs`, `go.mod`. Mapping: `package.json` → `node`, `pyproject.toml`/`requirements.txt` → `python`, `pom.xml`/`build.gradle*` → `java`, `composer.json` → `php`, `Gemfile` → `ruby`, `*.csproj`/`Program.cs` → `dotnet`, `go.mod` → `go`. **Single manifest match → resolved, do NOT ask.** Multiple manifests (real polyglot monorepo) → ask. No manifest at all → ask. | Read from progress file. | `AskUserQuestion` |
+| `client` | — | **MUST inspect** `package.json` deps and project files: `react`/`next` → `react`, `react-native`/`expo` → `react-native`, iOS Xcode project (`*.xcodeproj`) → `ios`, Android `build.gradle` with `com.android.application` → `android`, `pubspec.yaml` → `flutter`. Single match → resolved, do NOT ask. Otherwise → ask, but only if the product has a client component. | Read from progress file. | `AskUserQuestion` |
+| `lang` | — | Derive from country (BR→pt, others→es). | Read from progress file. | almost never asked — defaulted from country |
+| `mode` | — | `Grep` for `/v1/orders` / `order.create` → `orders`; `/v1/payments` / `payment.create` → `payments`; `/v1/checkout/preferences` / `preference.create` → `preferences`. Single hit → resolved. Plus the Product Matrix may pin mode to a single allowed value (e.g. `checkout-pro` → always `preferences`); when pinned, **do NOT ask**. | Read from progress file. | `AskUserQuestion` (only when matrix allows >1 AND grep didn't disambiguate) |
 
 **Concrete order of operations for the wizard:**
 
-1. Run `get_application` (already done in Step 0). Extract `site_id`. **Country resolved.** Skip the country question.
-2. Run `Glob` over the manifest patterns above. If a single SDK matches, **SDK resolved**. Skip the SDK question.
-3. If the product needs a client (e.g. `bricks`, `checkout-api`), run `Glob`/`Grep` on the manifest deps. If a single client matches, **client resolved**. Skip the client question.
-4. Default `lang` from country. Skip the lang question.
-5. Now — and only now — call `AskUserQuestion` for whatever is still missing, one tool call at a time, in the order defined in Step 1.b.
+1. Read `.mp-integrate-progress.md` if it exists — pull any previously-resolved values.
+2. Apply name heuristic on the `application_list` response (already fetched in Step 0). If `AppName`/`AppDescription` matches a site code, **country resolved**. Otherwise continue.
+3. Run repo signal greps for country (`currency_id`, `site_id`, locales). If unique match, **country resolved**. Otherwise the country goes into the wizard with `AskUserQuestion`.
+4. Run `Glob` over the manifest patterns. If a single SDK matches, **SDK resolved**. Skip the SDK question.
+5. If the product needs a client, run `Glob`/`Grep` on the manifest deps. If a single client matches, **client resolved**. Skip the client question.
+6. Default `lang` from country. Skip the lang question.
+7. Now — and only now — call `AskUserQuestion` for whatever is still missing, one tool call at a time, in the order defined in Step 1.b. After each answer, **persist it** to `.mp-integrate-progress.md`.
 
 If the agent already passed flags (`country=`, `sdk=`, `mode=`, etc.), treat those as resolved too.
 
@@ -78,15 +80,27 @@ Anything still unresolved after 1.a goes into the wizard in 1.b.
 
 ### Step 1.b — Ask one question at a time, with the AskUserQuestion picker
 
-This is the most-violated rule of the wizard. Read it twice.
+This is the most-violated rule of the wizard. **The two screenshots that broke the v4 wizard were caused by violating this section.** Read it twice.
+
+**STOP-TEST before writing any chat output:**
+
+If your response includes ANY of these patterns, you are doing it wrong — abort and use `AskUserQuestion` instead:
+
+- `Question N of M`
+- `1. Country` / `2. Product` / `3. SDK` (numbered question list)
+- A bullet list of option codes like `- checkout-pro — …`
+- The phrase `Type the code` or `Reply with` or `Answer with`
+- Any markdown that looks like a menu the developer is supposed to read and respond to in free text
+
+These are all the v3 anti-pattern. The developer cannot click on plain text. They get a worse experience than the v3 plugin you just rewrote.
 
 **HARD RULES — no exceptions:**
 
-1. **Never** write a numbered list of pending questions in chat (`1. Country …  2. Product …  3. SDK …`). That is the v3 anti-pattern.
-2. **Never** list options as plain text bullets (`- checkout-pro — Redirect-based …`). The developer cannot click on plain text.
-3. **Always** use the `AskUserQuestion` tool, **one tool call per dimension**, waiting for the answer before issuing the next call. The developer sees an interactive picker and arrows-to-select.
-4. The chat output before the first `AskUserQuestion` call MUST be ≤3 short lines — a one-line confirmation of the auto-resolved values (one line per dimension already resolved). No prose, no menu, no preamble.
-5. After each answer comes back, output ≤1 short confirmation line, then immediately make the next `AskUserQuestion` call for the next unresolved dimension. Do **not** summarise progress between questions.
+1. The **first tool call after Step 0/1.a** MUST be `AskUserQuestion`. If your first tool call is anything else (Read, Write, Bash, search_documentation, …), you skipped the wizard and went straight to "ask in chat". Stop and restart with `AskUserQuestion`.
+2. `AskUserQuestion` runs **one tool call per dimension**, waiting for the answer before issuing the next call. The developer sees an interactive picker with arrow-key selection.
+3. The chat output **before** the first `AskUserQuestion` call MUST be ≤3 short lines — one line per auto-resolved dimension, plus an optional one-line "now I'll ask the rest". No menus, no numbered lists, no "I'll ask you 4 quick questions".
+4. **Between** `AskUserQuestion` calls: ≤1 line of confirmation, then immediately the next call. Do not summarise progress, do not show "Question N of M".
+5. If you genuinely cannot fit a dimension into 4 picker options, the picker auto-adds an "Other" entry that lets the developer type freely — use that, do not split the question into two questions.
 
 **Order of `AskUserQuestion` calls** — only for dimensions still unresolved after Step 1.a. Skip any dimension that is already known. Do NOT ask about dimensions the Product Matrix marks `n/a` for the chosen product.
 
@@ -102,7 +116,7 @@ This is the most-violated rule of the wizard. Read it twice.
 | 8 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
 | 9 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
 
-**`country` is never in this list** — it is always resolved by `get_application` (Step 1.a). If reaching this step without a country, something went wrong upstream; ask via `AskUserQuestion` as `header="Country"` with the 4 most-common (AR, BR, MX, CO) + "Other" — but in practice this should not happen because OAuth gave us the answer.
+**`country` may end up in this list.** Today the MCP does not return `site_id`, so unless the name heuristic or repo signals matched in 1.a, you will need to ask. Use `header="Country"` with `AR`, `BR`, `MX`, `CO` as buttons (the 4 most common) — the picker auto-adds an "Other" entry that lets the developer type `CL`, `PE`, or `UY`. After the answer, persist it.
 
 ### Step 1.b.i — What the chat looks like (concrete example)
 
@@ -126,7 +140,8 @@ Now I need a few details to scaffold the right integration:
 Right:
 
 ```
-✓ Country: Colombia (MCO) — from get_application
+✓ App: Villa mco (157134683642259) — from application_list
+✓ Country: Colombia (MCO) — heuristic on AppName
 ✓ SDK: node — from package.json
 ```
 
@@ -139,7 +154,7 @@ While the wizard runs, maintain a scratchpad at `./.mp-integrate-progress.md` (p
 ```markdown
 # mp-integrate progress
 
-- country: AR (resolved from get_application)
+- country: MCO (resolved from application_list AppName heuristic)
 - product: checkout-pro (asked)
 - sdk: node (auto-detected from package.json)
 - mode: preferences (only valid mode for checkout-pro)

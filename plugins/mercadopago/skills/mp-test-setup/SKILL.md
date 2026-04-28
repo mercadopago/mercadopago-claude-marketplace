@@ -30,7 +30,7 @@ This skill is the only place test users get created. It exists because the testi
 
 `ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
 
-Check whether `mcp__plugin_mercadopago_mercadopago__get_application` is callable AND returns a real payload. If not, stop and tell the user:
+Check whether `mcp__plugin_mercadopago_mercadopago__application_list` is callable AND returns at least one application. If not, stop and tell the user:
 
 > The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`**, find **`plugin:mercadopago:mercadopago`**, and complete OAuth in the browser. Then ask again.
 
@@ -38,11 +38,12 @@ Check whether `mcp__plugin_mercadopago_mercadopago__get_application` is callable
 
 ## Step 1 — Resolve `site_id` before asking
 
-Before asking the developer for the country, resolve it from the MCP. **This is the expected path** — OAuth credentials are bound to a country, so a properly-connected MCP always knows it.
+The MCP does not currently return a `site_id` (its `application_list` only returns `AppID`/`AppName`/`AppDescription`). Resolve in this order:
 
-1. Call `mcp__plugin_mercadopago_mercadopago__get_application` (also exposed as `application_list`). Read `site_id` (or country/country_id) from the response.
-2. If that fails, use the country the agent already passed (it runs the same MCP-first resolution).
-3. Only if both yield nothing, ask the developer which country — and consider suggesting `/mp-connect` again, since OAuth should have answered this.
+1. **Use the country the agent already passed** as `country=` — the agent runs name-heuristic + repo signals + persisted state + ask, so it should have a value by the time it delegates here.
+2. **Heuristic on app name** — call `application_list` and match `(MLA|MLB|MLM|MLC|MCO|MPE|MLU)` (case-insensitive) inside `AppName` or `AppDescription`. E.g. `"Villa mco"` → MCO.
+3. **Read `.mp-integrate-progress.md`** at the project root — if a previous run persisted a country, reuse it.
+4. **Last resort**: ask via `AskUserQuestion` (picker, never a numbered text block). Persist the answer to `.mp-integrate-progress.md`.
 
 ## Step 2 — Create a test user
 

@@ -20,7 +20,7 @@ Use this command only if the connection is broken or you want to verify the stat
 
 `ListMcpResourcesTool` always returns "No resources found" for this MCP and is **not** a reliable check. The bootstrap tools `authenticate` / `complete_authentication` always exist and prove nothing.
 
-Verify by attempting to call `mcp__plugin_mercadopago_mercadopago__get_application`:
+Verify by attempting to call `mcp__plugin_mercadopago_mercadopago__application_list`:
 
 - The tool is callable AND returns a real application payload (with `site_id`, etc.) → tell the user: "✓ Connected and ready." and **stop**.
 - The tool is not in your capabilities, or it returns an auth error → continue to Step 2.
@@ -49,7 +49,7 @@ Wait for confirmation, then go to Step 3.
 
 ## Step 3 — Verify
 
-Attempt to call `mcp__plugin_mercadopago_mercadopago__get_application` again.
+Attempt to call `mcp__plugin_mercadopago_mercadopago__application_list` again.
 
 - Returns a real payload → "✓ Connected and ready."
 - Still no tools → "Not connected. Try restarting Claude Code and running `/mp-connect` again."
