@@ -32,7 +32,15 @@ Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`. If e
 
 ---
 
-## Step 1 — Create a test user
+## Step 1 — Resolve `site_id` before asking
+
+Before asking the developer for the country, resolve it from the MCP. **This is the expected path** — OAuth credentials are bound to a country, so a properly-connected MCP always knows it.
+
+1. Call `mcp__plugin_mercadopago_mercadopago__get_application` (also exposed as `application_list`). Read `site_id` (or country/country_id) from the response.
+2. If that fails, use the country the agent already passed (it runs the same MCP-first resolution).
+3. Only if both yield nothing, ask the developer which country — and consider suggesting `/mp-connect` again, since OAuth should have answered this.
+
+## Step 2 — Create a test user
 
 Call `mcp__plugin_mercadopago_mercadopago__create_test_user` with:
 
@@ -49,7 +57,7 @@ The tool returns the user id, email, password, and `APP_USR-` credentials. Show 
 
 ---
 
-## Step 2 — Load funds (when needed)
+## Step 3 — Load funds (when needed)
 
 Call `mcp__plugin_mercadopago_mercadopago__add_money_test_user` with:
 
@@ -62,13 +70,13 @@ Country-specific limits apply. If the call fails with a limit error, ask for a s
 
 ---
 
-## Step 3 — Test cards
+## Step 4 — Test cards
 
 For card testing, do **not** invent card numbers. Query MCP `search_documentation` with `"test cards {country}"` (e.g., `"test cards argentina"`) — the official set changes per country and per acquirer.
 
 ---
 
-## Step 4 — Hand the credentials to the developer
+## Step 5 — Hand the credentials to the developer
 
 Output template:
 

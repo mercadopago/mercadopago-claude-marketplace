@@ -47,9 +47,19 @@ Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
 | `brick=` | `payment` / `card-payment` / `wallet` / `status-screen` (only when `product=bricks`) |
 | `qr-mode=` | `static` / `dynamic` / `attended` (only when `product=qr`) |
 
+### Resolve country BEFORE asking the developer
+
+Before any wizard question, attempt to resolve the country in this order:
+
+1. **Ask the MCP** — call `mcp__plugin_mercadopago_mercadopago__get_application` (also exposed as `application_list`). The OAuth-authenticated app is bound to a country; if the response carries `site_id` (or country/country_id), use it and skip the country question entirely.
+2. **Project signals** — grep for `currency_id`, `site_id`, `mercadopago.com.<tld>` URLs, or locale strings (handled by the agent before delegating).
+3. **Ask the developer** — only as a last resort, and only for the country dimension.
+
+The agent passes the resolved country via `country=`. If `country=` is present, the wizard does **not** ask country.
+
 ### Wizard order
 
-**Batch 1** — country, product, docs language (always asked if missing).
+**Batch 1** — only the dimensions still missing (typically product + docs language; country only if 1.a/1.b/agent did not resolve it).
 
 **Batch 2** — SDK, mode (orders/legacy), client framework (only if product has a client component).
 - Default `mode=orders` for new integrations. Only suggest `legacy` if the user explicitly asks or the existing code already uses `/v1/payments` or `/v1/checkout/preferences`.

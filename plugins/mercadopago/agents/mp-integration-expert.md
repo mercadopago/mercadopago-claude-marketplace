@@ -37,22 +37,41 @@ Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
 
   Do **not** load any skill, do **not** fall back to WebFetch as a substitute. Wait for authentication.
 
-## Step 1 — Country (only if the matched skill needs it)
+## Step 1 — Country resolution (always in this order)
 
-`mp-integrate` needs the country before generating any code. `mp-webhooks`, `mp-test-setup`, and `mp-review` may need it for country-scoped queries.
+`mp-integrate` needs the country before generating any code. `mp-webhooks`, `mp-test-setup`, and `mp-review` may need it for country-scoped queries. **Always resolve country in this exact priority order — never ask the developer if an earlier step already answered it.**
 
-Detect the country from project signals before asking:
+### 1.a — Ask the MCP (mandatory first attempt)
+
+The OAuth-authenticated MCP knows which Mercado Pago application the developer is logged into, and that application is bound to a country. Call the MCP application-info tool (`mcp__plugin_mercadopago_mercadopago__get_application` — also exposed as `application_list` in some catalogs) **before** scanning the project or asking.
+
+If it returns a `site_id` (or an equivalent country/country_id field), map it and stop:
+
+| Site ID | Country | Site ID | Country |
+|---------|---------|---------|---------|
+| MLA | Argentina (AR) | MCO | Colombia (CO) |
+| MLB | Brazil (BR) | MLC | Chile (CL) |
+| MLM | Mexico (MX) | MPE | Peru (PE) |
+| MLU | Uruguay (UY) | | |
+
+Only if the call fails or the response doesn't carry a country, fall through to 1.b.
+
+### 1.b — Project signals (fallback)
 
 | Priority | Signal | Mapping |
 |----------|--------|---------|
 | 1 | `currency_id` in code/config | ARS→AR, BRL→BR, MXN→MX, CLP→CL, COP→CO, PEN→PE, UYU→UY |
 | 2 | `site_id` literal | MLA→AR, MLB→BR, MLM→MX, MLC→CL, MCO→CO, MPE→PE, MLU→UY |
-| 3 | Existing `mercadopago.com.<tld>` URLs | The TLD reveals the country |
+| 3 | Existing `mercadopago.com.<tld>` URLs | The TLD reveals the country (`.com.ar`, `.com.br`, `.com.mx`, `.cl`, `.com.co`, `.com.pe`, `.com.uy`) |
 | 4 | Locale strings (`pt-BR`, `es-AR`, etc.) | Standard ISO mapping |
 
-If no signal is found, ask: "What country is this Mercado Pago integration for? (Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay)"
+### 1.c — Ask the developer (last resort)
 
-Country domains and currencies live inside `mp-integrate` — do not duplicate the table here.
+Only if 1.a and 1.b yield nothing, ask: "What country is this Mercado Pago integration for? (Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay)"
+
+**The expected and overwhelmingly common path is 1.a** — the OAuth-authenticated MCP knows the country. Reaching 1.c (asking the developer) usually means OAuth was not completed properly; consider suggesting `/mp-connect` again before asking.
+
+Country domains and currencies live inside `mp-integrate` — do not duplicate the table here. Pass the resolved country to the skill via the `country=` flag so it does not ask again.
 
 ## Step 2 — Mode (Orders API vs legacy)
 
