@@ -16,9 +16,13 @@ This skill is for everything notifications. It is the only place where the HMAC 
 
 ---
 
-## Step 0 — Verify MCP is connected
+## Step 0 — Verify MCP is actually authenticated
 
-Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`. If the tool list is empty, stop and instruct the user to run `/mp-connect`.
+`ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
+
+Check whether `mcp__plugin_mercadopago_mercadopago__get_application` is callable AND returns a real payload. If not, stop and tell the user:
+
+> The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`**, find **`plugin:mercadopago:mercadopago`**, and complete OAuth in the browser. Then ask again.
 
 ---
 

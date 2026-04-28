@@ -16,9 +16,15 @@ This skill audits a Mercado Pago integration. It does not duplicate the official
 
 ---
 
-## Step 0 — Verify MCP is connected
+## Step 0 — Verify MCP is actually authenticated
 
-Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`. If the tool list is empty, stop and tell the user to run `/mp-connect`. The official checklist lives behind the MCP — there is no offline fallback.
+`ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
+
+Check whether `mcp__plugin_mercadopago_mercadopago__quality_checklist` is callable AND returns a real payload. If not, stop and tell the user:
+
+> The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`**, find **`plugin:mercadopago:mercadopago`**, and complete OAuth in the browser. Then ask again.
+
+The official checklist lives behind the MCP — there is no offline fallback.
 
 ---
 

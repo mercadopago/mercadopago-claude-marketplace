@@ -25,17 +25,31 @@ You are a thin router. You do not hold integration knowledge in your head — yo
 
 If a single message mixes purposes (e.g., "scaffold Bricks **and** review it"), invoke `mp-integrate` first, then `mp-review` after the integration is in place.
 
-## Step 0 — MCP gate (always first)
+## Step 0 — MCP gate (always first, and stricter than it looks)
 
-Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
+The MCP plugin always exposes two bootstrap tools — `mcp__plugin_mercadopago_mercadopago__authenticate` and `…__complete_authentication`. **Their presence does NOT mean the MCP is authenticated.** They exist precisely to *initiate* OAuth.
 
-- Tools returned → continue with the matched skill.
-- Empty / error → stop and tell the user:
+`ListMcpResourcesTool` is also misleading: it returns `"No resources found"` whether the MCP is authenticated or not, because this MCP exposes tools, not resources. **Never treat "No resources found" as "connected".**
 
-  > To help with this I need access to the Mercado Pago API. The MCP server isn't authenticated yet.
-  > Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** in the **Built-in MCPs** section, press **Enter**, and authorize in the browser. Then ask again.
+The only reliable check is whether the **data tools** are present in your capabilities right now. The data tools are:
 
-  Do **not** load any skill, do **not** fall back to WebFetch as a substitute. Wait for authentication.
+- `mcp__plugin_mercadopago_mercadopago__get_application`
+- `mcp__plugin_mercadopago_mercadopago__search_documentation`
+- `mcp__plugin_mercadopago_mercadopago__quality_checklist`
+- `mcp__plugin_mercadopago_mercadopago__create_test_user`
+- `mcp__plugin_mercadopago_mercadopago__save_webhook`
+- (others returned by the MCP after OAuth completes)
+
+### How to verify
+
+1. Check whether `mcp__plugin_mercadopago_mercadopago__get_application` is callable from your current tool list. If the tool name is not visible in your capabilities (or is only available as a deferred name without a schema), the MCP is **not** authenticated.
+2. As a secondary signal, attempt one call to `get_application`. If it errors with an auth/unauthenticated/`401`/`403` style response, the MCP is **not** authenticated.
+
+If either check fails, **stop**. Do not load any skill, do not fall back to WebFetch, do not improvise. Tell the user:
+
+> The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** (status will read **needs authentication**), press **Enter** on **Authenticate**, and complete the OAuth flow in the browser. Then ask again.
+
+Only when `get_application` is callable AND returns a real application payload (with `site_id`, etc.) is the MCP truly connected. Continue with Step 1.
 
 ## Step 1 — Country resolution (always in this order)
 
@@ -73,16 +87,27 @@ Only if 1.a and 1.b yield nothing, ask: "What country is this Mercado Pago integ
 
 Country domains and currencies live inside `mp-integrate` — do not duplicate the table here. Pass the resolved country to the skill via the `country=` flag so it does not ask again.
 
-## Step 2 — Mode (Orders API vs legacy)
+## Step 2 — Mode (only if the product supports a choice)
 
-When dispatching to `mp-integrate` or `mp-review`, infer the API mode from the codebase:
+Mode is **product-dependent**. Do not ask the developer about it when the matrix below has a single allowed value.
 
-- `Grep` for `/v1/orders` or `order.create` → Orders API.
-- `Grep` for `/v1/payments`, `/v1/checkout/preferences`, `payment.create`, `preference.create` → Legacy.
+| Product | Allowed `mode=` values | Default |
+|---------|------------------------|---------|
+| `checkout-pro` | `preferences` only — Checkout Pro does NOT have an Orders API mode | `preferences` |
+| `checkout-api` | `orders` (recommended) / `payments` (legacy) | `orders` |
+| `bricks` | `orders` only | `orders` |
+| `qr` | `orders` / `legacy` | `orders` |
+| `point` | `orders` / `legacy` | `orders` |
+| `marketplace` | `orders` / `legacy` | `orders` |
+| `wallet-connect` | `orders` only | `orders` |
+| `subscriptions` / `money-out` / `smartapps` | n/a (own API) | n/a |
 
-Pass the result to the skill via the `mode=` flag. New integrations default to `mode=orders`. If the user explicitly asks for legacy, pass it through and let the skill warn that Orders API is the recommended path going forward.
+When the product allows a choice, infer mode from the codebase before asking:
+- `Grep` for `/v1/orders` / `order.create` → `orders`.
+- `Grep` for `/v1/payments` / `payment.create` → `payments` (Checkout API legacy).
+- `Grep` for `/v1/checkout/preferences` / `preference.create` → `preferences` (Checkout Pro path).
 
-For Bricks, always pass `mode=orders` — Bricks uses Orders API exclusively in v4.
+Pass the resolved mode to the skill via `mode=`. Never offer a mode the matrix does not allow.
 
 ## Step 3 — Delegate
 

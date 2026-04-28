@@ -20,7 +20,7 @@ Single entry point for adding any Mercado Pago integration. Delegates to one of 
 
 ## Behaviour
 
-1. Verify the Mercado Pago MCP is connected (call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`). If not, stop and ask the user to run `/mp-connect`.
+1. Verify the Mercado Pago MCP is **actually authenticated** by checking that `mcp__plugin_mercadopago_mercadopago__get_application` is callable and returns a real payload. The presence of `authenticate` / `complete_authentication` does NOT count, and `ListMcpResourcesTool` returns "No resources found" even when authenticated. If the data tools are not available, stop and ask the user to run `/mcp` and authenticate.
 2. Hand control to the matched skill, passing through the rest of `$ARGUMENTS`.
 3. Do **not** invent code, payloads, or endpoints in this command file. The skills orchestrate the MCP for that.
 

@@ -18,14 +18,17 @@ This skill is the single entry point for building a Mercado Pago integration. It
 
 ---
 
-## Step 0 — Verify MCP is connected
+## Step 0 — Verify MCP is actually authenticated
 
-Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
+`ListMcpResourcesTool` is **not** a reliable check — this MCP returns "No resources found" whether authenticated or not. The bootstrap tools `authenticate` / `complete_authentication` are **always** present and prove nothing.
 
-- Tools returned → continue.
-- Empty / error → tell the user:
-  > To scaffold the integration I need access to the Mercado Pago API. Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** in the **Built-in MCPs** section, press **Enter**, and authorize in the browser. Then ask again.
-  Then **stop**. Do not fall back to WebFetch as a substitute.
+The reliable check: is `mcp__plugin_mercadopago_mercadopago__get_application` callable from the current tool list AND does it return a real payload?
+
+- If the tool is not in your capabilities, or it returns an auth error → the MCP is NOT connected. Stop, do not run the wizard, do not call AskUserQuestion. Tell the user:
+
+  > The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** (status reads **needs authentication**), press **Enter** on **Authenticate**, and complete OAuth in the browser. Then ask again.
+
+- If `get_application` returns successfully → the MCP is connected. Continue, and **save the response** — its `site_id` is what you'll use in Step 2 instead of asking the developer for the country.
 
 ---
 
@@ -37,8 +40,8 @@ Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
 |------|--------|
 | `country=` | `AR` / `BR` / `MX` / `CL` / `CO` / `PE` / `UY` |
 | `product=` | `checkout-pro` / `checkout-api` / `bricks` / `qr` / `point` / `subscriptions` / `marketplace` / `wallet-connect` / `money-out` / `smartapps` |
-| `mode=` | `orders` (recommended) / `legacy` |
-| `sdk=` | `node` / `python` / `java` / `php` / `ruby` / `dotnet` / `go` |
+| `mode=` | depends on product — see Product Matrix below |
+| `sdk=` | `node` / `python` / `java` / `php` / `ruby` / `dotnet` / `go` (or `none` for raw REST) |
 | `client=` | `vanilla-js` / `react` / `ios` / `android` / `flutter` / `react-native` (only for products with a client component) |
 | `lang=` | `es` / `en` / `pt` (docs language) |
 | `recurrent=` | `yes` / `no` (Checkout API, Bricks) |
@@ -47,43 +50,59 @@ Call `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
 | `brick=` | `payment` / `card-payment` / `wallet` / `status-screen` (only when `product=bricks`) |
 | `qr-mode=` | `static` / `dynamic` / `attended` (only when `product=qr`) |
 
-### Resolve country BEFORE asking the developer
+### Step 1.a — Auto-resolve before asking
 
-Before any wizard question, attempt to resolve the country in this order:
+For every dimension, attempt these resolution sources **in order** before falling back to a question:
 
-1. **Ask the MCP** — call `mcp__plugin_mercadopago_mercadopago__get_application` (also exposed as `application_list`). The OAuth-authenticated app is bound to a country; if the response carries `site_id` (or country/country_id), use it and skip the country question entirely.
-2. **Project signals** — grep for `currency_id`, `site_id`, `mercadopago.com.<tld>` URLs, or locale strings (handled by the agent before delegating).
-3. **Ask the developer** — only as a last resort, and only for the country dimension.
+| Dimension | 1st: MCP | 2nd: repo signals | 3rd: ask |
+|-----------|----------|-------------------|----------|
+| `country` | `get_application` → `site_id` | `currency_id`, `site_id` literals, `mercadopago.com.<tld>` URLs, locale strings | `AskUserQuestion` |
+| `sdk` | — | `package.json` → `node` · `requirements.txt` / `pyproject.toml` → `python` · `pom.xml` / `build.gradle` → `java` · `composer.json` → `php` · `Gemfile` → `ruby` · `*.csproj` / `Program.cs` → `dotnet` · `go.mod` → `go` (multiple manifests → ask) | `AskUserQuestion` |
+| `client` | — | `package.json` deps: `react` → `react` · `next` → `react` · `react-native` → `react-native` · `expo` → `react-native` · iOS Xcode project → `ios` · `build.gradle` Android → `android` · `pubspec.yaml` → `flutter` (none → ask, only if product has a client component) | `AskUserQuestion` |
+| `lang` | `get_application` may carry locale | derive from country (BR→pt, others→es) | `AskUserQuestion` (only if developer chose a non-default) |
+| `mode` | — | `Grep` for `/v1/orders` / `order.create` → `orders`; `/v1/payments` / `/v1/checkout/preferences` / `payment.create` / `preference.create` → `legacy` | `AskUserQuestion` (only when the product matrix lists more than one) |
 
-The agent passes the resolved country via `country=`. If `country=` is present, the wizard does **not** ask country.
+Anything still unresolved after 1.a goes into the wizard in 1.b.
 
-### Wizard order
+### Step 1.b — Ask one question at a time (NEVER as a single text block)
 
-**Batch 1** — only the dimensions still missing (typically product + docs language; country only if 1.a/1.b/agent did not resolve it).
+The wizard MUST use `AskUserQuestion` for every unresolved dimension, **one call per dimension**, waiting for the answer before issuing the next call. Do **not** print a numbered list of pending questions in chat and ask the developer to answer them all at once — that pattern is what the v3 wizard did wrong, and it makes skipping/correcting answers impossible.
 
-**Batch 2** — SDK, mode (orders/legacy), client framework (only if product has a client component).
-- Default `mode=orders` for new integrations. Only suggest `legacy` if the user explicitly asks or the existing code already uses `/v1/payments` or `/v1/checkout/preferences`.
+For dimensions with more than 4 valid options (e.g. `product` has 10), use the natural overflow of `AskUserQuestion` — show 4 most-likely options + "Other" (which lets the developer type freely). Never split a single dimension into "category then sub-category" — that's a different decision.
 
-**Batch 3** — feature flags (recurrent, 3ds, marketplace) — only the ones that apply to the chosen product (see Product Matrix below).
+### Step 1.c — Persist progress in a scratch file
 
-**Batch 4** — product-specific (brick variant, qr-mode, point device model) — only when applicable.
+While the wizard runs, maintain a scratchpad at `./.mp-integrate-progress.md` (project root) with the answers collected so far. Overwrite it after every question with the current state:
 
-> Stop the wizard as soon as you have everything required for the chosen product. Do not ask flags that the Product Matrix marks `n/a`.
+```markdown
+# mp-integrate progress
 
-### Product Matrix — which flags apply
+- country: AR (resolved from get_application)
+- product: checkout-pro (asked)
+- sdk: node (auto-detected from package.json)
+- mode: preferences (only valid mode for checkout-pro)
+- client: react (auto-detected from package.json deps)
+- lang: es
+```
 
-| Product | sdk | client | mode | recurrent | 3ds | marketplace | sub-flag |
+The file gives the developer a visible audit trail of what was inferred vs asked, and lets them interrupt and resume. **Delete it on success** (after the bundle is rendered) or leave it on cancel/error so the next run can pick up. Add `.mp-integrate-progress.md` to `.gitignore` if it isn't already.
+
+### Product Matrix — which flags apply (and which don't)
+
+| Product | sdk | client | mode (allowed values) | recurrent | 3ds | marketplace | sub-flag |
 |---|---|---|---|---|---|---|---|
-| `checkout-pro` | yes | optional | orders/legacy | n/a | n/a | optional | n/a |
-| `checkout-api` | yes | yes | orders/legacy | yes | yes | optional | n/a |
-| `bricks` | yes (server) | yes | orders only | yes (payment, card-payment) | yes (payment, card-payment, status-screen) | optional | `brick=` |
-| `qr` | yes | n/a | orders/legacy | n/a | n/a | n/a | `qr-mode=` |
-| `point` | yes | n/a | orders/legacy | n/a | n/a | n/a | n/a |
-| `subscriptions` | yes | n/a | n/a (own API) | implicit | n/a | optional | n/a |
-| `marketplace` | yes | n/a | orders/legacy | n/a | n/a | implicit | n/a |
-| `wallet-connect` | yes | n/a | orders | n/a | n/a | n/a | n/a |
-| `money-out` | yes | n/a | n/a (own API) | n/a | n/a | n/a | n/a |
+| `checkout-pro` | yes | optional | **`preferences` only** — Checkout Pro does NOT have an Orders API mode | n/a | n/a | optional | n/a |
+| `checkout-api` | yes | yes | `orders` *(recommended)* / `payments` *(legacy)* | yes | yes | optional | n/a |
+| `bricks` | yes (server) | yes | `orders` *(only mode supported by Bricks v4)* | yes (payment, card-payment) | yes (payment, card-payment, status-screen) | optional | `brick=` |
+| `qr` | yes | n/a | `orders` / `legacy` | n/a | n/a | n/a | `qr-mode=` |
+| `point` | yes | n/a | `orders` / `legacy` | n/a | n/a | n/a | n/a |
+| `subscriptions` | yes | n/a | n/a (own `preapproval` API) | implicit | n/a | optional | n/a |
+| `marketplace` | yes | n/a | `orders` / `legacy` | n/a | n/a | implicit | n/a |
+| `wallet-connect` | yes | n/a | `orders` | n/a | n/a | n/a | n/a |
+| `money-out` | yes | n/a | n/a (own `disbursements` API) | n/a | n/a | n/a | n/a |
 | `smartapps` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+
+When a product's `mode` cell is fixed (single value or `n/a`), **never ask** the developer about mode — just use the value or skip the question.
 
 ---
 
@@ -111,7 +130,7 @@ Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mercadopago__sear
 
 | Need | Query template |
 |------|----------------|
-| Server creation | `"{product} create {mode} {sdk} {country}"` (e.g., `"checkout-pro create order node argentina"`) |
+| Server creation | `"{product} create {mode} {sdk} {country}"` (e.g., `"checkout-pro create preference node argentina"` or `"checkout-api create order node argentina"`) |
 | Client/UI | `"{product} {client} initialization {brick?}"` (e.g., `"bricks react payment brick initialization"`) |
 | Tokenization (Checkout API / Card Payment Brick) | `"card token {client} {country}"` |
 | 3DS challenge | `"3ds {product} {sdk}"` |

@@ -18,10 +18,12 @@ Use this command only if the connection is broken or you want to verify the stat
 ### Pre-check: Is MCP already connected?
 ## Step 1 — Check status
 
-Try `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
+`ListMcpResourcesTool` always returns "No resources found" for this MCP and is **not** a reliable check. The bootstrap tools `authenticate` / `complete_authentication` always exist and prove nothing.
 
-- Tools returned → tell the user: "✓ Connected and ready." and **stop**.
-- Error or no tools → continue.
+Verify by attempting to call `mcp__plugin_mercadopago_mercadopago__get_application`:
+
+- The tool is callable AND returns a real application payload (with `site_id`, etc.) → tell the user: "✓ Connected and ready." and **stop**.
+- The tool is not in your capabilities, or it returns an auth error → continue to Step 2.
 
 ---
 
@@ -47,9 +49,9 @@ Wait for confirmation, then go to Step 3.
 
 ## Step 3 — Verify
 
-Try `ListMcpResourcesTool` with server `"plugin:mercadopago:mercadopago"`.
+Attempt to call `mcp__plugin_mercadopago_mercadopago__get_application` again.
 
-- Tools returned → "✓ Connected and ready."
+- Returns a real payload → "✓ Connected and ready."
 - Still no tools → "Not connected. Try restarting Claude Code and running `/mp-connect` again."
 
 ---
