@@ -3,7 +3,7 @@ description: Scaffold a Mercado Pago integration via the mp-integrate wizard. Su
 argument-hint: "[product=...] [country=...] [sdk=...] [mode=orders|legacy] [client=...] [3ds=yes|no] [recurrent=yes|no] [marketplace=yes|no]  |  webhook  |  test-setup"
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
-allowed-tools: [Read, Write, Edit, Bash]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
 
 # /mp-integrate

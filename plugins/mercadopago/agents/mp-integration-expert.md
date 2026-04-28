@@ -3,7 +3,7 @@ name: mp-integration-expert
 description: Use when implementing, reviewing, or debugging any Mercado Pago payment integration. Routes the request to one of four skills (mp-integrate, mp-webhooks, mp-test-setup, mp-review) and uses the Mercado Pago MCP server for live API data. The MCP must always be connected — there is no offline mode.
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
-tools: Read, Grep, Glob, Bash, WebFetch
+tools: Read, Grep, Glob, Bash, WebFetch, AskUserQuestion, Write, Edit
 model: sonnet
 tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace]
 category: development

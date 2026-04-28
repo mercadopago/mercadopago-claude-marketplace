@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-28T19:52:29.329059+00:00",
+  "generated_at": "2026-04-28T20:20:37.827546+00:00",
   "plugin": {
     "name": "mercadopago",
     "version": "4.0.0",
@@ -48,7 +48,7 @@
         "marketplace"
       ],
       "license": "Apache-2.0",
-      "tools": "Read, Grep, Glob, Bash, WebFetch",
+      "tools": "Read, Grep, Glob, Bash, WebFetch, AskUserQuestion, Write, Edit",
       "model": "sonnet",
       "path": "plugins/mercadopago/agents/mp-integration-expert.md"
     },
@@ -143,7 +143,10 @@
         "Read",
         "Write",
         "Edit",
-        "Bash"
+        "Bash",
+        "Grep",
+        "Glob",
+        "AskUserQuestion"
       ],
       "license": "Apache-2.0",
       "path": "plugins/mercadopago/commands/mp-integrate.md"
@@ -157,7 +160,8 @@
         "Read",
         "Grep",
         "Glob",
-        "Bash"
+        "Bash",
+        "AskUserQuestion"
       ],
       "license": "Apache-2.0",
       "path": "plugins/mercadopago/commands/mp-review.md"

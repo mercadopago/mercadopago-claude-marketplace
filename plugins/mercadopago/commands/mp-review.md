@@ -3,7 +3,7 @@ description: Review a Mercado Pago integration against the official quality chec
 argument-hint: "[security|webhooks|checkout|qr|subscriptions|marketplace|quality|full]"
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
-allowed-tools: [Read, Grep, Glob, Bash]
+allowed-tools: [Read, Grep, Glob, Bash, AskUserQuestion]
 ---
 
 # /mp-review
