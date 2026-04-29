@@ -20,28 +20,26 @@ Use this command only if the connection is broken or you want to verify the stat
 
 `ListMcpResourcesTool` always returns "No resources found" for this MCP and is **not** a reliable check. The bootstrap tools `authenticate` / `complete_authentication` always exist and prove nothing.
 
-Verify by attempting to call `mcp__plugin_mercadopago_mercadopago__application_list`:
+Verify by attempting to call `mcp__plugin_mercadopago_mcp__application_list`:
 
 - The tool is callable AND returns a real application payload (with `site_id`, etc.) → tell the user: "✓ Connected and ready." and **stop**.
-- The tool is not in your capabilities, or it returns an auth error → continue to Step 2.
+- The tool is not in your capabilities, or it returns an auth error → **do NOT ask the user to run `/mcp`**. Continue to Step 2.
 
 ---
 
-## Step 2 — Check why it's not connected
+## Step 2 — Start OAuth directly
 
-Run:
+Call `mcp__plugin_mercadopago_mcp__authenticate`. Show the returned URL as a clickable link:
 
-```bash
-claude mcp list 2>/dev/null | grep -i mercado || echo "not-found"
-```
-
-**`plugin:mercadopago:mercadopago` listed with "Needs authentication"** → tell the user:
-
-> Run **`/mcp`** in your terminal. Find **`plugin:mercadopago:mercadopago`** in the **Built-in MCPs** section and press **Enter** on it. A browser will open — select your country and click **Authorize**.
+> Open this URL to connect Mercado Pago:
+> **{authorization_url}**
 >
-> Tell me when you're done.
+> When you see **"Authentication Successful"** in the browser, come back and say anything — I'll verify automatically.
 
-Wait for confirmation, then go to Step 3.
+When the user responds:
+- **Call `application_list` directly.** If the browser showed "Authentication Successful", the local MCP server already processed the callback and the token is live.
+- **Do NOT call `complete_authentication` first** — it will hang trying to reach a socket that was already closed.
+- Only if `application_list` fails AND the browser showed an error (not "Authentication Successful") → call `complete_authentication`. ⚠️ **Do not ask the user to paste the callback URL** — it contains a sensitive OAuth code. Ask them to re-run the flow (`/mp-connect`) instead.
 
 **`not-found`** → the plugin is not loaded. Tell the user to run `/reload-plugins` and then `/mp-connect` again.
 
@@ -49,7 +47,7 @@ Wait for confirmation, then go to Step 3.
 
 ## Step 3 — Verify
 
-Attempt to call `mcp__plugin_mercadopago_mercadopago__application_list` again.
+Attempt to call `mcp__plugin_mercadopago_mcp__application_list` again.
 
 - Returns a real payload → "✓ Connected and ready."
 - Still no tools → "Not connected. Try restarting Claude Code and running `/mp-connect` again."

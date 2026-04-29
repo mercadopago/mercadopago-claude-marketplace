@@ -30,24 +30,25 @@ This skill is the only place test users get created. It exists because the testi
 
 `ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
 
-Check whether `mcp__plugin_mercadopago_mercadopago__application_list` is callable AND returns at least one application. If not, stop and tell the user:
+Check whether `mcp__plugin_mercadopago_mcp__application_list` is callable AND returns at least one application. If not, stop and tell the user:
 
-> The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`**, find **`plugin:mercadopago:mercadopago`**, and complete OAuth in the browser. Then ask again.
+> Call `mcp__plugin_mercadopago_mcp__authenticate`, show the URL as a clickable link, and say: "When you see **Authentication Successful** in the browser, come back and say anything." When the user responds, call `application_list` directly — do NOT call `complete_authentication` first (it hangs when the callback was already consumed). Never ask the user to paste the callback URL — it contains a sensitive OAuth code.
 
 ---
 
 ## Step 1 — Resolve `site_id` before asking
 
-The MCP does not currently return a `site_id` (its `application_list` only returns `AppID`/`AppName`/`AppDescription`). Resolve in this order:
+The MCP does not currently return a `site_id` (its `application_list` only returns `AppID`/`AppName`/`AppDescription`, and the OAuth access token that would let us call `/users/me` is not exposed to the plugin client). Resolve in this order:
 
-1. **Use the country the agent already passed** as `country=` — the agent runs name-heuristic + repo signals + persisted state + ask, so it should have a value by the time it delegates here.
-2. **Heuristic on app name** — call `application_list` and match `(MLA|MLB|MLM|MLC|MCO|MPE|MLU)` (case-insensitive) inside `AppName` or `AppDescription`. E.g. `"Villa mco"` → MCO.
-3. **Read `.mp-integrate-progress.md`** at the project root — if a previous run persisted a country, reuse it.
-4. **Last resort**: ask via `AskUserQuestion` (picker, never a numbered text block). Persist the answer to `.mp-integrate-progress.md`.
+1. **Use the country the agent already passed** as `country=` — the agent already resolved it (persisted state or wizard).
+2. **Read `.mp-integrate-progress.md`** at the project root — if a previous run persisted a country, reuse it.
+3. **Last resort**: ask via `AskUserQuestion` (picker, never a numbered text block). Persist the answer to `.mp-integrate-progress.md`.
+
+Do **not** grep the repo for `currency_id`/`site_id` literals or locale strings — they're unreliable on a clean repo and waste tokens.
 
 ## Step 2 — Create a test user
 
-Call `mcp__plugin_mercadopago_mercadopago__create_test_user` with:
+Call `mcp__plugin_mercadopago_mcp__create_test_user` with:
 
 | Param | Required | Values |
 |-------|----------|--------|
@@ -64,7 +65,7 @@ The tool returns the user id, email, password, and `APP_USR-` credentials. Show 
 
 ## Step 3 — Load funds (when needed)
 
-Call `mcp__plugin_mercadopago_mercadopago__add_money_test_user` with:
+Call `mcp__plugin_mercadopago_mcp__add_money_test_user` with:
 
 | Param | Required |
 |-------|----------|

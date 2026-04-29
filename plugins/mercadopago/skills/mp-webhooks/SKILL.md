@@ -20,9 +20,9 @@ This skill is for everything notifications. It is the only place where the HMAC 
 
 `ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
 
-Check whether `mcp__plugin_mercadopago_mercadopago__application_list` is callable AND returns a real payload. If not, stop and tell the user:
+Check whether `mcp__plugin_mercadopago_mcp__application_list` is callable AND returns a real payload. If not, stop and tell the user:
 
-> The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`**, find **`plugin:mercadopago:mercadopago`**, and complete OAuth in the browser. Then ask again.
+> Call `mcp__plugin_mercadopago_mcp__authenticate`, show the URL as a clickable link, and say: "When you see **Authentication Successful** in the browser, come back and say anything." When the user responds, call `application_list` directly — do NOT call `complete_authentication` first (it hangs when the callback was already consumed). Never ask the user to paste the callback URL — it contains a sensitive OAuth code.
 
 ---
 
@@ -116,7 +116,7 @@ If a topic is not in this table, query MCP for the latest list rather than guess
 ## Step 4 — Configure on Mercado Pago (`save_webhook`)
 
 ```
-mcp__plugin_mercadopago_mercadopago__save_webhook(
+mcp__plugin_mercadopago_mcp__save_webhook(
   callback="https://<production-url>/mp/webhook",
   callback_sandbox="https://<staging-url>/mp/webhook",
   topics=["payment", "merchant_order", ...]
@@ -132,7 +132,7 @@ Confirm the response shows the URL and topics correctly registered.
 Once the receiver is deployed (or running locally with a tunnel like `ngrok`):
 
 ```
-mcp__plugin_mercadopago_mercadopago__simulate_webhook(
+mcp__plugin_mercadopago_mcp__simulate_webhook(
   topic="payment",
   url_callback="https://<your-url>/mp/webhook",
   resource_id="<a real test payment id>",
@@ -147,7 +147,7 @@ Verify the receiver returned `200` and that the event was processed (idempotent:
 ## Step 6 — Diagnose missed deliveries
 
 ```
-mcp__plugin_mercadopago_mercadopago__notifications_history_diagnostics()
+mcp__plugin_mercadopago_mcp__notifications_history_diagnostics()
 ```
 
 Returns delivery metrics and a breakdown of failures (timeouts, non-200 responses, signature mismatches). Use this when notifications are missing in production.

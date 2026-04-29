@@ -12,9 +12,9 @@ metadata:
 
 # mp-integrate
 
-This skill is the single entry point for building a Mercado Pago integration. It collects the minimum context from the developer, queries the official Mercado Pago MCP server (`plugin:mercadopago:mercadopago`) for current documentation, and assembles a ready-to-paste bundle (server snippet + client snippet + env vars + test instructions + gotchas).
+This skill is the single entry point for building a Mercado Pago integration. It collects the minimum context from the developer, queries the official Mercado Pago MCP server (`plugin:mercadopago:mcp`) for current documentation, and assembles a ready-to-paste bundle (server snippet + client snippet + env vars + test instructions + gotchas).
 
-**The MCP server is the source of truth.** This skill orchestrates queries to it; it does not duplicate documentation. If `mcp__plugin_mercadopago_mercadopago__search_documentation` is not available, stop and instruct the user to run `/mp-connect`.
+**The MCP server is the source of truth.** This skill orchestrates queries to it; it does not duplicate documentation. If `mcp__plugin_mercadopago_mcp__search_documentation` is not available, stop and instruct the user to run `/mp-connect`.
 
 ---
 
@@ -22,13 +22,60 @@ This skill is the single entry point for building a Mercado Pago integration. It
 
 `ListMcpResourcesTool` is **not** a reliable check — this MCP returns "No resources found" whether authenticated or not. The bootstrap tools `authenticate` / `complete_authentication` are **always** present and prove nothing.
 
-The reliable check: is `mcp__plugin_mercadopago_mercadopago__application_list` callable from the current tool list AND does it return at least one application?
+The reliable check: is `mcp__plugin_mercadopago_mcp__application_list` callable from the current tool list AND does it return at least one application?
 
-- If the tool is not in your capabilities, or it returns an auth error → the MCP is NOT connected. Stop, do not run the wizard, do not call AskUserQuestion. Tell the user:
+- If the tool is not in your capabilities (only `authenticate` / `complete_authentication` are visible) → call `mcp__plugin_mercadopago_mcp__authenticate` immediately. Show the URL and say:
 
-  > The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`** in your terminal, find **`plugin:mercadopago:mercadopago`** (status reads **needs authentication**), press **Enter** on **Authenticate**, and complete OAuth in the browser. Then ask again.
+  > Open this URL to connect Mercado Pago: **{authorization_url}**
+  > When you see **"Authentication Successful"** in the browser, come back and say anything.
 
-- If `application_list` returns successfully → the MCP is connected. Save the response (`AppID`, `AppName`, `AppDescription`). The MCP **does not** return `site_id` today, so the country is resolved separately in Step 1.a.
+  When the user responds, **call `application_list` directly** — the local MCP server already processed the callback when the browser hit the redirect URL. Do NOT call `complete_authentication` first (it will hang trying to open a socket that's already closed). Only fall back to `complete_authentication` if `application_list` still fails AND the browser showed an error, not "Authentication Successful". Never ask the user to paste the callback URL — it contains a sensitive OAuth code.
+
+- **`application_list` callable and returns an app** → authenticated. Save the response and continue.
+- **Only `authenticate`/`complete_authentication` visible** → loaded but not authenticated. Call `authenticate`, show the URL as a clickable link, wait for the user to return, then call `application_list` directly. **Do NOT call `complete_authentication`** — it hangs because the local server already consumed the callback.
+- **Neither tool visible** → plugin is disabled or not loaded. Tell the user: *"The Mercado Pago plugin isn't loaded. Run `/mcp` in the terminal, find `plugin:mercadopago:mcp`, and enable it. Then run `/mp-integrate` again."* Do NOT suggest `/mp-connect` — it also requires the plugin to be loaded.
+
+---
+
+## ⚠️ HARD LOCKS — read before doing anything else
+
+These rules override any "what makes sense" judgement during the wizard. Past wizard runs have violated them; do not repeat the mistake.
+
+### LOCK 1 — SDK is never a wizard question
+
+The SDK / language is **NEVER** asked via `AskUserQuestion`. Period.
+
+- Resolve it silently in Step 1.a by globbing the repo for a manifest (`package.json`, `pyproject.toml`, etc.).
+- If a single manifest is found → record the SDK and **skip the question entirely**.
+- If multiple manifests exist (real polyglot monorepo) → still don't ask. Pick the one that matches the directory the developer is currently editing, or default to `node`. Mention the choice in a single line of chat (`✓ SDK: node — from package.json`) and **continue without asking**.
+- If no manifest exists at all → still don't ask. Default to `node`, mention it (`✓ SDK: node — defaulted (no manifest detected; we'll create package.json during scaffolding)`), and continue.
+
+If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `header="Stack"` or `header="Language"`, **stop immediately**. The SDK is never a picker. The Tabs row at the top of the wizard must NOT include "SDK" as one of the tabs.
+
+### LOCK 2 — Product → Mode availability table (NON-NEGOTIABLE)
+
+| Product | The ONLY valid `mode` values | Picker behavior |
+|---------|------------------------------|-----------------|
+| `checkout-pro` | `preferences` (the Orders API does **not** exist for Checkout Pro) | **Skip the mode question entirely.** Do not call `AskUserQuestion` with `header="Mode"`. Do not show "Orders API" as an option. Use `mode=preferences` silently. |
+| `checkout-api` | `orders`, `payments` | Ask only if `Grep` did not disambiguate. Default `orders`. |
+| `bricks` | `orders` | Skip the mode question (single value). |
+| `qr` | `orders`, `legacy` | Ask only if ambiguous. |
+| `point` | `orders`, `legacy` | Ask only if ambiguous. |
+| `marketplace` | `orders`, `legacy` | Ask only if ambiguous. |
+| `wallet-connect` | `orders` | Skip the mode question (single value). |
+| `subscriptions` | n/a (uses its own `preapproval` API) | Skip the mode question. |
+| `money-out` | n/a (uses its own `disbursements` API) | Skip the mode question. |
+| `smartapps` | n/a | Skip the mode question. |
+
+**If `product=checkout-pro` and you are about to render a Mode picker that includes `Orders API`, abort.** The Orders API is not available for Checkout Pro today. Period. Do not "future-proof" by offering it. Do not add a "Recommended" tag to it. Do not include it in any "Other" fallback.
+
+### LOCK 3 — Tabs row must reflect only the questions that will actually be asked
+
+The wizard's Tabs row at the top (the `□ Country  □ Product  □ Mode  ✓ Submit` line) must include **only** the dimensions that are actually still unresolved AND non-skipped per LOCK 1 and LOCK 2. Concretely:
+
+- Never include "SDK" in the tabs — see LOCK 1.
+- Never include "Mode" in the tabs when `product` is `checkout-pro` / `bricks` / `wallet-connect` / `subscriptions` / `money-out` / `smartapps`.
+- Never include "Environment" in the tabs.
 
 ---
 
@@ -56,9 +103,9 @@ The reliable check: is `mcp__plugin_mercadopago_mercadopago__application_list` c
 
 For every dimension, attempt these resolution sources **in order**:
 
-| Dimension | 1st: MCP heuristic | 2nd: repo signals | 3rd: persisted | 4th: ask |
-|-----------|--------------------|-------------------|----------------|----------|
-| `country` | Match `(MLA\|MLB\|MLM\|MLC\|MCO\|MPE\|MLU)` (case-insensitive) inside `AppName` or `AppDescription` from the `application_list` response (e.g. `"Villa mco"` → MCO → Colombia). The MCP does NOT return `site_id`, so this regex on the app name is the only MCP-derived signal. | `currency_id`, `site_id` literals in code, `mercadopago.com.<tld>` URLs, locale strings | Read `country=` from `.mp-integrate-progress.md` if it exists from a prior run. | `AskUserQuestion` (with the country picker) |
+| Dimension | 1st: persisted | 2nd: repo signals | 3rd: ask |
+|-----------|----------------|-------------------|----------|
+| `country` | Read `country=` from `.mp-integrate-progress.md` if a prior run persisted it. | **None — do not grep for country at all.** Locale strings, `mercadopago.com.<tld>` URLs, `currency_id`, and `site_id` literals are all unreliable on a clean repo (and grepping for them costs tokens for almost no signal). Skip directly to step 3. | `AskUserQuestion` with a country picker. **Persist the answer** to `.mp-integrate-progress.md`. |
 | `sdk` | — | **MUST run `Glob` for**: `package.json`, `pyproject.toml`, `requirements.txt`, `pom.xml`, `build.gradle`, `build.gradle.kts`, `composer.json`, `Gemfile`, `*.csproj`, `Program.cs`, `go.mod`. Mapping: `package.json` → `node`, `pyproject.toml`/`requirements.txt` → `python`, `pom.xml`/`build.gradle*` → `java`, `composer.json` → `php`, `Gemfile` → `ruby`, `*.csproj`/`Program.cs` → `dotnet`, `go.mod` → `go`. **Single manifest match → resolved, do NOT ask.** Multiple manifests (real polyglot monorepo) → ask. No manifest at all → ask. | Read from progress file. | `AskUserQuestion` |
 | `client` | — | **MUST inspect** `package.json` deps and project files: `react`/`next` → `react`, `react-native`/`expo` → `react-native`, iOS Xcode project (`*.xcodeproj`) → `ios`, Android `build.gradle` with `com.android.application` → `android`, `pubspec.yaml` → `flutter`. Single match → resolved, do NOT ask. Otherwise → ask, but only if the product has a client component. | Read from progress file. | `AskUserQuestion` |
 | `lang` | — | Derive from country (BR→pt, others→es). | Read from progress file. | almost never asked — defaulted from country |
@@ -67,16 +114,46 @@ For every dimension, attempt these resolution sources **in order**:
 **Concrete order of operations for the wizard:**
 
 1. Read `.mp-integrate-progress.md` if it exists — pull any previously-resolved values.
-2. Apply name heuristic on the `application_list` response (already fetched in Step 0). If `AppName`/`AppDescription` matches a site code, **country resolved**. Otherwise continue.
-3. Run repo signal greps for country (`currency_id`, `site_id`, locales). If unique match, **country resolved**. Otherwise the country goes into the wizard with `AskUserQuestion`.
-4. Run `Glob` over the manifest patterns. If a single SDK matches, **SDK resolved**. Skip the SDK question.
-5. If the product needs a client, run `Glob`/`Grep` on the manifest deps. If a single client matches, **client resolved**. Skip the client question.
-6. Default `lang` from country. Skip the lang question.
-7. Now — and only now — call `AskUserQuestion` for whatever is still missing, one tool call at a time, in the order defined in Step 1.b. After each answer, **persist it** to `.mp-integrate-progress.md`.
+2. **Do NOT grep for the country.** Country is asked via `AskUserQuestion` unless `.mp-integrate-progress.md` already has it. No locale-string grep, no `mercadopago.com.<tld>` grep, no `currency_id` grep. They cost tokens and produce wrong matches.
+3. Run `Glob` over the manifest patterns. **If a single SDK manifest matches, the SDK is RESOLVED — do NOT ask, do NOT confirm with the developer, do NOT offer a "Stack" picker.** The official Mercado Pago SDK for the detected language is the one used (Node→`mercadopago`, Python→`mercadopago`, Java→`com.mercadopago:sdk-java`, PHP→`mercadopago/dx-php`, Ruby→`mercadopago-sdk`, .NET→`MercadoPago`, Go→`github.com/mercadopago/sdk-go`). Never propose a third-party SDK.
+4. If the product needs a client, run `Glob`/`Grep` on the manifest deps. If a single client matches, **client resolved**. Skip the client question.
+5. Default `lang` from country. Skip the lang question.
+6. Now — and only now — call `AskUserQuestion` for whatever is still missing, one tool call at a time, in the order defined in Step 1.b. After each answer, **persist it** to `.mp-integrate-progress.md`.
+
+**Known MCP limitation — country resolution:** The Mercado Pago MCP does not currently expose a tool that returns the developer's `site_id` (neither `application_list` nor `quality_checklist` nor `notifications_history` carry the country in their response). The OAuth access token would let us call `GET https://api.mercadopago.com/users/me` directly, but the token is held by the MCP server and is not exposed to the plugin client. Until MP ships a new MCP tool (e.g. `current_user_info` or a generic `proxy_request`), country resolution is **just**: read `.mp-integrate-progress.md` if it has a country, otherwise ask via `AskUserQuestion` and persist. **Do not** waste tokens grepping the repo for country signals (locales, URLs, `currency_id`, `site_id`, app-name heuristics) — they don't pay off, and asking the developer once is cheaper and more reliable.
+
+### Step 1.a.iii — Confirm everything that was auto-resolved (mandatory)
+
+After auto-resolving, render a single confirmation block listing every value that was inferred (not just country — also SDK, client, and any other dimension that came from the repo). Then, **before any wizard question**, ask the developer with one `AskUserQuestion`:
+
+- `header="Confirm setup"`
+- Question: `"I auto-detected the following from your repo. Is everything correct?"`
+- Options:
+  - `"Yes, continue"` — proceed to Step 1.b with the auto-resolved values.
+  - `"No, let me correct"` — drop ALL auto-resolved values back into the wizard queue and ask each one via `AskUserQuestion` in Step 1.b. Do not try to guess which one was wrong; let the developer reset.
+
+Skip this confirmation **only** when there was nothing to auto-resolve (clean repo, no manifest, no locale, no existing MP URLs). In that case the wizard goes straight to asking.
+
+Example block to render:
+
+```
+I auto-detected the following from your repo:
+
+  ✓ App:    Villa mco (157134683642259) — from application_list
+  ✓ SDK:    node — from backend/package.json (mercadopago v2.12.0 already installed)
+  ✓ Client: react — from frontend/package.json
+
+Country will be asked next (not auto-detected).
+Confirm the above to continue, or correct.
+```
+
+The developer must explicitly opt-in to the auto-resolved set. Never proceed silently to Step 1.b after auto-resolving — that's how wrong assumptions propagate to the final bundle.
 
 If the agent already passed flags (`country=`, `sdk=`, `mode=`, etc.), treat those as resolved too.
 
 Anything still unresolved after 1.a goes into the wizard in 1.b.
+
+**Always use the official Mercado Pago SDKs**, listed below, regardless of whether the developer mentions a wrapper or alternative library. The official SDKs are maintained by Mercado Pago and aligned with the live API.
 
 ### Step 1.b — Ask one question at a time, with the AskUserQuestion picker
 
@@ -107,16 +184,31 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 | Order | Dimension | Header | Options to show |
 |-------|-----------|--------|-----------------|
 | 1 | `product` | "Product" | The 4 most likely products as buttons + "Other" auto-fallback. Pick the 4 from this priority: `checkout-pro`, `bricks`, `checkout-api`, `subscriptions` (most common). The remaining ones (`qr`, `point`, `marketplace`, `wallet-connect`, `money-out`, `smartapps`) are reachable via "Other". |
-| 2 | `mode` | "Mode" | Only when the matrix lists more than one allowed value. For `checkout-api`: `orders` / `payments`. For `qr` / `point` / `marketplace`: `orders` / `legacy`. Skip entirely otherwise. |
-| 3 | `sdk` | "Stack" | `node` / `python` / `java` / "Other" (php, ruby, dotnet, go, none-for-raw-REST reachable via Other). |
-| 4 | `client` | "Client" | Only if the product has a client component AND repo signals were ambiguous. Show the 3 most likely + Other. |
-| 5 | `brick` | "Brick" | Only when `product=bricks`. Options: `payment` / `card-payment` / `wallet` / `status-screen`. |
-| 6 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `attended`. |
-| 7 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
-| 8 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
-| 9 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
+| 2 | `mode` | "Mode" | **Cross-reference LOCK 2 first.** Skip entirely when LOCK 2 says "Skip the mode question". When asked, only show modes that LOCK 2 explicitly allows for the chosen product. Never include "Orders API" as an option for `checkout-pro`. |
+| 3 | `client` | "Client" | Only if the product has a client component AND repo signals were ambiguous. Show the 3 most likely + Other. |
+| 4 | `brick` | "Brick" | Only when `product=bricks`. Options: `payment` / `card-payment` / `wallet` / `status-screen`. |
+| 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `attended`. |
+| 6 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
+| 7 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
+| 8 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
 
-**`country` may end up in this list.** Today the MCP does not return `site_id`, so unless the name heuristic or repo signals matched in 1.a, you will need to ask. Use `header="Country"` with `AR`, `BR`, `MX`, `CO` as buttons (the 4 most common) — the picker auto-adds an "Other" entry that lets the developer type `CL`, `PE`, or `UY`. After the answer, persist it.
+**`sdk` is intentionally absent from this table** — see LOCK 1 above. The SDK is never asked via `AskUserQuestion`.
+
+**`environment` is NEVER asked.** Mercado Pago no longer has a sandbox/production toggle. Both production credentials and test-user credentials use the `APP_USR-` prefix; the difference is whether the credentials belong to a real account or a test user (handled in `mp-test-setup`). Do not present an "Environment: production / test" picker. Do not write code that branches on `NODE_ENV` to switch MP base URLs.
+
+### Step 1.b.ii — Validate `mode` against the MCP before offering
+
+The Product Matrix below is a static fallback. Mercado Pago's API surface evolves (Orders API is being extended to more products over time), so before offering `mode` options for a product, **validate against the MCP**:
+
+1. Call `mcp__plugin_mercadopago_mcp__search_documentation` with a query like `"{product} orders api {country}"` (e.g. `"checkout-api orders api argentina"`). Never run this query for `checkout-pro` — LOCK 2 already forbids Orders for that product.
+2. Inspect the results:
+   - If the docs explicitly say the Orders API is available for this product → include `orders` in the offered options.
+   - If the docs only mention preferences/payments and never Orders for this product → **do NOT include Orders**, even if the developer asks for it.
+3. Cross-check with the Product Matrix below. If the matrix and the MCP disagree, **trust the MCP** and update your understanding for this run; the matrix is the static fallback, not the source of truth.
+
+This rule exists because the v4 wizard offered Orders for Checkout Pro when the API does not exist for that product. Never offer a mode that does not exist on the MP API today, even if it is rumored or coming-soon.
+
+**`country` will commonly end up in this list.** Today the MCP does not return `site_id`, so unless repo signals or persisted state resolved it in 1.a, you will need to ask. Use `header="Country"` with `AR`, `BR`, `MX`, `CO` as buttons (the 4 most common) — the picker auto-adds an "Other" entry that lets the developer type `CL`, `PE`, or `UY`. After the answer, persist it to `.mp-integrate-progress.md`.
 
 ### Step 1.b.i — What the chat looks like (concrete example)
 
@@ -141,8 +233,8 @@ Right:
 
 ```
 ✓ App: Villa mco (157134683642259) — from application_list
-✓ Country: Colombia (MCO) — heuristic on AppName
 ✓ SDK: node — from package.json
+(Country will be asked next — not auto-detected.)
 ```
 
 → then immediately the `AskUserQuestion` call for `product`. The developer picks. Then ≤1 line confirmation. Then the next `AskUserQuestion`. And so on.
@@ -154,7 +246,7 @@ While the wizard runs, maintain a scratchpad at `./.mp-integrate-progress.md` (p
 ```markdown
 # mp-integrate progress
 
-- country: MCO (resolved from application_list AppName heuristic)
+- country: AR (asked via wizard)
 - product: checkout-pro (asked)
 - sdk: node (auto-detected from package.json)
 - mode: preferences (only valid mode for checkout-pro)
@@ -201,7 +293,7 @@ If `lang=` was not provided, default to the country's default lang.
 
 ## Step 3 — Query the MCP for current docs
 
-Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mercadopago__search_documentation` with each. Use `language` from the resolved doc language.
+Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mcp__search_documentation` with each. Use `language` from the resolved doc language.
 
 **Query templates** (use the most specific 1–3 for the chosen product/mode/sdk):
 
@@ -219,7 +311,7 @@ Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mercadopago__sear
 
 Do **not** issue more than 3 queries. If a query returns generic results, refine once and stop.
 
-If MCP returns nothing useful for the requested combination (e.g., a product not yet documented for that country), say so explicitly and offer to fall back to one targeted `WebFetch` against `https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/landing` (max 1 fetch).
+If MCP returns nothing useful for the requested combination (e.g., a product not yet documented for that country), say so explicitly and offer to fall back to **one** targeted `WebFetch` against `https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/landing` (max 1 fetch). **Never queue multiple WebFetch calls for the same product in different languages or for the API reference plus the guide — that pattern is a bug.** If you catch yourself doing it, cancel and re-issue a more specific `search_documentation` query instead.
 
 ---
 
@@ -235,11 +327,23 @@ Render the result with this exact structure. Code blocks come from MCP responses
 {install command for the chosen SDK}
 ```
 
-## 2. Environment variables (`.env.example`)
+## 2. Credentials
+
+Get your credentials from the Mercado Pago Developer Dashboard:
+👉 **https://{DOMAIN}/developers/panel/app**
+
+- Under your application, click **Credentials**.
+- For **testing**: click **"Prueba"** (or "Teste" in Brazil) to get test credentials.
+- For **production**: use the credentials in the **"Producción"** tab.
+
+Both test and production credentials use the `APP_USR-` prefix — there is no `TEST-` prefix anymore.
+
+Create `.env` from the template below (**never commit `.env`**):
+
 ```
-MP_ACCESS_TOKEN=APP_USR-...
-MP_PUBLIC_KEY=APP_USR-...
-MP_WEBHOOK_SECRET=...
+MP_ACCESS_TOKEN=APP_USR-...   # server-side, keep secret
+MP_PUBLIC_KEY=APP_USR-...     # client-side, can be public
+MP_WEBHOOK_SECRET=...         # from Dashboard → Webhooks → Signature secret
 APP_URL=http://localhost:3000
 ```
 Also ensure `.env` is in `.gitignore` (and `.env.example` is **not** ignored).

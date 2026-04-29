@@ -12,7 +12,7 @@ Audit the current project's Mercado Pago integration. Delegates to the `mp-revie
 
 ## Behaviour
 
-1. Verify the Mercado Pago MCP is **actually authenticated** by checking that `mcp__plugin_mercadopago_mercadopago__quality_checklist` is callable. The bootstrap tools `authenticate` / `complete_authentication` always exist and prove nothing; `ListMcpResourcesTool` returns "No resources found" either way. If the data tools are not available, stop and tell the user to run `/mcp` and authenticate. **There is no offline mode** — the official checklist must come from the MCP.
+1. Verify the Mercado Pago MCP is **actually authenticated** by checking that `mcp__plugin_mercadopago_mcp__quality_checklist` is callable. The bootstrap tools `authenticate` / `complete_authentication` always exist and prove nothing; `ListMcpResourcesTool` returns "No resources found" either way. If the data tools are not available, call `mcp__plugin_mercadopago_mcp__authenticate` to get the authorization URL and show it directly in chat — do not send the user to `/mcp` manually. **There is no offline mode** — the official checklist must come from the MCP.
 2. Hand control to the `mp-review` skill, passing `$ARGUMENTS` (the scope) through.
 
 ## Scopes

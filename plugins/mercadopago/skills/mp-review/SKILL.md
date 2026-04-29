@@ -20,9 +20,9 @@ This skill audits a Mercado Pago integration. It does not duplicate the official
 
 `ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
 
-Check whether `mcp__plugin_mercadopago_mercadopago__quality_checklist` is callable AND returns a real payload. If not, stop and tell the user:
+Check whether `mcp__plugin_mercadopago_mcp__quality_checklist` is callable AND returns a real payload. If not, stop and tell the user:
 
-> The Mercado Pago MCP isn't authenticated yet. Run **`/mcp`**, find **`plugin:mercadopago:mercadopago`**, and complete OAuth in the browser. Then ask again.
+> Call `mcp__plugin_mercadopago_mcp__authenticate`, show the URL as a clickable link, and say: "When you see **Authentication Successful** in the browser, come back and say anything." When the user responds, call `application_list` directly — do NOT call `complete_authentication` first (it hangs when the callback was already consumed). Never ask the user to paste the callback URL — it contains a sensitive OAuth code.
 
 The official checklist lives behind the MCP — there is no offline fallback.
 
@@ -46,7 +46,7 @@ Determine:
 
 ## Step 2 — Run the official quality checklist
 
-Call `mcp__plugin_mercadopago_mercadopago__quality_checklist`. The response defines:
+Call `mcp__plugin_mercadopago_mcp__quality_checklist`. The response defines:
 
 - **Required fields** — must be implemented to meet Mercado Pago's quality bar.
 - **Best practices** — recommended improvements.
