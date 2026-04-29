@@ -17,13 +17,13 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git branch *)",
-      "mcp__plugin_mercadopago_mercadopago__search_documentation",
-      "mcp__plugin_mercadopago_mercadopago__quality_checklist",
-      "mcp__plugin_mercadopago_mercadopago__quality_evaluation",
-      "mcp__plugin_mercadopago_mercadopago__notifications_history",
-      "mcp__plugin_mercadopago_mercadopago__application_list",
-      "mcp__plugin_mercadopago_mercadopago__create_test_user",
-      "mcp__plugin_mercadopago_mercadopago__add_money_test_user"
+      "mcp__plugin_mercadopago_mcp__search_documentation",
+      "mcp__plugin_mercadopago_mcp__quality_checklist",
+      "mcp__plugin_mercadopago_mcp__quality_evaluation",
+      "mcp__plugin_mercadopago_mcp__notifications_history",
+      "mcp__plugin_mercadopago_mcp__application_list",
+      "mcp__plugin_mercadopago_mcp__create_test_user",
+      "mcp__plugin_mercadopago_mcp__add_money_test_user"
     ],
     "deny": [
       "Read(.env)",
