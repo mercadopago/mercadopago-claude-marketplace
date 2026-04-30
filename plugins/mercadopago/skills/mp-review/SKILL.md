@@ -72,6 +72,7 @@ These items are not always part of `quality_checklist` but are mandatory for any
 | 6 | Idempotency key sent on payment/order creation | Grep for `X-Idempotency-Key` or SDK equivalent |
 | 7 | `external_reference` set on every preference/order | Grep for `external_reference` |
 | 8 | Test user credentials not committed to production deploy | Confirm test credentials are loaded from a separate env file or vault |
+| 9 | `sandbox_init_point` not used anywhere | Grep for `sandbox_init_point` — flag any match as a bug; Mercado Pago has no sandbox, the URL is invalid in all environments |
 
 ---
 
@@ -126,7 +127,7 @@ These items are not always part of `quality_checklist` but are mandatory for any
 ### Recommendations
 - {actionable, ordered by impact}
 
-**Summary**: X/Y required fields implemented, Z/W best practices adopted, S/8 security checks pass.
+**Summary**: X/Y required fields implemented, Z/W best practices adopted, S/9 security checks pass.
 
 > Want a deeper score? Provide a recent test payment ID (or order ID) and I'll run `quality_evaluation`.
 ```

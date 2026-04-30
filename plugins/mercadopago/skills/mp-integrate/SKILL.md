@@ -69,7 +69,17 @@ If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `hea
 
 **If `product=checkout-pro` and you are about to render a Mode picker that includes `Orders API`, abort.** The Orders API is not available for Checkout Pro today. Period. Do not "future-proof" by offering it. Do not add a "Recommended" tag to it. Do not include it in any "Other" fallback.
 
-### LOCK 3 — Tabs row must reflect only the questions that will actually be asked
+### LOCK 3 — Always use `init_point`, never `sandbox_init_point`
+
+Mercado Pago removed the sandbox environment. There is no staging URL. Every integration — including test-user flows — runs against the production API.
+
+**Never generate code that references `sandbox_init_point`.** Always use `init_point` from the preference response. The difference between a test run and a production run is only which credentials are loaded (`APP_USR-` from a test user vs. a real account) — not the URL.
+
+If you find `sandbox_init_point` in existing code, flag it as a bug: the redirect will fail silently or land on an error page.
+
+**Also applies to test users:** test users created via `create_test_user` operate against the production API using `APP_USR-` credentials. There is no separate test base URL, no `TEST-` prefix, and no toggle. Code using `sandbox_init_point` with test-user credentials will not work.
+
+### LOCK 4 — Tabs row must reflect only the questions that will actually be asked
 
 The wizard's Tabs row at the top (the `□ Country  □ Product  □ Mode  ✓ Submit` line) must include **only** the dimensions that are actually still unresolved AND non-skipped per LOCK 1 and LOCK 2. Concretely:
 
@@ -404,6 +414,7 @@ Always close with:
 Render only the section that matches the chosen product. These are the experiential traps that the docs do not surface clearly. Keep them short.
 
 ### checkout-pro
+- **Always use `init_point`, never `sandbox_init_point`.** Mercado Pago has no sandbox — there is only the production API. Test runs use test-user credentials (`APP_USR-`), not a different URL.
 - `currency_id` must match the country (ARS, BRL, MXN, CLP, COP, PEN, UYU).
 - Never trust `back_url` query params alone — always re-fetch payment status server-side.
 - `auto_return=approved` requires `back_urls.success` set; otherwise it is silently ignored.
