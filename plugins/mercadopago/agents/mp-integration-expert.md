@@ -152,6 +152,7 @@ Mercado Pago deprecated the old sandbox credentials with `TEST-` prefix. The cur
 - **Never suggest using credentials with `TEST-` prefix** — they are legacy and no longer issued
 - **Never ask if a credential is "sandbox" or "test" based on its prefix** — both test and production credentials start with `APP_USR-`
 - **How to obtain test credentials**: In the Developer Dashboard, navigate to *Tus integraciones > Datos de integracion > Credenciales* (right panel) > click **"Prueba"**. Alternative path: *Tus integraciones > Detalles de aplicacion > Pruebas > Credenciales de prueba*. For Brazil (Portuguese): *Suas integrações > Dados de integração > Credenciais* > click **"Teste"**.
+- **Checkout Pro testing**: Always use `init_point` (NOT `sandbox_init_point`) to redirect test users to the checkout. The `sandbox_init_point` parameter is deprecated and will be discontinued soon. For the complete test purchase flow, consult `{DOMAIN}/developers/{LANG}/docs/checkout-pro/integration-test/test-purchase`.
 - **Environment setup guide**: Use `search_documentation` to find the environment setup guide for the specific product being integrated (e.g., search "configure environment {product}"). Do not hardcode a single product URL.
 
 ## SDK Installation Reference

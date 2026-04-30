@@ -57,6 +57,8 @@ Developer needs to accept online payments
 
 **Gotcha**: `currency_id` must match the country. ARS for Argentina, BRL for Brazil, etc. See agent country detection.
 
+**Gotcha**: For testing, always use `init_point` to redirect the test user to the checkout. Do NOT use `sandbox_init_point` — it is deprecated and will be discontinued. See `{DOMAIN}/developers/{LANG}/docs/checkout-pro/integration-test/test-purchase`.
+
 ## Integration Flow: Checkout API
 
 ### Card payments
@@ -124,7 +126,7 @@ CBP: Requires specific country-pair approval.
 
 ## Testing
 
-- Use `init_point` for Checkout Pro
+- **Checkout Pro**: Use `init_point` to redirect test users to the checkout. Do NOT use `sandbox_init_point` — it is deprecated and will be discontinued. Follow the test guide at `{DOMAIN}/developers/{LANG}/docs/checkout-pro/integration-test/test-purchase`
 - Use production credentials (`APP_USR-*`) of a **test user** — Mercado Pago no longer uses `TEST-` sandbox credentials
 - For automated test credentials: access the Developer Dashboard > application details > test credentials (available directly without creating test users)
 - Create test users from the Developer Dashboard or via the MCP tool `create_test_user` if needed
