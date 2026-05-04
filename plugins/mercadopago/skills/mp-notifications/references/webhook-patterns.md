@@ -11,7 +11,7 @@
 | subscription.updated | Subscription updated |
 | invoice.created | Subscription invoice created |
 | invoice.updated | Subscription invoice updated |
-| point_integration_wh | Point device event |
+| point_integration_wh | Point device event (legacy — old Point Integration API) |
 | chargeback.created | Chargeback initiated |
 | chargeback.updated | Chargeback status changed |
 | order.created | Order created (Orders API) |

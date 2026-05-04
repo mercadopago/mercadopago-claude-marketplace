@@ -68,4 +68,4 @@ All countries (report types may vary)
 - Generation endpoints
 - Download endpoints
 - Field descriptions
-- `{DOMAIN}/developers/{LANG}/docs/reports/landing`
+- `{DOMAIN}/developers/{LANG}/docs/reports/introduction`

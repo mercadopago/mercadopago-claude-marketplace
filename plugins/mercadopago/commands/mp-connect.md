@@ -65,7 +65,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/setup.sh --remove
 
 ### Getting an Access Token
 
-Direct the user to: https://www.mercadopago.com.ar/developers/panel/app
+Direct the user to: `https://{DOMAIN}/developers/panel/app` (use the domain for their country)
 
 Steps:
 1. Log in to the Mercado Pago Developer Dashboard

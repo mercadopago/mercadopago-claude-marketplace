@@ -49,7 +49,7 @@ Business Account
 ## Notification Flow
 
 - **QR**: Standard webhook events `payment.created` and `payment.updated`.
-- **Point**: Uses `point_integration_wh` event type.
+- **Point**: Uses `orders` topic (Orders API).
 - **Both**: Always verify the payment server-side after receiving the notification. Never trust client-side data alone.
 
 ## Common Integration Errors

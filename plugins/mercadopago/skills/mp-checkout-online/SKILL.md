@@ -1,6 +1,6 @@
 ---
 name: mp-checkout-online
-description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout API, 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
+description: Online checkout integration patterns for Mercado Pago. Covers Checkout Pro, Checkout API, Checkout Transparente (Brazil), 3D Secure, and Cross-Border Payments. Use when implementing any web-based payment flow.
 license: Apache-2.0
 metadata:
   version: "3.0.0"
@@ -61,6 +61,8 @@ Developer needs to accept online payments
 
 ## Integration Flow: Checkout API
 
+**API by country:** Orders API (default) for AR, BR, CL, MX — Payments API (default; Orders API also available) for UY, PE, CO. Consult MCP for current country-specific guidance.
+
 ### Card payments
 1. Client: Tokenize card using MercadoPago.js `cardForm` or `createCardToken`
 2. Client: Send token + payment details to server
@@ -87,7 +89,7 @@ Developer needs to accept online payments
 - Adds an iframe challenge flow for the buyer
 - Only integrable for Checkout API or Checkout Bricks. Checkout Pro is already integrated by default
 - Always use `binary_mode: false`, otherwise the payment won't be able to show the challenge or `pending` status. 
-- **For endpoints, payloads, and implementation details**: Consult the MCP server or fetch docs at `{DOMAIN}/developers/{LANG}/docs/checkout-api/3ds`
+- **For endpoints, payloads, and implementation details**: Consult the MCP server or fetch docs at `{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/payment-management/integrate-3ds` (available for AR, BR, MX only)
 
 ## Cross-Border Payments (CBP) -- Skeleton
 
@@ -122,6 +124,8 @@ Developer needs to accept online payments
 
 All 7 countries: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay.
 
+**Note:** For Brazil (MLB), the product is called **Checkout Transparente** — not Checkout API. Both are handled by this skill.
+
 CBP: Requires specific country-pair approval.
 
 ## Testing
@@ -148,8 +152,9 @@ When helping a developer, use the Mercado Pago MCP server (`mercadopago`) to get
 
 If MCP is unavailable:
 
-- `{DOMAIN}/developers/{LANG}/docs/checkout-pro/landing` -- Checkout Pro guide
-- `{DOMAIN}/developers/{LANG}/docs/checkout-bricks/landing` -- Bricks guide
-- `{DOMAIN}/developers/{LANG}/docs/checkout-api/landing` -- Checkout API guide (note: this path may redirect to Orders API docs in some countries)
-- `{DOMAIN}/developers/{LANG}/docs/checkout-api/3ds` -- 3DS guide
+- `{DOMAIN}/developers/{LANG}/docs/checkout-pro/overview` -- Checkout Pro guide
+- `{DOMAIN}/developers/{LANG}/docs/checkout-bricks/overview` -- Bricks guide
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/overview` -- Checkout API guide (AR, BR, MX)
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api-payments/overview` -- Checkout API guide (CL, UY, PE, CO)
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/payment-management/integrate-3ds` -- 3DS guide (AR, BR, MX only)
 - `{DOMAIN}/developers/{LANG}/docs/your-integrations/test/cards` -- Test cards

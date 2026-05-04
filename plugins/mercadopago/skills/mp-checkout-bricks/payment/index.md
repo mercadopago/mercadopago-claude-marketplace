@@ -131,7 +131,7 @@ After implementation is complete, generate and output a consolidated report:
 4. Go to production (swap TEST- keys for live keys)
 
 ### 🔗 Resources
-- [Payment Brick Docs](https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/payment-brick)
+- [Payment Brick Docs](https://{DOMAIN}/developers/{LANG}/docs/checkout-bricks/payment-brick/introduction)
 - [Troubleshooting](references/troubleshooting.md)
 - [Customization](references/customization.md)
 ```

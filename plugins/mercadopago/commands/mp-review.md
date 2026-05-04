@@ -22,7 +22,7 @@ If `$ARGUMENTS` is provided, narrow the review to that scope:
 - **checkout** — Preference creation, back_urls, payment flow
 - **bricks** — Bricks setup, SDK JS initialization and customization, callbacks handling, troubleshooting common errors
 - **qr** — QR code setup, store/POS configuration, order creation
-- **point** — Device registration, payment intents, firmware, Point webhook (`point_integration_wh`)
+- **point** — Device registration, Orders API order creation, firmware, Point webhook (`orders` topic)
 - **subscriptions** — Plan setup, preapproval flow, invoice handling
 - **marketplace** — OAuth flow, split payments, application_fee, seller management
 - **errors** — Error handling, API error responses, retry logic, edge cases
@@ -49,7 +49,7 @@ If no argument is given, perform a full review.
    - **Bricks**: SDK initialization, container div before `create()`, onSubmit sends formData to backend, server-side payment with token, amount consistency between Brick and server
    - **Payments API**: Token handling, payer data, installments, issuer_id
    - **QR**: Store/POS setup, order fields, QR lifecycle
-   - **Point**: Device registration, payment intent creation, firmware compliance, `point_integration_wh` notification handling
+   - **Point**: Device registration, Orders API order creation, firmware compliance, `orders` notification topic
    - **Subscriptions**: Plan configuration, preapproval flow, invoice handling
    - **Marketplace**: OAuth flow, split configuration, application_fee limits
    - **Webhooks**: 200 response before processing, idempotency, async processing
