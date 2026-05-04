@@ -101,7 +101,7 @@ After implementation is complete, generate and output a consolidated report:
 3. Go to production (swap TEST- keys for live keys)
 
 ### 🔗 Resources
-- [Status Screen Brick Docs](https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/status-screen-brick)
+- [Status Screen Brick Docs](https://{DOMAIN}/developers/{LANG}/docs/checkout-bricks/status-screen-brick/introduction)
 - [Troubleshooting](references/troubleshooting.md)
 - [Customization](references/customization.md)
 ```

@@ -52,14 +52,14 @@ Need in-store payments
 ## Integration Flow: QR Static (Attended)
 
 1. Create a Store and a POS in Mercado Pago (one-time setup). The QR code is generated when the POS is created.
-2. Create an order associated to that POS via the Unified Orders API.
+2. Create an order associated to that POS via the Orders API.
 3. Buyer scans the QR code with the Mercado Pago app.
 4. Mercado Pago processes the payment.
 5. Receive webhook notification with payment result.
 
 ## Integration Flow: QR Dynamic
 
-1. Create an order via the Unified Orders API. The response includes the QR data to display.
+1. Create an order via the Orders API. The response includes the QR data to display.
 2. Display the generated QR to the buyer (on screen or printed). Note: the QR expires after a set time — refresh if needed.
 3. Buyer scans with the Mercado Pago app.
 4. Mercado Pago processes the payment.
@@ -68,7 +68,7 @@ Need in-store payments
 ## Integration Flow: QR Hybrid
 
 1. Create a Store and a POS in Mercado Pago (one-time setup). The static QR code is generated when the POS is created.
-2. Create an order via the Unified Orders API. The order is linked to the static QR of the POS and a unique dynamic QR is generated simultaneously.
+2. Create an order via the Orders API. The order is linked to the static QR of the POS and a unique dynamic QR is generated simultaneously.
 3. Display either the static or dynamic QR to the buyer.
 4. Buyer scans one of the QR codes with the Mercado Pago app.
 5. Mercado Pago processes the payment. The other QR is automatically invalidated.
@@ -79,7 +79,7 @@ Need in-store payments
 1. Create a Store and a POS in Mercado Pago (one-time setup).
 2. Register the physical device and associate it to the POS.
 3. Set the operating mode of the device via the Point API (`PDV` or `SELF_SERVICE`).
-4. Create an order via the Unified Orders API.
+4. Create an order via the Orders API.
 5. The device processes the card (chip, swipe, or contactless).
 6. Receive the result via webhook.
 
@@ -117,11 +117,16 @@ Need in-store payments
 
 Use the MCP server to retrieve current data for:
 - Store and POS creation endpoints and payloads
-- Unified Orders API schema and endpoints (for QR Static, QR Dynamic, QR Hybrid and Point)
+- Orders API schema and endpoints (for QR Static, QR Dynamic, QR Hybrid and Point)
 - Point device registration and operating mode configuration API
 - Order status codes and webhook payload examples
 
+## Testing
+
+- **QR**: Consult MCP (`search_documentation` with term "qr code test integration") or fetch `{DOMAIN}/developers/{LANG}/docs/qr-code/test-integration`
+- **Point**: Consult MCP (`search_documentation` with term "point integration test") or fetch `{DOMAIN}/developers/{LANG}/docs/mp-point/integration-test`
+
 ## What to Fetch from Docs
 
-- `{DOMAIN}/developers/{LANG}/docs/qr-code/landing`
-- `{DOMAIN}/developers/{LANG}/docs/mp-point/landing`
+- `{DOMAIN}/developers/{LANG}/docs/qr-code/overview`
+- `{DOMAIN}/developers/{LANG}/docs/mp-point/overview`

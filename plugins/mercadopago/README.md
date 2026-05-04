@@ -20,7 +20,7 @@ Then restart Claude Code. The MCP server will read the token from the keychain a
 
 > Your Access Token is never stored in any file. Claude Code cannot read the OS keychain — only the MCP server process accesses it.
 
-Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
+Get your Access Token at: `https://{DOMAIN}/developers/panel/app` (replace `{DOMAIN}` with your country's domain — e.g. `www.mercadopago.com.ar` for Argentina)
 
 ## Products Covered
 
@@ -28,12 +28,12 @@ Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
 |---------|-------|-------------|
 | Checkout Pro | `mp-checkout-online` | Redirect-based payment with preferences |
 | Checkout Bricks | `mp-checkout-bricks` | Payment Brick, Card Payment Brick, Wallet Brick, Status Screen Brick |
-| Payments API | `mp-checkout-online` | Direct server-to-server payment with card tokenization |
+| Checkout API / Checkout Transparente (Brazil) | `mp-checkout-online` | Direct server-to-server payment with card tokenization |
 | 3D Secure | `mp-checkout-online` | Additional cardholder authentication |
 | Cross-Border Payments | `mp-checkout-online` | Accept payments from other countries |
-| Webhooks | `mp-notifications` | HMAC-signed webhook handling, IPN |
-| QR Attended / Dynamic | `mp-instore` | In-store QR code payments |
-| Point | `mp-instore` | Physical card reader devices |
+| Webhooks | `mp-notifications` | HMAC-signed webhook handling, IPN (legacy) |
+| QR Attended / Dynamic | `mp-instore` | In-store QR code payments (AR, BR, CL, UY) |
+| Point | `mp-instore` | Physical card reader devices (AR, BR, CL, MX) |
 | Orders | `mp-orders` | Orders, OU + QR |
 | Subscriptions | `mp-subscriptions` | Recurring billing, plans, preapprovals |
 | Wallet Connect | `mp-wallet` | Link user wallets, debt payments, massive links |
@@ -98,7 +98,9 @@ See [PLUGIN_SETTINGS.md](./PLUGIN_SETTINGS.md) for per-project configuration opt
 
 ## Resources
 
-- [Mercado Pago Developer Docs](https://www.mercadopago.com.ar/developers/en/docs)
-- [API Reference](https://www.mercadopago.com.ar/developers/en/reference)
-- [SDKs](https://www.mercadopago.com.ar/developers/en/docs/sdks-library/landing)
-- [Credentials Dashboard](https://www.mercadopago.com.ar/developers/panel/app)
+Replace `{DOMAIN}` with your country's domain and `{LANG}` with `es`, `pt` (Brazil), or `en`.
+
+- [Mercado Pago Developer Docs](https://{DOMAIN}/developers/{LANG}/docs)
+- [API Reference](https://{DOMAIN}/developers/{LANG}/reference)
+- [SDKs](https://{DOMAIN}/developers/{LANG}/docs/sdks-library/landing)
+- [Credentials Dashboard](https://{DOMAIN}/developers/panel/app)

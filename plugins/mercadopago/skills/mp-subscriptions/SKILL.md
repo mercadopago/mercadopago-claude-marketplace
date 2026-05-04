@@ -81,4 +81,4 @@ Use the MCP server to retrieve current data for:
 
 ## What to Fetch from Docs
 
-- `{DOMAIN}/developers/{LANG}/docs/subscriptions/landing`
+- `{DOMAIN}/developers/{LANG}/docs/subscriptions/overview`

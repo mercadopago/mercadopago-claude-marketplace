@@ -15,9 +15,20 @@ Mercado Pago Orders (Orden Unificada). Covers order flows, multi-payment orders,
 
 ## Products Covered
 
-- **Orders API**: The new unified order system (`POST /v1/orders`). Supports multiple payment methods, partial payments, and QR integration. Recommended for all new integrations.
+- **Orders API**: The unified orders system (`POST /v1/orders`). Supports multiple payment methods, partial payments, and QR integration. Recommended for all new integrations.
 - **Orders + QR**: Order combined with QR payment flow, enabling in-store payments within the Orders API framework.
 - **merchant_orders (Legacy)**: The older order entity from the legacy API. If you find `merchant_orders` in existing code, consider migrating to the Orders API.
+
+## Products That Use Orders API
+
+Orders API is the backend for multiple MP products — not a standalone product:
+
+| Product | Countries |
+|---------|-----------|
+| Checkout API / Checkout Transparente | AR, BR, CL, MX (default); UY, PE, CO (available) |
+| Checkout Bricks (automatic mode) | All countries |
+| Point | AR, BR, CL, MX |
+| QR Code | AR, BR, CL, UY |
 
 ## When to Use This Skill
 
@@ -61,7 +72,12 @@ Need flexible order management
 
 ## Country Availability
 
-- AR, BR, MX (check Mercado Pago documentation for expansion to additional countries).
+Orders API is available across all 7 countries, with scope varying by product:
+
+- **Checkout API / Checkout Transparente**: default in AR, BR, CL, MX — also available (non-default) in UY, PE, CO.
+- **Point**: AR, BR, CL, MX only.
+- **QR Code**: AR, BR, CL, UY only.
+- **Checkout Bricks**: all countries (automatic mode).
 
 ## What to Fetch from MCP
 
@@ -73,4 +89,4 @@ Use the MCP server to retrieve current data for:
 
 ## What to Fetch from Docs
 
-- `{DOMAIN}/developers/{LANG}/docs/orders/landing`
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/overview`

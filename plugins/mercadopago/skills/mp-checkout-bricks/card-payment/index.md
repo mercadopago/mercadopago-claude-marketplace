@@ -109,7 +109,7 @@ After implementation is complete, generate and output a consolidated report:
 3. Go to production (swap TEST- keys for live keys)
 
 ### 🔗 Resources
-- [Card Payment Brick Docs](https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/card-payment-brick)
+- [Card Payment Brick Docs](https://{DOMAIN}/developers/{LANG}/docs/checkout-bricks/card-payment-brick/introduction)
 - [Troubleshooting](references/troubleshooting.md)
 - [Customization](references/customization.md)
 ```

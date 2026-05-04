@@ -80,4 +80,5 @@ Security feature needed
 - Supertoken API
 - 3DS configuration
 - Vault API
-- `{DOMAIN}/developers/{LANG}/docs/checkout-api/tokenization`
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/saved-cards` -- saved cards / tokenization (AR, BR, MX)
+- `{DOMAIN}/developers/{LANG}/docs/checkout-api-payments/how-tos/payment-approval/saved-cards` -- saved cards / tokenization (CL, UY, PE, CO)

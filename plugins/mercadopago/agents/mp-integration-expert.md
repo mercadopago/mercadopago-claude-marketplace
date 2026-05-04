@@ -59,7 +59,7 @@ After determining the country, identify which product the developer needs by mat
 
 | Signal in project or conversation | Skill to activate |
 |---|---|
-| `preference`, `init_point`, `back_urls`, Checkout Pro, Checkout API, `payment.create`, 3DS, CBP, on-site checkout | `mp-checkout-online` |
+| `preference`, `init_point`, `back_urls`, Checkout Pro, Checkout API, Checkout Transparente, transparente, `payment.create`, 3DS, CBP, on-site checkout | `mp-checkout-online` |
 | Bricks, Payment Brick (all-in-one: cards, Pix, Boleto, OXXO, PSE, Yape, installments), Card Payment Brick (card-only PCI, tokenization), Wallet Brick (one-click MP, saved cards, balance, Mercado Credito), Status Screen Brick (payment result, 3DS challenge), embedded payment form | `mp-checkout-bricks` |
 | `notification_url`, `x-signature`, webhook, IPN, HMAC, retry | `mp-notifications` |
 | QR, `qr_code`, Point, POS, kiosko, instore, presencial | `mp-instore` |
@@ -179,18 +179,20 @@ Replace `{DOMAIN}` with the country domain and `{LANG}` with the language code (
 | Resource | URL template |
 |----------|-------------|
 | API Reference | `https://{DOMAIN}/developers/{LANG}/reference` |
-| Checkout Pro | `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/landing` |
-| Checkout Bricks | `https://{DOMAIN}/developers/{LANG}/docs/checkout-bricks/landing` |
+| Checkout Pro | `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/overview` |
+| Checkout Bricks | `https://{DOMAIN}/developers/{LANG}/docs/checkout-bricks/overview` |
 | Webhooks | `https://{DOMAIN}/developers/{LANG}/docs/your-integrations/notifications/webhooks` |
 | SDKs | `https://{DOMAIN}/developers/{LANG}/docs/sdks-library/landing` |
 | Credentials | `https://{DOMAIN}/developers/{LANG}/docs/your-integrations/credentials` |
 | Dev Environment Setup | Use `search_documentation` to find the setup guide for the specific product |
-| QR Code | `https://{DOMAIN}/developers/{LANG}/docs/qr-code/landing` |
-| Subscriptions | `https://{DOMAIN}/developers/{LANG}/docs/subscriptions/landing` |
-| Marketplace | `https://{DOMAIN}/developers/{LANG}/docs/marketplace/landing` |
-| Checkout API | `https://{DOMAIN}/developers/{LANG}/docs/checkout-api/landing` |
-| Point | `https://{DOMAIN}/developers/{LANG}/docs/mp-point/landing` |
-| Orders | `https://{DOMAIN}/developers/{LANG}/docs/orders/landing` |
+| QR Code | `https://{DOMAIN}/developers/{LANG}/docs/qr-code/overview` |
+| Subscriptions | `https://{DOMAIN}/developers/{LANG}/docs/subscriptions/overview` |
+| Marketplace (via Checkout Pro) | `https://{DOMAIN}/developers/{LANG}/docs/checkout-pro/how-tos/integrate-marketplace` |
+| Marketplace (via Checkout API) | `https://{DOMAIN}/developers/{LANG}/docs/checkout-api-payments/how-tos/integrate-marketplace` |
+| Checkout API (Orders — AR, BR, MX) | `https://{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/overview` |
+| Checkout API (Payments — CL, UY, PE, CO) | `https://{DOMAIN}/developers/{LANG}/docs/checkout-api-payments/overview` |
+| Point | `https://{DOMAIN}/developers/{LANG}/docs/mp-point/overview` |
+| Orders | `https://{DOMAIN}/developers/{LANG}/docs/checkout-api-orders/overview` |
 | Wallet Connect | `https://{DOMAIN}/developers/{LANG}/docs/wallet-connect/landing` |
 
 Always use the country-specific links when sharing documentation with the user.

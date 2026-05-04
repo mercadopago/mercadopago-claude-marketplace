@@ -17,7 +17,7 @@ metadata:
 - **Yape (Peru)**: Mobile wallet integration
 - **Fintoc (Chile)**: Bank transfer via Fintoc
 - **PSE (Colombia)**: Bank transfer via PSE
-- **Other regional methods**: Pix (Brazil) is natively supported in Checkout API/Bricks. For the full list of available payment methods per country, consult MCP (`search_documentation`).
+- **Other regional methods**: Pix (Brazil) is natively supported in Checkout Transparente/Bricks. For the full list of available payment methods per country, consult MCP (`search_documentation`).
 
 ## When to Use
 

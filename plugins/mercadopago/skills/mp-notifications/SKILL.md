@@ -24,7 +24,7 @@ Do NOT use for: payment creation (-> mp-checkout-online), QR notifications (-> m
 |---------|-------------|
 | Checkout Pro / Bricks / API | payment.created, payment.updated |
 | Subscriptions | plan.created, plan.updated, subscription.created, subscription.updated, invoice.created, invoice.updated |
-| Point / In-Store | point_integration_wh |
+| Point / In-Store | orders |
 | Marketplace | payment.created, payment.updated (with marketplace context) |
 | Orders API | order.created, order.updated |
 | Chargebacks | chargeback.created, chargeback.updated |

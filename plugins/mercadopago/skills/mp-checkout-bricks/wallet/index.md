@@ -96,7 +96,7 @@ After implementation is complete, generate and output a consolidated report:
 3. Go to production (swap TEST- keys for live keys)
 
 ### 🔗 Resources
-- [Wallet Brick Docs](https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/wallet-brick)
+- [Wallet Brick Docs](https://{DOMAIN}/developers/{LANG}/docs/checkout-bricks/wallet-brick/introduction)
 - [Troubleshooting](references/troubleshooting.md)
 - [Customization](references/customization.md)
 ```

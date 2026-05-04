@@ -124,4 +124,5 @@ What platform is the integration running on?
 ## What to Fetch from Docs
 
 - `{DOMAIN}/developers/{LANG}/docs/sdks-library/landing` — SDK overview and downloads
-- `{DOMAIN}/developers/{LANG}/docs/sdks-library/client-side` — MercadoPago.js and React SDK details
+- `{DOMAIN}/developers/{LANG}/docs/sdks-library/client-side/mp-js-v2` — MercadoPago.js details
+- `{DOMAIN}/developers/{LANG}/docs/sdks-library/client-side/sdk-js-react-installation` — React SDK details

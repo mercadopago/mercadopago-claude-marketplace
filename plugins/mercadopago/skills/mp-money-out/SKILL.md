@@ -72,5 +72,5 @@ Use the MCP server to retrieve current data for:
 
 ## What to Fetch from Docs
 
-- `{DOMAIN}/developers/{LANG}/docs/money-out/landing` (if available)
-- `{DOMAIN}/developers/{LANG}/reference/disbursements`
+- `{DOMAIN}/developers/{LANG}/docs/payouts/overview` (if available)
+- `{DOMAIN}/developers/{LANG}/docs/payouts/resources/endpoints-map` (if available)
