@@ -1,0 +1,61 @@
+plugins/mercadopago/skills/mp-instore/references/instore-integration-guide.md
+  da2e6af7fedf3218 52
+plugins/mercadopago/README.md
+  da2e6af7fedf3218 23,31,34-36,101-106
+plugins/mercadopago/skills/mp-reporting/SKILL.md
+  da2e6af7fedf3218 71
+plugins/mercadopago/skills/mp-specialized/SKILL.md
+  da2e6af7fedf3218 20
+plugins/mercadopago/skills/mp-security/SKILL.md
+  da2e6af7fedf3218 83-84
+plugins/mercadopago/skills/mp-checkout-bricks/status-screen/index.md
+  da2e6af7fedf3218 104
+plugins/mercadopago/skills/mp-checkout-bricks/wallet/index.md
+  da2e6af7fedf3218 99
+plugins/mercadopago/skills/mp-instore/SKILL.md
+  da2e6af7fedf3218 55,62,71,82,120,124-128,131-132
+plugins/mercadopago/skills/mp-orders/SKILL.md
+  da2e6af7fedf3218 18,22-32,75-80,92
+plugins/mercadopago/skills/mp-notifications/SKILL.md
+  da2e6af7fedf3218 27
+plugins/mercadopago/commands/mp-review.md
+  da2e6af7fedf3218 25,52
+plugins/mercadopago/skills/mp-checkout-bricks/card-payment/index.md
+  da2e6af7fedf3218 112
+plugins/mercadopago/commands/mp-connect.md
+  da2e6af7fedf3218 68
+plugins/mercadopago/skills/mp-sdks/SKILL.md
+  da2e6af7fedf3218 127-128
+plugins/mercadopago/skills/mp-checkout-online/SKILL.md
+  da2e6af7fedf3218 3,64-65,92,127-128,155-159
+plugins/mercadopago/skills/mp-money-out/SKILL.md
+  da2e6af7fedf3218 75-76
+plugins/mercadopago/skills/mp-notifications/references/webhook-patterns.md
+  da2e6af7fedf3218 14
+plugins/mercadopago/agents/mp-integration-expert.md
+  da2e6af7fedf3218 62,182-183,188-195
+plugins/mercadopago/skills/mp-checkout-bricks/payment/index.md
+  da2e6af7fedf3218 134
+plugins/mercadopago/skills/mp-subscriptions/SKILL.md
+  da2e6af7fedf3218 84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ac97aad344d35240baf0a2a4b5426d7113762594",
+  "prompts": {
+    "da2e6af7fedf3218": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8d7c0956-7b33-4ca5-96b2-2b19638060cc",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Pili Canosa",
+      "messages": [],
+      "total_additions": 91,
+      "total_deletions": 59,
+      "accepted_lines": 83,
+      "overriden_lines": 0
+    }
+  }
+}
