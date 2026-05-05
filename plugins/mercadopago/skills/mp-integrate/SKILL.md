@@ -399,6 +399,41 @@ Also ensure `.env` is in `.gitignore` (and `.env.example` is **not** ignored).
 
 ---
 
+## Step 4.5 — Offer to scaffold files
+
+Immediately after rendering the bundle, **before listing next steps**, call `AskUserQuestion` with:
+
+- `header="Scaffold files"`
+- Question: `"¿Quiero escribir estos archivos en tu proyecto ahora?"`
+- Options:
+  - `"Sí, escribí los archivos"` → execute the scaffold below
+  - `"No, solo quiero el código"` → skip to Step 5
+
+**If the developer chooses to scaffold**, execute this sequence (in order — each step depends on the previous):
+
+1. **Install the SDK** — run `npm install mercadopago` (or the equivalent for the detected SDK) in the directory that contains the server-side manifest. Report any non-zero exit code and stop.
+2. **Write the server snippet** — create or edit the server file (e.g., `backend/index.js`, `backend/src/routes/mercadopago.js`) inserting the snippet from Step 4. If the file already exists, inject the new route after existing routes rather than overwriting.
+3. **Write the client component** — create `frontend/src/components/CheckoutButton.{jsx|tsx|vue|…}` (or the framework-appropriate path/extension) with the client snippet from Step 4. If the file already exists, warn and ask the developer before overwriting.
+4. **Create `.env.example`** — write the template vars (MP_ACCESS_TOKEN, MP_PUBLIC_KEY, MP_WEBHOOK_SECRET, APP_URL) to `.env.example`. Never touch or create `.env` directly — the developer must fill in their credentials.
+5. **Update `.gitignore`** — add `.env`, `.env.*.local`, `.mp-integrate-progress.md` if not already present.
+6. After all writes, print a short summary:
+
+```
+✓ npm install mercadopago — OK
+✓ backend/index.js — route /api/create-preference added
+✓ frontend/src/components/CheckoutButton.jsx — created
+✓ .env.example — created (fill in your credentials)
+✓ .gitignore — updated
+```
+
+**Scaffold guardrails:**
+- Never write to files outside the current working directory.
+- Never create or overwrite `.env` (only `.env.example`).
+- If a target file exists and the developer said "write all", inject code rather than overwrite — show a `+diff`-style preview of what changed.
+- If any write fails, report the exact error and stop; do not continue to the next file.
+
+---
+
 ## Step 5 — Suggest next steps
 
 Always close with:
