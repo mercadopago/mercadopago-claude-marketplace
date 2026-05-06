@@ -4,15 +4,15 @@
     "name": "Mercado Pago Developer Experience"
   },
   "metadata": {
-    "version": "3.0.0",
+    "version": "4.0.0",
     "description": "Public marketplace of Claude Code plugins for Mercado Pago payment integration development"
   },
   "plugins": [
     {
       "name": "mercadopago",
       "source": "./plugins/mercadopago",
-      "description": "Mercado Pago full-product integration toolkit. Covers online checkout (Pro, Bricks, API), in-store (QR, Point), subscriptions, marketplace, wallet, money-out, security (3DS, PCI), reporting, SDKs, and specialized integrations. Hybrid architecture: 13 skills provide stable integration intelligence, MCP provides live API data.",
-      "version": "3.0.0",
+      "description": "Mercado Pago full-product integration toolkit. One agent routes to four orchestration skills (mp-integrate wizard, mp-webhooks, mp-test-setup, mp-review) that pull every endpoint, payload, and snippet live from the official Mercado Pago MCP server. The MCP must always be connected — there is no offline mode.",
+      "version": "4.0.0",
       "author": { "name": "Mercado Pago Developer Experience" },
       "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
       "license": "Apache-2.0",
