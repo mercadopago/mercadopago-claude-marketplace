@@ -1,0 +1,24 @@
+plugins/mercadopago/skills/mp-review/SKILL.md
+  s_f9a559de6bcb1e::t_658572a56ef4ef 7
+  s_f9a559de6bcb1e::t_e971ce82d550d0 92-99
+  s_f9a559de6bcb1e::t_9959342b80d5ed 141-167
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_f9a559de6bcb1e::t_f8d8d31ab11d25 7
+  s_f9a559de6bcb1e::t_201a488b1f160e 471-476
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.6",
+  "base_commit_sha": "c3ba077694dcb71199f9db0157a4ae693574a825",
+  "prompts": {},
+  "sessions": {
+    "s_f9a559de6bcb1e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4ab48ec-1e50-401c-89e0-4de9e5c782a6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "sheredia_meli <samuel.heredia@mercadolibre.cl>"
+    }
+  }
+}
