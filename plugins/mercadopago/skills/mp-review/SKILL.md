@@ -40,6 +40,8 @@ Use `Grep`/`Glob` to find:
 Determine:
 
 - **API in use**: Payments API (`/v1/payments`) vs Orders API (`/v1/orders`). Both can coexist.
+  - **If the integration uses the Payments API**, it is on the legacy path. The Payments API is being deprecated; Mercado Pago is pushing all integrations toward the Orders API. Always include a `Needs attention` item in the Implementation Report recommending the migration, with the file:line where `/v1/payments` is called. Do **not** treat it as a Blocker (existing code still works), but flag it as forward-looking technical debt.
+  - **Exception**: Checkout Pro stays on preferences (the Orders API does not exist for Checkout Pro). Do not flag `/v1/checkout/preferences` as legacy.
 - **Products in use**: Checkout Pro/API, Bricks, Subscriptions, Marketplace, etc. — derive from endpoint patterns and request payloads.
 
 ---
@@ -148,8 +150,9 @@ The report is the source of truth for the developer's next session: it tells the
 - [x] {next passing item}
 
 ### Needs attention
-- [ ] {actionable item with file:line — e.g., "Add idempotency key to POST /v1/payments at api/payments.js:42"}
+- [ ] {actionable item with file:line — e.g., "Add idempotency key to POST /v1/orders at api/orders.js:42"}
 - [ ] {next pending item}
+- [ ] {if legacy `/v1/payments` is detected — e.g., "Migrate POST /v1/payments to the Orders API (POST /v1/orders) at api/payments.js:42. The Payments API is being deprecated."}
 
 ### Blockers (must fix before production)
 - [ ] {critical item — e.g., "Hardcoded APP_USR- token in config/mp.js:8 — move to env"}
