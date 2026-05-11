@@ -4,7 +4,7 @@ description: Review a Mercado Pago integration against the official quality chec
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, review, quality, checklist, security"
@@ -40,6 +40,8 @@ Use `Grep`/`Glob` to find:
 Determine:
 
 - **API in use**: Payments API (`/v1/payments`) vs Orders API (`/v1/orders`). Both can coexist.
+  - **If the integration uses the Payments API**, it is on the legacy path. The Payments API is being deprecated; Mercado Pago is pushing all integrations toward the Orders API. Always include a `Needs attention` item in the Implementation Report recommending the migration, with the file:line where `/v1/payments` is called. Do **not** treat it as a Blocker (existing code still works), but flag it as forward-looking technical debt.
+  - **Exception**: Checkout Pro stays on preferences (the Orders API does not exist for Checkout Pro). Do not flag `/v1/checkout/preferences` as legacy.
 - **Products in use**: Checkout Pro/API, Bricks, Subscriptions, Marketplace, etc. — derive from endpoint patterns and request payloads.
 
 ---
@@ -89,6 +91,14 @@ These items are not always part of `quality_checklist` but are mandatory for any
 
 ---
 
+## Step 5 — Render the Implementation Report (MANDATORY final step)
+
+After Steps 1–4 are complete, **always** render an Implementation Report as the last block of the output. This is the deliverable the developer keeps — it summarizes what's done, what's pending, and what to do next. Do not skip it, do not summarize it in prose; render the structured block below verbatim.
+
+The report is the source of truth for the developer's next session: it tells them exactly what was verified, what was flagged, and the next concrete action. Without it, the review feels open-ended and the developer doesn't know if they can ship.
+
+---
+
 ## Output format
 
 ```markdown
@@ -130,6 +140,34 @@ These items are not always part of `quality_checklist` but are mandatory for any
 **Summary**: X/Y required fields implemented, Z/W best practices adopted, S/9 security checks pass.
 
 > Want a deeper score? Provide a recent test payment ID (or order ID) and I'll run `quality_evaluation`.
+
+---
+
+## Implementation Report
+
+### Verified
+- [x] {item that passed — e.g., "Webhook handler validates x-signature with HMAC-SHA256"}
+- [x] {next passing item}
+
+### Needs attention
+- [ ] {actionable item with file:line — e.g., "Add idempotency key to POST /v1/orders at api/orders.js:42"}
+- [ ] {next pending item}
+- [ ] {if legacy `/v1/payments` is detected — e.g., "Migrate POST /v1/payments to the Orders API (POST /v1/orders) at api/payments.js:42. The Payments API is being deprecated."}
+
+### Blockers (must fix before production)
+- [ ] {critical item — e.g., "Hardcoded APP_USR- token in config/mp.js:8 — move to env"}
+
+### Next steps
+1. {The single most impactful action the developer should take next}
+2. {Follow-up actions in priority order}
+3. Re-run `/mp-review` after fixes to confirm the report.
+
+### Resources used
+- MCP: `quality_checklist` ({date/time of call})
+- MCP: `quality_evaluation` (if it was run, with the payment_id/order_id used)
+- Skill: `mp-review` v4.1.0
+
+**Scores**: {X}/{Y} required, {Z}/{W} best practices, {S}/9 security. **Verdict**: {Ready for production | Needs fixes | Blocked}.
 ```
 
 ---
