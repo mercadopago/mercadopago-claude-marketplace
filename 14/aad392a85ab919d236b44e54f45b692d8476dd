@@ -1,0 +1,28 @@
+plugins/mercadopago/skills/mp-webhooks/SKILL.md
+  s_da2e6af7fedf32::t_bb1c2f125b56fb 106-107,109
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_da2e6af7fedf32::t_9a2eb9bae814a9 459
+  s_da2e6af7fedf32::t_917a4d5d329adb 482
+  s_da2e6af7fedf32::t_8aa79c7fe5d3d2 324
+  s_da2e6af7fedf32::t_2be1f78a345bd2 379
+  s_da2e6af7fedf32::t_6a4cad446bbfd0 487
+  s_da2e6af7fedf32::t_e8dc442f139766 508
+plugins/mercadopago/README.md
+  s_da2e6af7fedf32::t_dc9bb90fe173b5 93-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "14aad392a85ab919d236b44e54f45b692d8476dd",
+  "prompts": {},
+  "sessions": {
+    "s_da2e6af7fedf32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8d7c0956-7b33-4ca5-96b2-2b19638060cc",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Pili Canosa <pilar.canosa@mercadolibre.com>"
+    }
+  }
+}
