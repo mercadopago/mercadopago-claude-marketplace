@@ -90,7 +90,9 @@ See [PLUGIN_SETTINGS.md](./PLUGIN_SETTINGS.md) for per-project configuration opt
 
 ## Resources
 
-- [Mercado Pago Developer Docs](https://www.mercadopago.com.ar/developers/en/docs)
-- [API Reference](https://www.mercadopago.com.ar/developers/en/reference)
-- [SDKs](https://www.mercadopago.com.ar/developers/en/docs/sdks-library/landing)
-- [Credentials Dashboard](https://www.mercadopago.com.ar/developers/panel/app)
+Replace `{DOMAIN}` with your country's domain (e.g. `www.mercadopago.com.ar` for Argentina, `www.mercadopago.com.br` for Brazil) and `{LANG}` with `es`, `pt` (Brazil), or `en`. See the full country list in `mp-integrate`.
+
+- [Mercado Pago Developer Docs](https://{DOMAIN}/developers/{LANG}/docs)
+- [API Reference](https://{DOMAIN}/developers/{LANG}/reference)
+- [SDKs](https://{DOMAIN}/developers/{LANG}/docs/sdks-library/landing)
+- [Credentials Dashboard](https://{DOMAIN}/developers/panel/app)

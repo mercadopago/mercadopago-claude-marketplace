@@ -321,7 +321,7 @@ Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mcp__search_docum
 
 Do **not** issue more than 3 queries. If a query returns generic results, refine once and stop.
 
-If MCP returns nothing useful for the requested combination (e.g., a product not yet documented for that country), say so explicitly and offer to fall back to **one** targeted `WebFetch` against `https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/landing` (max 1 fetch). **Never queue multiple WebFetch calls for the same product in different languages or for the API reference plus the guide — that pattern is a bug.** If you catch yourself doing it, cancel and re-issue a more specific `search_documentation` query instead.
+If MCP returns nothing useful for the requested combination (e.g., a product not yet documented for that country), say so explicitly and offer to fall back to **one** targeted `WebFetch` (max 1 fetch). Try `https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/overview` first; if that returns 404, retry with `https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/landing`. **Never queue multiple WebFetch calls for the same product in different languages or for the API reference plus the guide — that pattern is a bug.** If you catch yourself doing it, cancel and re-issue a more specific `search_documentation` query instead.
 
 ---
 
@@ -376,7 +376,7 @@ Also ensure `.env` is in `.gitignore` (and `.env.example` is **not** ignored).
 - Test cards for the country: query MCP `search_documentation` with `"test cards {country}"`.
 
 ## 7. Docs (country-specific)
-- Product guide: https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/landing
+- Product guide: https://{DOMAIN}/developers/{LANG}/docs/{product-slug}/overview (fallback: /landing)
 - API reference: https://{DOMAIN}/developers/{LANG}/reference
 
 ## 8. Gotchas
@@ -456,6 +456,7 @@ Render only the section that matches the chosen product. These are the experient
 - `external_reference` is your reconciliation anchor — set it on every preference/order.
 
 ### checkout-api
+- **Brazil (MLB)**: this product is called **Checkout Transparente** — use that name in MCP queries (e.g., `"checkout transparente orders node brazil"`). The integration flow is identical; only the product name differs.
 - Card tokens are single-use and expire in 7 days.
 - `binary_mode: false` is required for 3DS — otherwise no challenge is issued and the payment cannot reach `pending`.
 - `issuer_id` is required for some card BINs in some countries.
@@ -478,12 +479,12 @@ Render only the section that matches the chosen product. These are the experient
 ### qr
 - Static QR (printed sticker) requires **Store + POS** to be created via API before generating the QR — they are not auto-created.
 - Dynamic QR has a short TTL — generate one per buyer interaction, not one shared QR.
-- Attended QR (cashier app) flows through `merchant_orders`, not direct payments — wire the webhook to `merchant_order` topic.
+- Attended QR (cashier app) with Orders API uses the `orders` topic. Legacy attended QR flows through `merchant_orders` — wire the webhook to `merchant_order` topic only if using the legacy API.
 
 ### point
 - The device must be paired to a User ID (not the application). A device paired to the wrong user will silently reject `payment_intent`s.
 - After a firmware update the device may take ~2 minutes to come back online; do not retry `payment_intent` creation aggressively.
-- Webhook topic for Point is `point_integration_wh` — different from regular `payment` notifications.
+- Webhook topic for Point (Orders API) is `orders`. The legacy `point_integration_wh` topic belongs to the old Point Integration API — do not use it for new integrations.
 
 ### subscriptions
 - A `preapproval` without a `preapproval_plan_id` is allowed but cannot be migrated to a plan later — pick one model upfront.
@@ -504,6 +505,7 @@ Render only the section that matches the chosen product. These are the experient
 - Bank account validation is asynchronous; the disbursement may sit in `pending` until validation completes.
 
 ### smartapps
+- **Requires direct contact with the Mercado Pago team** — SmartApps is not self-service. Do not scaffold without confirming the developer has an active agreement with MP.
 - Smart Apps run on Point devices — code limits and APIs differ from server SDKs. Always query MCP for the SmartApp-specific guide.
 
 ---
