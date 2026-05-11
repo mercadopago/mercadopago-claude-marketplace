@@ -103,9 +103,10 @@ The notification body contains `type` (the topic) and `data.id`. Common topics:
 | Topic | When | Resource to fetch |
 |-------|------|-------------------|
 | `payment` | Payment status change (Payments API) | `GET /v1/payments/{id}` |
-| `merchant_order` | Merchant order updated (Checkout Pro / QR attended) | `GET /merchant_orders/{id}` |
+| `orders` | Point / QR Code event (Orders API) | `GET /v1/orders/{id}` |
+| `merchant_order` | Merchant order updated — legacy (Checkout Pro / QR attended via legacy API) | `GET /merchant_orders/{id}` |
 | `topic_claims_integration_wh` | Chargebacks | `GET /v1/chargebacks/{id}` |
-| `point_integration_wh` | Point device events | Point API — query MCP for the country |
+| `point_integration_wh` | Point device events — legacy (old Point Integration API) | Point legacy API — query MCP for the country |
 | `subscription_preapproval` | Subscription status change | `GET /preapproval/{id}` |
 | `subscription_authorized_payment` | Recurring charge attempt | `GET /authorized_payments/{id}` |
 
