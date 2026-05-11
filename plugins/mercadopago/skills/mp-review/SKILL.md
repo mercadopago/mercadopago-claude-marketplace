@@ -141,25 +141,25 @@ The report is the source of truth for the developer's next session: it tells the
 
 ---
 
-## 📋 Implementation Report
+## Implementation Report
 
-### ✅ Verified
+### Verified
 - [x] {item that passed — e.g., "Webhook handler validates x-signature with HMAC-SHA256"}
 - [x] {next passing item}
 
-### ⚠️ Needs attention
+### Needs attention
 - [ ] {actionable item with file:line — e.g., "Add idempotency key to POST /v1/payments at api/payments.js:42"}
 - [ ] {next pending item}
 
-### 🚫 Blockers (must fix before production)
+### Blockers (must fix before production)
 - [ ] {critical item — e.g., "Hardcoded APP_USR- token in config/mp.js:8 — move to env"}
 
-### 🎯 Next steps
+### Next steps
 1. {The single most impactful action the developer should take next}
 2. {Follow-up actions in priority order}
 3. Re-run `/mp-review` after fixes to confirm the report.
 
-### 🔗 Resources used
+### Resources used
 - MCP: `quality_checklist` ({date/time of call})
 - MCP: `quality_evaluation` (if it was run, with the payment_id/order_id used)
 - Skill: `mp-review` v4.1.0
