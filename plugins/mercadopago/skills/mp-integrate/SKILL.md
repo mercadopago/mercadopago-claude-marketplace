@@ -4,7 +4,7 @@ description: Wizard that scaffolds a complete Mercado Pago integration for any p
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, orders, sdk"
@@ -468,6 +468,12 @@ Render only the section that matches the chosen product. These are the experient
 - For Card Payment Brick: amount validation happens server-side; never trust the amount echoed by the brick.
 - Wallet Brick requires the buyer to be logged into Mercado Pago — test users count as logged in if you use their credentials.
 - Status Screen Brick handles 3DS challenge rendering; do not also render your own 3DS iframe.
+- **Ad-blockers (uBlock, AdBlock Plus, Brave shields) block `sdk.mercadopago.com`** → the brick raises `FIELDS_SETUP_FAILED` and silently fails to mount. If a developer reports "the brick doesn't appear", check the ad-blocker before debugging code.
+- **Debit cards do NOT show an installments selector** — this is correct behavior, not a bug. Make sure the server accepts `installments: 1` for debit and does not require the selector field to be present.
+- **Never hardcode `preferenceId` as a placeholder** (e.g., `<PREFERENCE_ID>`, `YOUR_PREFERENCE_ID`, `"preference_id"`): the brick fails silently. The `preferenceId` must always be created dynamically on the server per buyer session.
+- **Status Screen Brick needs a `payment_id`, not an `order_id`** — extract it from the order response: when the order is paid, the `transactions.payments[]` array contains the payment object with the `id` you must pass to the brick.
+- **React: call `brickController.unmount()` in the `useEffect` cleanup** before re-mounting. Re-rendering without unmounting leaves zombie listeners that break form submission silently.
+- **`back_urls` must be on the same origin as the page that mounts the brick.** Cross-domain back_urls fail silently — the redirect after payment lands on a blank page with no error.
 
 ### qr
 - Static QR (printed sticker) requires **Store + POS** to be created via API before generating the QR — they are not auto-created.
