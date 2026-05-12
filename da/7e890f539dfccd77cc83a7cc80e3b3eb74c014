@@ -1,0 +1,29 @@
+plugins/mercadopago/agents/mp-integration-expert.md
+  s_f9a559de6bcb1e::t_01cbb1c3944f8e 10
+README.md
+  s_f9a559de6bcb1e::t_b06c4f7baa8320 39-47
+  s_f9a559de6bcb1e::t_a803c84459cfdb 7
+docs/components.json
+  s_f9a559de6bcb1e::t_0de35cb0980246 2,5,38
+  s_f9a559de6bcb1e::t_97963dc436861b 59,81
+plugins/mercadopago/.claude-plugin/plugin.json
+  s_f9a559de6bcb1e::t_10c41bb76f228b 4
+.claude-plugin/marketplace.json
+  s_f9a559de6bcb1e::t_a0f0f12002c2d1 7,15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.6",
+  "base_commit_sha": "da7e890f539dfccd77cc83a7cc80e3b3eb74c014",
+  "prompts": {},
+  "sessions": {
+    "s_f9a559de6bcb1e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4ab48ec-1e50-401c-89e0-4de9e5c782a6",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "sheredia_meli <samuel.heredia@mercadolibre.cl>"
+    }
+  }
+}
