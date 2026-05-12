@@ -15,7 +15,7 @@ mercadopago-claude-marketplace/
 │       ├── README.md             # Plugin documentation (required)
 │       ├── agents/               # Agent definitions (.md)
 │       ├── commands/             # Slash command definitions (.md)
-│       ├── skills/               # Skill definitions (SKILL.md + references/)
+│       ├── skills/               # Skill definitions (SKILL.md per skill)
 │       ├── hooks/                # Hook config (hooks.json) + scripts
 │       └── .mcp.json             # MCP server definitions
 └── ...
@@ -48,7 +48,7 @@ Add any combination of:
 
 - **Agents** (`agents/<name>.md`) — Specialized agents with frontmatter (`name`, `description`, `tools`, `model`, `tags`)
 - **Commands** (`commands/<name>.md`) — Slash commands with frontmatter (`description`, `argument-hint`, `allowed-tools`)
-- **Skills** (`skills/<name>/SKILL.md`) — Knowledge skills with frontmatter and reference files
+- **Skills** (`skills/<name>/SKILL.md`) — Orchestration skills with frontmatter; no separate reference files (MCP is the source of truth)
 - **Hooks** (`hooks/hooks.json` + scripts) — Event hooks for PreToolUse, PostToolUse, etc.
 - **MCP Servers** (`.mcp.json`) — Model Context Protocol server definitions
 

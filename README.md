@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 3.0.0](https://img.shields.io/badge/version-3.0.0-green)](./CHANGELOG.md)
+[![Version: 4.0.0](https://img.shields.io/badge/version-4.0.0-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -17,7 +17,7 @@
 
 [![Browse Components](https://img.shields.io/badge/%F0%9F%94%8D_Browse_Components-mercadopago--claude--marketplace.vercel.app-3483fa?style=for-the-badge&logoColor=white)](https://mercadopago-claude-marketplace.vercel.app/)
 
-> **13 skills** · **1 agent** · **3 commands** · **1 hook** — all browsable in a visual catalog.
+> **4 skills** · **1 agent** · **3 commands** · **2 hooks** — all browsable in a visual catalog.
 >
 > Search, filter, and explore every component with detailed metadata and direct links to source code.
 
@@ -29,12 +29,12 @@
 
 A Claude Code plugin that gives you an AI-powered integration assistant for the full Mercado Pago product suite. Ask questions, scaffold projects, review code, and get real-time API guidance — all from your terminal.
 
-- **13 product skills** covering the complete Mercado Pago ecosystem
+- **MCP-first architecture** — one thin router agent delegates to 4 orchestration skills backed by the live Mercado Pago MCP server
+- **4 orchestration skills**: `mp-integrate`, `mp-webhooks`, `mp-test-setup`, `mp-review`
 - **7 countries** supported: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay
-- **Hybrid architecture** — skills provide stable integration intelligence, MCP provides live API data
 - **Credential leak prevention** — hook scans every file write for hardcoded tokens
-- **Secure token storage** — Access Tokens stored in OS keychain (macOS Keychain / Linux secret-tool)
-- **3 slash commands** — `/mp-setup`, `/mp-review`, `/mp-connect`
+- **OAuth-based auth** — connect via `/mp-connect`, no keychain scripts needed
+- **3 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`
 
 ## Installation
 
@@ -54,79 +54,80 @@ If you are developing this repository locally, you must run `bash scripts/instal
 
 ### 3. Connect your account
 
-Run the setup script from your **terminal** (not inside Claude Code):
+Inside Claude Code, run:
 
-```bash
-bash ~/.claude/plugins/cache/mercadopago-claude-marketplace/mercadopago/*/scripts/setup.sh
+```
+/mp-connect
 ```
 
-This stores your Access Token in the OS keychain. Claude Code cannot read the keychain directly — only the MCP server process accesses it at startup.
+This starts the OAuth flow. No Access Token or keychain setup required — the MCP server handles authentication via OAuth.
 
-Get your Access Token at: https://www.mercadopago.com.ar/developers/panel/app
+For other IDEs (Cursor, VS Code, Windsurf), add `https://mcp.mercadopago.com/mcp` via your IDE's MCP settings panel. Run `/mp-connect` for IDE-specific snippets.
 
-Then restart Claude Code.
+## Skills
 
-## Product Coverage
+| Skill | What it does |
+|-------|-------------|
+| `mp-integrate` | Wizard that scaffolds a complete integration for any product: Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Money Out, SmartApps |
+| `mp-webhooks` | Receiver pattern with HMAC-SHA256 validation; configures, simulates, and diagnoses webhooks |
+| `mp-test-setup` | Creates test users and loads funds. Clarifies the modern testing model (no `TEST-` prefix — both users use `APP_USR-`) |
+| `mp-review` | Runs the official quality checklist live + a fixed cross-cutting security floor |
 
-| Skill | Products Covered |
-|-------|-----------------|
-| `mp-checkout-online` | Checkout Pro, Payments API, 3DS, Cross-Border Payments |
-| `mp-checkout-bricks` | Payment Brick, Card Payment Brick, Wallet Brick, Status Screen Brick |
-| `mp-notifications` | Webhooks (v2), IPN (legacy), HMAC validation |
-| `mp-instore` | QR Attended, QR Dynamic, Point devices, Kiosk |
-| `mp-orders` | Orders, OU + QR |
-| `mp-subscriptions` | Subscription Plans, Preapprovals, Invoices |
-| `mp-wallet` | Wallet Connect, Debt Payments, Massive Payment Links |
-| `mp-money-out` | Disbursements, Bank Transfers |
-| `mp-marketplace` | Marketplace Splits, Seller Onboarding, VTEX, Application Fees |
-| `mp-security` | 3D Secure, PCI, Supertoken, Vault, Card Tokenization |
-| `mp-specialized` | Insurance (AR), Yape (PE), Fintoc (CL) |
-| `mp-reporting` | Settlement Reports, Reconciliation, Account Statements |
-| `mp-sdks` | SDK Selection, Setup, Migration (Node, Python, Java, PHP, Ruby, .NET, Go, React, iOS, Android) |
+All product knowledge (endpoint URLs, request/response schemas, code snippets, payment status tables, country availability) is pulled live from the Mercado Pago MCP server. Nothing is hardcoded in the skills.
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/mp-connect` | Securely connect to your Mercado Pago account |
-| `/mp-review [scope]` | Review an integration for correctness, security, and best practices |
-| `/mp-setup [lang] [product]` | Scaffold a new Mercado Pago integration for any product |
+| `/mp-connect` | Verify or trigger the Mercado Pago MCP OAuth flow |
+| `/mp-integrate [product] [options]` | Scaffold a new integration via the wizard. Sub-modes: `webhook`, `test-setup` |
+| `/mp-review [scope]` | Review an integration. Scopes: `security`, `webhooks`, `checkout`, `qr`, `subscriptions`, `marketplace`, `quality`, `full` |
 
 ## Architecture
 
 ```
-User question
-     |
-     v
-+--------------------+
-| mp-integration-    |     1. Detect country (from project signals or ask)
-| expert (agent)     | --> 2. Detect product (from signal-to-skill routing)
-+--------------------+     3. Load ONE relevant skill
-     |          |
-     v          v
-+---------+  +-----+
-| Skill   |  | MCP |      Skill = stable flows, decision trees, gotchas
-| (1 of   |  |     |      MCP  = live endpoints, payloads, code snippets
-|  12)    |  |     |
-+---------+  +-----+
-     |          |
-     v          v
-+--------------------+
-|   Combined answer  |
-+--------------------+
+┌────────────────────────────────────────────────────────┐
+│  mp-integration-expert  (router, ~120 lines)           │
+│  - MCP-gate every interaction                          │
+│  - country detection                                   │
+│  - mode detection (Orders API vs legacy)               │
+│  - delegates to one of four skills                     │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+        ┌──────────────────┼──────────────────┬──────────────────┐
+        ▼                  ▼                  ▼                  ▼
+   mp-integrate       mp-webhooks       mp-test-setup        mp-review
+   (wizard)           (HMAC + MCP        (create_test_user   (quality_checklist
+                       webhook tools)     + add_money)        + security floor)
+        │                  │                  │                  │
+        └──────────────────┴──────────────────┴──────────────────┘
+                           │
+                           ▼
+              ┌───────────────────────────┐
+              │  Mercado Pago MCP server  │
+              │  (mcp.mercadopago.com)    │
+              │                           │
+              │  search_documentation     │
+              │  quality_checklist        │
+              │  quality_evaluation       │
+              │  save_webhook             │
+              │  simulate_webhook         │
+              │  notifications_history…   │
+              │  create_test_user         │
+              │  add_money_test_user      │
+              └───────────────────────────┘
 ```
 
-**Skills** contain integration intelligence that rarely changes: product flows, decision trees, prerequisites, country availability, and common gotchas. **MCP** provides dynamic data that must always be current: endpoint URLs, request/response schemas, SDK code snippets, and test credentials.
-
-Only one skill is loaded per interaction, keeping context lightweight.
+**The agent is a thin router** (~120 lines) with no embedded product knowledge. **Skills** translate developer intent into MCP queries and assemble the response. **The MCP** is the single source of truth — all endpoints, payloads, code snippets, and quality criteria are pulled live. There is no offline mode.
 
 ## Infrastructure
 
 | Component | Name | Purpose |
 |-----------|------|---------|
-| Agent | `mp-integration-expert` | Single router — detects country and product, loads the right skill |
+| Agent | `mp-integration-expert` | Single router — detects country and mode, delegates to the right skill |
 | Hook | `validate_mp_credentials` | Credential scanner — blocks hardcoded MP tokens from reaching source files |
-| MCP | `mercadopago` | Live Mercado Pago API access (token from OS keychain) |
+| Hook | `check-version` | Runs on every prompt to verify plugin version compatibility |
+| MCP | `mercadopago` | Live Mercado Pago API access via OAuth (`mcp.mercadopago.com`) |
 | CI | `validate.yml` | JSON validation, Python syntax checks, skill integrity |
 
 ## Requirements
