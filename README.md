@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 4.0.0](https://img.shields.io/badge/version-4.0.0-green)](./CHANGELOG.md)
+[![Version: 4.1.0](https://img.shields.io/badge/version-4.1.0-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -35,6 +35,15 @@ A Claude Code plugin that gives you an AI-powered integration assistant for the 
 - **Credential leak prevention** — hook scans every file write for hardcoded tokens
 - **OAuth-based auth** — connect via `/mp-connect`, no keychain scripts needed
 - **3 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`
+
+## What's new in v4.1.0
+
+A focused refinement of the v4.0.0 architecture. No breaking changes — same 4 skills, same MCP-first model.
+
+- **Bricks gotchas restored**: six experiential traps that v4.0.0 lost during the consolidation are back in `mp-integrate`'s Gotchas Bank — ad-blockers blocking `sdk.mercadopago.com`, debit cards without installments, `preferenceId` placeholder failures, Status Screen needing `payment_id` (not `order_id`), React `unmount()` in `useEffect` cleanup, and `back_urls` same-origin requirement.
+- **Implementation Report** in `/mp-review`: every review now ends with a structured closure block — Verified / Needs attention / Blockers / Next steps / Scores + Verdict — so developers know if they can ship.
+- **Orders API push reflected in reviews**: `mp-review` now detects legacy `/v1/payments` usage and surfaces a forward-looking migration item in *Needs attention* (not a blocker — existing code works, but the Payments API is being deprecated). Checkout Pro is explicitly exempted since it has no Orders API equivalent.
+- **Architecture-agnostic CI**: `validate.yml` no longer hardcodes skill filenames. Future refactors that keep the basic plugin structure won't break the build.
 
 ## Installation
 
