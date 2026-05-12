@@ -61,7 +61,8 @@ jobs:
 
       - name: Verify required files exist
         run: |
-          files=(
+          # Fixed infrastructure files — must always exist regardless of skill architecture
+          required_files=(
             ".claude-plugin/marketplace.json"
             "plugins/mercadopago/.claude-plugin/plugin.json"
             "plugins/mercadopago/.mcp.json"
@@ -70,19 +71,36 @@ jobs:
             ".claude/settings.json"
             "plugins/mercadopago/agents/mp-integration-expert.md"
             "plugins/mercadopago/commands/mp-review.md"
-            "plugins/mercadopago/commands/mp-setup.md"
-            "plugins/mercadopago/skills/mp-checkout-online/SKILL.md"
-            "plugins/mercadopago/skills/mp-notifications/SKILL.md"
-            "plugins/mercadopago/skills/mp-checkout-bricks/SKILL.md"
             "plugins/mercadopago/PLUGIN_SETTINGS.md"
             "plugins/mercadopago/README.md"
             "README.md"
             "CONTRIBUTING.md"
           )
-          for f in "${files[@]}"; do
+          for f in "${required_files[@]}"; do
             if [ ! -f "$f" ]; then
               echo "MISSING: $f"
               exit 1
             fi
             echo "OK: $f"
           done
+
+          # Structural checks — architecture-agnostic, work for v3 (multi-product skills)
+          # and v4 (consolidated orchestration skills) alike.
+
+          # 1) At least one user-facing command beyond /mp-review must exist
+          #    (v3: /mp-setup; v4: /mp-integrate). /mp-connect is optional.
+          shopt -s nullglob
+          extra_commands=(plugins/mercadopago/commands/mp-{setup,integrate}.md)
+          if [ ${#extra_commands[@]} -eq 0 ]; then
+            echo "MISSING: at least one of mp-setup.md or mp-integrate.md must exist under plugins/mercadopago/commands/"
+            exit 1
+          fi
+          for f in "${extra_commands[@]}"; do echo "OK: $f"; done
+
+          # 2) At least one SKILL.md must exist under plugins/mercadopago/skills/
+          skill_count=$(find plugins/mercadopago/skills -name SKILL.md -type f | wc -l)
+          if [ "$skill_count" -lt 1 ]; then
+            echo "MISSING: no SKILL.md found under plugins/mercadopago/skills/"
+            exit 1
+          fi
+          echo "OK: found $skill_count SKILL.md file(s)"
