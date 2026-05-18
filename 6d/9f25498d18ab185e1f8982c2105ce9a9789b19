@@ -1,0 +1,19 @@
+.github/workflows/validate.yml
+  s_f9a559de6bcb1e::t_dd7d12eb954805 44,49,56,61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "6d9f25498d18ab185e1f8982c2105ce9a9789b19",
+  "prompts": {},
+  "sessions": {
+    "s_f9a559de6bcb1e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4ab48ec-1e50-401c-89e0-4de9e5c782a6",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "sheredia_meli <samuel.heredia@mercadolibre.cl>"
+    }
+  }
+}
