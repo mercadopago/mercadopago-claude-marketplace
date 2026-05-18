@@ -41,20 +41,24 @@ jobs:
 
       - name: Test hook blocks real token
         run: |
+          echo '{"dependencies":{"mercadopago":"^2.0.0"}}' > package.json
           RESULT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"app.js","content":"const token = \"TEST-123456789012-123456-abc12345678901234567890123456789-U123456\""}}' \
             | python3 plugins/mercadopago/hooks/validate_mp_credentials.py; echo $?)
           if [ "$RESULT" != "2" ]; then
             echo "ERROR: Hook should have blocked real token (expected exit 2, got $RESULT)"
+          rm -f package.json
             exit 1
           fi
           echo "PASS: Hook correctly blocked real token"
 
       - name: Test hook allows env var reference
         run: |
+          echo '{"dependencies":{"mercadopago":"^2.0.0"}}' > package.json
           EXIT_CODE=$(echo '{"tool_name":"Write","tool_input":{"file_path":"app.js","content":"const token = process.env.MP_ACCESS_TOKEN"}}' \
             | python3 plugins/mercadopago/hooks/validate_mp_credentials.py; echo $?)
           if [ "$EXIT_CODE" != "0" ]; then
             echo "ERROR: Hook should have allowed env var reference (expected exit 0, got $EXIT_CODE)"
+          rm -f package.json
             exit 1
           fi
           echo "PASS: Hook correctly allowed env var reference"
