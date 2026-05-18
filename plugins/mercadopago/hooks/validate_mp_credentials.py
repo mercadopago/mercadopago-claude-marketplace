@@ -42,6 +42,61 @@ PATTERNS = {
 }
 
 
+# ---------- project relevance gate ----------
+
+# Dependency manifests checked for a "mercadopago" mention. Lock files are
+# intentionally excluded to keep the per-call file reads small.
+MANIFEST_FILES = (
+    "package.json",
+    "composer.json",
+    "requirements.txt",
+    "Pipfile",
+    "pyproject.toml",
+    "Gemfile",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "go.mod",
+)
+
+
+def _mentions_mercadopago(path: str) -> bool:
+    try:
+        with open(path, "r", errors="ignore") as f:
+            return "mercadopago" in f.read().lower()
+    except OSError:
+        return False
+
+
+def is_mercadopago_project(start_dir: str) -> bool:
+    """Heuristic check: does this project integrate with Mercado Pago?
+
+    Walks from start_dir up to the nearest .git boundary (or filesystem root)
+    looking for either:
+      - the plugin's per-project config (.claude/mercadopago.local.md), or
+      - a dependency manifest that mentions "mercadopago".
+
+    This is intentionally conservative: it only needs to be good enough to
+    keep the hook a no-op in projects that have nothing to do with Mercado
+    Pago. Maintainers: add or remove signals here as you see fit.
+    """
+    current = os.path.abspath(start_dir or os.getcwd())
+    for _ in range(32):  # bounded walk
+        if os.path.isfile(os.path.join(current, ".claude", "mercadopago.local.md")):
+            return True
+        for name in MANIFEST_FILES:
+            candidate = os.path.join(current, name)
+            if os.path.isfile(candidate) and _mentions_mercadopago(candidate):
+                return True
+
+        at_repo_root = os.path.isdir(os.path.join(current, ".git"))
+        parent = os.path.dirname(current)
+        if at_repo_root or parent == current:
+            break
+        current = parent
+    return False
+
+
 # ---------- helpers ----------
 
 def read_settings() -> dict:
@@ -119,6 +174,13 @@ def main():
         data = json.loads(sys.stdin.read())
     except (json.JSONDecodeError, EOFError):
         sys.exit(0)  # Can't parse input — allow
+
+    # Project relevance gate: if the current project shows no signs of a
+    # Mercado Pago integration, allow the tool call without inspection.
+    # This keeps the hook from changing tool behavior (e.g. blocking .env
+    # reads) in projects that have nothing to do with Mercado Pago.
+    if not is_mercadopago_project(os.getcwd()):
+        sys.exit(0)
 
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
