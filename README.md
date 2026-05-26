@@ -138,13 +138,17 @@ All product knowledge (endpoint URLs, request/response schemas, code snippets, p
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on adding new plugins or improving existing ones.
+Have a bug to report, a feature to suggest, or a question? Open an issue — that's the best way to contribute. See our [Contributing Guidelines](./CONTRIBUTING.md) for details on how to write a good report or feature request.
+
+## Code of Conduct
+
+This project is governed by our [Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you are expected to uphold these standards and help maintain a welcoming and respectful environment for everyone.
 
 ## Support
 
-You may find technical documentation about Mercado Pago's products and services on the [Developer's Website](https://www.mercadopago.com.ar/developers/en)
+You may find technical documentation about Mercado Pago's products and services on the [Developer's Website](https://www.mercadopago.com.ar/developers/en).
 
-Technical Support is avaliable within the [Developer's Website Support Section](https://www.mercadopago.com.ar/developers/en/support/center)
+Technical Support is available within the [Developer's Website Support Section](https://www.mercadopago.com.ar/developers/en/support/center).
 
 ## License
 
