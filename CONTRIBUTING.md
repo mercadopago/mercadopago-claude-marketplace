@@ -1,118 +1,30 @@
 # Contributing to mercadopago-claude-marketplace
 
-Thank you for your interest in contributing! This guide explains how to add new plugins or improve existing ones.
+Thank you for your interest in contributing to the Mercado Pago Claude Marketplace! This guide explains how to report issues and request features.
 
-## Repository Structure
+## How to Contribute
 
-```
-mercadopago-claude-marketplace/
-├── .claude-plugin/
-│   └── marketplace.json          # Marketplace registry — lists all plugins
-├── plugins/
-│   └── <plugin-name>/
-│       ├── .claude-plugin/
-│       │   └── plugin.json       # Plugin manifest (required)
-│       ├── README.md             # Plugin documentation (required)
-│       ├── agents/               # Agent definitions (.md)
-│       ├── commands/             # Slash command definitions (.md)
-│       ├── skills/               # Skill definitions (SKILL.md per skill)
-│       ├── hooks/                # Hook config (hooks.json) + scripts
-│       └── .mcp.json             # MCP server definitions
-└── ...
-```
+There are two main ways to contribute to this project:
 
-## Adding a New Plugin
+* **Feature Requests**: Suggest new plugins, skills, agents, or capabilities you'd like to see
+* **Bug Reports**: Report unexpected behavior or broken integrations
 
-### 1. Create the plugin directory
+Open an issue to share your ideas, questions, or feedback. The team will review all submissions and will follow up accordingly.
 
-```bash
-mkdir -p plugins/<your-plugin>/.claude-plugin
-```
+## Feature Requests
 
-### 2. Create `plugin.json`
+If you want to suggest a new plugin, skill, agent, or a significant change to an existing component, please open an issue and prefix the title with `[RFC]` (Request for Change). This helps the team evaluate the proposal for relevance, capacity, and architectural consistency before any code is written, ensuring your contribution is set up for success.
 
-```json
-{
-  "name": "<your-plugin>",
-  "description": "Brief description of what the plugin does",
-  "version": "1.0.0",
-  "author": { "name": "Your Name or Team" },
-  "license": "Apache-2.0",
-  "keywords": ["relevant", "keywords"]
-}
-```
+## Bug Reports
 
-### 3. Add components
+Bugs are a reality in software. We can't fix what we don't know about, so please report liberally.
 
-Add any combination of:
+Before reporting a bug, please search existing issues as it's possible that someone else has already reported your error. In the off case that you find your issue as fixed/closed, please add a reference to it on your new one.
 
-- **Agents** (`agents/<name>.md`) — Specialized agents with frontmatter (`name`, `description`, `tools`, `model`, `tags`)
-- **Commands** (`commands/<name>.md`) — Slash commands with frontmatter (`description`, `argument-hint`, `allowed-tools`)
-- **Skills** (`skills/<name>/SKILL.md`) — Orchestration skills with frontmatter; no separate reference files (MCP is the source of truth)
-- **Hooks** (`hooks/hooks.json` + scripts) — Event hooks for PreToolUse, PostToolUse, etc.
-- **MCP Servers** (`.mcp.json`) — Model Context Protocol server definitions
+Your issue should contain a title and a clear description of the issue. You should also include as much relevant information as possible, and a code sample that demonstrates the issue. The goal of a bug report is to make it easy for yourself - and others - to replicate the bug and develop a fix.
 
-### 4. Register in marketplace.json
-
-Add your plugin to the `plugins` array in `.claude-plugin/marketplace.json`:
-
-```json
-{
-  "name": "<your-plugin>",
-  "source": "./plugins/<your-plugin>",
-  "description": "Brief description",
-  "version": "1.0.0",
-  "author": { "name": "Your Name" },
-  "license": "Apache-2.0",
-  "category": "development",
-  "keywords": ["keyword1", "keyword2"]
-}
-```
-
-### 5. Add a README
-
-Create `plugins/<your-plugin>/README.md` documenting all components and usage.
-
-## Guidelines
-
-### Content
-
-- **Public information only** — Do not include internal URLs, credentials, proprietary APIs, or company-internal tooling
-- **Working examples** — All code examples should be complete and functional
-- **Environment variables** — Never hardcode credentials. Always use environment variables with clear naming
-
-### Quality
-
-- All JSON files must be valid (validated in CI)
-- All Python scripts must pass `py_compile` syntax check
-- Hooks must handle edge cases (missing stdin, invalid JSON) gracefully
-- Commands should have clear argument hints and structured output
-
-### Testing
-
-Before submitting, run the validation suite:
-
-```bash
-# JSON validation
-python3 -m json.tool .claude-plugin/marketplace.json
-python3 -m json.tool plugins/<your-plugin>/.claude-plugin/plugin.json
-
-# Python syntax (if applicable)
-python3 -m py_compile plugins/<your-plugin>/hooks/*.py
-
-# Hook testing (if applicable)
-echo '{"tool_name":"Write","tool_input":{"file_path":"test.js","content":"clean code"}}' \
-  | python3 plugins/<your-plugin>/hooks/<your-hook>.py; echo "Exit: $?"
-```
-
-## Submitting a Pull Request
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b add-my-plugin`)
-3. Add your plugin following the structure above
-4. Run validation checks locally
-5. Submit a PR with a description of the plugin and its components
+Opening an issue is as easy as following [this link](https://github.com/mercadopago/mercadopago-claude-marketplace/issues/new?assignees=&labels=&template=bug_report.md) and filling out the given template.
 
 ## Code of Conduct
 
-Be respectful, constructive, and focused on helping developers build better Mercado Pago integrations.
+This project is governed by our [Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you are expected to uphold these standards. Please report unacceptable behavior to the project maintainers.
