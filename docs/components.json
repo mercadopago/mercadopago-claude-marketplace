@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-29T14:44:20.572413+00:00",
+  "generated_at": "2026-05-12T17:08:15.849155+00:00",
   "plugin": {
     "name": "mercadopago",
-    "version": "4.0.0",
+    "version": "4.1.0",
     "description": "Mercado Pago full-product integration toolkit. One agent routes to four orchestration skills (mp-integrate, mp-webhooks, mp-test-setup, mp-review) that pull live data from the official Mercado Pago MCP server. The MCP must always be connected — there is no offline mode.",
     "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
     "license": "Apache-2.0",
@@ -35,7 +35,7 @@
       "name": "mp-integration-expert",
       "type": "agent",
       "description": "Use when implementing, reviewing, or debugging any Mercado Pago payment integration. Routes the request to one of four skills (mp-integrate, mp-webhooks, mp-test-setup, mp-review) and uses the Mercado Pago MCP server for live API data. The MCP must always be connected — there is no offline mode.",
-      "version": "4.0.0",
+      "version": "4.1.0",
       "tags": [
         "payments",
         "mercadopago",
@@ -56,7 +56,7 @@
       "name": "mp-integrate",
       "type": "skill",
       "description": "Wizard that scaffolds a complete Mercado Pago integration for any product. Asks the developer the minimum questions needed (country, product, variant, SDK, mode), queries the MCP server for live docs, and produces a ready-to-paste code bundle. Use whenever the developer wants to add or migrate a Mercado Pago payment flow.",
-      "version": "4.0.0",
+      "version": "4.1.0",
       "tags": [
         "mercadopago",
         "integration",
@@ -78,7 +78,7 @@
       "name": "mp-review",
       "type": "skill",
       "description": "Review a Mercado Pago integration against the official quality checklist and a fixed cross-cutting security checklist. Calls quality_checklist (and quality_evaluation when applicable) on the Mercado Pago MCP. Use after the integration is in place, or when /mp-review is invoked.",
-      "version": "4.0.0",
+      "version": "4.1.0",
       "tags": [
         "mercadopago",
         "review",
