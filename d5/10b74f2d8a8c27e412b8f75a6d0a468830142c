@@ -1,0 +1,61 @@
+plugins/mercadopago/commands/mp-integrate.md
+  s_60a3729090ded0::t_46bc14aea02855 29-31,35,37,39,44-53
+  s_60a3729090ded0::t_9e9fefcc3258b9 61
+plugins/mercadopago/.mcp.json
+  s_60a3729090ded0::t_aea8b85cfe0d7c 7
+plugins/mercadopago/skills/mp-integrate/references/products.md
+  s_60a3729090ded0::t_76d8ddf31076f3 1-122
+plugins/mercadopago/commands/mp-connect.md
+  s_60a3729090ded0::t_cadffc34c1e816 67-80
+plugins/mercadopago/skills/mp-webhooks/SKILL.md
+  s_60a3729090ded0::t_3bac786af77836 140-141
+  s_60a3729090ded0::t_571be5d3b6d036 175-176
+  s_60a3729090ded0::t_ec22b96d67daa5 158-159
+  s_60a3729090ded0::t_af0df6a9e2f7fa 7
+  s_60a3729090ded0::t_db7d846c93ea09 23-33,37-46
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_60a3729090ded0::t_a47f2b6038c9a5 38-56
+  s_60a3729090ded0::t_fee031c2e71ddd 345-360
+  s_60a3729090ded0::t_70cbc42c6496f7 111-132
+plugins/mercadopago/skills/mp-test-setup/SKILL.md
+  s_60a3729090ded0::t_66010b823686ca 124
+  s_60a3729090ded0::t_5bdb0144c0c81b 19-32
+  s_60a3729090ded0::t_d5279da19397bd 95-98
+  s_60a3729090ded0::t_bd97332cb041ac 7
+plugins/mercadopago/llms.txt
+  s_60a3729090ded0::t_1f95c1e30a942a 1-56
+plugins/mercadopago/.claude-plugin/plugin.json
+  s_60a3729090ded0::t_1d16fd0e305506 4,8-9
+meli/wip/20260608-mp-claude-plugin-improvements/3-tasks/tasks.json
+  s_2e3ef2fe06e47c::t_2751571a1e9b0a 1-8,10,16-20,23-25,29-36,40,45-48,51-53,57-64,68,73-76,79-80,88-95,105-108,111-112,121-122,124-129,140-143,146-147,154-159,165,169-172,175-176,183,185-190,199-203,205-206,213-215,217-218,224,228-232,234-235,242-248,256-259,262-278,286-293,305-319,331-335,366-367,369-373,391-393,399-401
+  s_60a3729090ded0::t_f2ad8078bd44bf 21-22,49-50,77-78,109-110,123,144-145,173-174,184,216,260,402
+  s_60a3729090ded0::t_3eb87ec19cb40a 204,233,261
+  s_2e3ef2fe06e47c::t_6d4feea0a5982f 9,11-15,26-28,37-39,41-44,54-56,65-67,69-72,81-87,96-104,113-120,130-139,148-153,160-164,166-168,177-182,191-198,207-212,219-223,225-227,236-241,249-255,279-285,294-304,320-330,336-365,368,374-390,394-398
+.claude-plugin/marketplace.json
+  s_60a3729090ded0::t_bd5874ef8ee929 15
+  s_60a3729090ded0::t_2a28dfaf421265 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "d510b74f2d8a8c27e412b8f75a6d0a468830142c",
+  "prompts": {},
+  "sessions": {
+    "s_2e3ef2fe06e47c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8047ef9e-29b3-4ef3-ad16-84b8a46e1571",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    },
+    "s_60a3729090ded0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44796d44-f91f-4fea-b391-6dcffc991bfd",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
