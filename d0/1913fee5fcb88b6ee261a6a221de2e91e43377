@@ -1,0 +1,60 @@
+meli/features/20260608-mp-claude-plugin-improvements/README.md
+  s_60a3729090ded0::t_4eb19025e7b59b 1-70
+meli/features/20260608-mp-claude-plugin-improvements/implementation-summary.md
+  s_60a3729090ded0::t_4eb19025e7b59b 1-44
+meli/extracted/PATTERNS.md
+  s_2e3ef2fe06e47c::t_2cb49e42c0af4f 1-61
+meli/extracted/functional-spec.md
+  s_2e3ef2fe06e47c::t_38b2dd34936d1f 1-127
+meli/extracted/raw/existing-specs/DETECTION_REPORT.md
+  s_2e3ef2fe06e47c::t_2d64f771ae1ff5 1-48
+meli/specs/technical-spec.md
+  s_2e3ef2fe06e47c::t_a17353db1beb3e 1-132
+meli/extracted/technical-spec.md
+  s_2e3ef2fe06e47c::t_4816cc11febd50 1-132
+meli/PATTERNS.md
+  s_2e3ef2fe06e47c::t_a17353db1beb3e 1-61
+meli/PROJECT.md
+  s_2e3ef2fe06e47c::t_4dd7bf3830ef63 1-29,47-60
+  s_2e3ef2fe06e47c::t_5204b819370454 30-46
+meli/extracted/DOCUMENTATION_GAPS.md
+  s_2e3ef2fe06e47c::t_c109f39a13c84f 1-26
+meli/extracted/README.md
+  s_2e3ef2fe06e47c::t_8ab6124bbaf51e 1-26
+meli/extracted/DISCREPANCIES_REPORT.md
+  s_2e3ef2fe06e47c::t_fbcf3444967462 1-46
+meli/features/20260608-mp-claude-plugin-improvements/1-functional/spec.md
+  s_60a3729090ded0::t_4eb19025e7b59b 1-254
+meli/features/20260608-mp-claude-plugin-improvements/2-technical/spec.md
+  s_60a3729090ded0::t_4eb19025e7b59b 1-441
+meli/features/20260608-mp-claude-plugin-improvements/meta.md
+  s_60a3729090ded0::t_4eb19025e7b59b 1-67
+meli/extracted/raw/README.md
+  s_2e3ef2fe06e47c::t_462e32b2baf734 1-25
+meli/specs/functional-spec.md
+  s_2e3ef2fe06e47c::t_a17353db1beb3e 1-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "d01913fee5fcb88b6ee261a6a221de2e91e43377",
+  "prompts": {},
+  "sessions": {
+    "s_2e3ef2fe06e47c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8047ef9e-29b3-4ef3-ad16-84b8a46e1571",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    },
+    "s_60a3729090ded0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44796d44-f91f-4fea-b391-6dcffc991bfd",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
