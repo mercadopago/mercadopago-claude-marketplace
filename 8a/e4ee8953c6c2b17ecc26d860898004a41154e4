@@ -1,0 +1,31 @@
+meli/wip/20260608-mp-claude-plugin-improvements/verdicts/code_review.json
+  s_60a3729090ded0::t_084e80f964de43 1-12
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_60a3729090ded0::t_10d416b4391b61 380
+  s_60a3729090ded0::t_7bf2744e792629 35
+  s_60a3729090ded0::t_99d815bef37e45 574
+plugins/mercadopago/.claude-plugin/plugin.json
+  s_60a3729090ded0::t_9567a85917da15 3
+.claude-plugin/marketplace.json
+  s_60a3729090ded0::t_39374e29b06e00 14
+meli/wip/20260608-mp-claude-plugin-improvements/verdicts/performance.json
+  s_60a3729090ded0::t_5306ddf0575654 1-12
+meli/wip/20260608-mp-claude-plugin-improvements/3-tasks/tasks.json
+  s_60a3729090ded0::t_6cc284387b5e77 291,317,346
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "8ae4ee8953c6c2b17ecc26d860898004a41154e4",
+  "prompts": {},
+  "sessions": {
+    "s_60a3729090ded0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44796d44-f91f-4fea-b391-6dcffc991bfd",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
