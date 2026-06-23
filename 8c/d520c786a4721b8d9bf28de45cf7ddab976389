@@ -1,0 +1,230 @@
+plugins/mercadopago/skills/mp-test-setup/SKILL.md
+  s_31b23b1fd2d9aa::t_09a37fa0acafd3 134-148,150-151,154-156,159-161,163
+  s_31b23b1fd2d9aa::t_33ebd61ae8f424 28
+  s_31b23b1fd2d9aa::t_8ef2e1170da8e9 157
+  s_31b23b1fd2d9aa::t_7d146a4e152598 51
+  s_31b23b1fd2d9aa::t_ea3572578e0f98 31
+  s_90c16db159262c::t_a0dce5d33978d0 46,50
+  s_90c16db159262c::t_61a288e5018255 15
+  s_31b23b1fd2d9aa::t_f4fbeafb7d95cf 89-94
+  s_60a3729090ded0::t_5e95d1435fcd4a 21-22,25,32-34,37
+  s_31b23b1fd2d9aa::t_af6d714ea9a068 24,26,117
+  s_31b23b1fd2d9aa::t_54d377f1ee706f 35-36
+  s_60a3729090ded0::t_20c3678838d1d0 38
+  s_31b23b1fd2d9aa::t_1734cedab63abc 59-62,64
+plugins/mercadopago/skills/mp-integrate/references/guides/webhooks.md
+  s_31b23b1fd2d9aa::t_5a540df426c871 2-152
+plugins/mercadopago/commands/mp-integrate.md
+  s_31b23b1fd2d9aa::t_da391465890d1a 30,49-53,59
+  s_31b23b1fd2d9aa::t_3950ab98c999a7 170,172-173
+  s_31b23b1fd2d9aa::t_d55958da43fa60 156-167
+  s_31b23b1fd2d9aa::t_00530384d4053a 123-141,143-154,168-169
+  s_90c16db159262c::t_23ee394e21608a 175
+  s_31b23b1fd2d9aa::t_3c358a5cb13d2f 66-72,74,81-83,86
+  s_31b23b1fd2d9aa::t_efcfc719b14de3 19-21,32,93,96-97,176-177
+  s_31b23b1fd2d9aa::t_5054fad88967d4 91-92,95
+  s_90c16db159262c::t_9b3de2f11e8964 116,118
+  s_31b23b1fd2d9aa::t_992a447eb2cb25 99-100
+  s_31b23b1fd2d9aa::t_5563c71617bcf9 142,171
+  s_31b23b1fd2d9aa::t_0cae17218647a6 184
+  s_31b23b1fd2d9aa::t_c2d52168360fe2 73,75,78-80,84,87-90
+  s_31b23b1fd2d9aa::t_6b31f506e97216 11
+  s_90c16db159262c::t_9580e1e1119fdf 39-47,55,57-58,60,62
+  s_31b23b1fd2d9aa::t_14269f9bc7b2c9 94,120-121
+  s_90c16db159262c::t_b3fbfcbcb8c3b2 25,27,29,31,33-35,37,63-65,76-77,85,98,101-104,110-114
+  s_90c16db159262c::t_f6fab471fda0f1 117,119,122,174,178
+  s_31b23b1fd2d9aa::t_c5000605f56961 155
+  s_31b23b1fd2d9aa::t_c55b58598a8e46 105-109
+plugins/mercadopago/skills/mp-webhooks/SKILL.md
+  s_31b23b1fd2d9aa::t_4e130785f4c444 3,30,58,178
+  s_31b23b1fd2d9aa::t_54d377f1ee706f 43
+plugins/mercadopago/skills/mp-review/SKILL.md
+  s_31b23b1fd2d9aa::t_af65b592eea0d8 23,25-26,28
+  s_31b23b1fd2d9aa::t_0b8f59c451f3b1 101-112
+  s_31b23b1fd2d9aa::t_a03c21ab301321 82,84,86-97
+meli/wip/20260609-mp-plugin-hallazgos-v4-2/3-tasks/tasks.json
+  s_60a3729090ded0::t_74e9e4f9182350 12-16,23,26-28,37-40,42-44,50,52-57,64-67,69-71,77,79-84,93-97,99-101,107,109-114,124-128,130-132,138,140-145,155-160,162-164,170,172-177,186-192,194-197,203,206-208,218-221,230-238,253-261,276-284,299-315,319-323
+  s_60a3729090ded0::t_a7d9debf1ecd54 1-10,17-22,24-25,29-36,41,45-49,51,58-63,68,72-76,78,85-92,98,102-106,108,115-123,129,133-137,139,146-154,161,165-169,171,178-185,193,198-202,204-205,209-217,222-227,229,239-250,252,262-273,275,285-298,316-318,324-327
+  s_60a3729090ded0::t_05034693e4afa7 11,228,251,274
+plugins/mercadopago/skills/mp-integrate/references/guides/point.md
+  s_31b23b1fd2d9aa::t_5add6946680bf0 1,3-4,6-9,11,13-14,16-17,19-20,59-60,71,82,99-100,105,107-108,112,114,118,120,127,129,131,136-140,145
+  s_31b23b1fd2d9aa::t_5361baa22d6240 2,5,10,12,15,18,21-58,61-70,72-81,83-98,101-104,106,109-111,113,115-117,119,121-126,128,130,132-135,141-144
+plugins/mercadopago/commands/mp-connect.md
+  s_31b23b1fd2d9aa::t_ff4408cb3c3e6e 16
+meli/wip/20260609-mp-plugin-hallazgos-v4-2/meta.md
+  s_60a3729090ded0::t_80366c0a68da47 59-62
+  s_60a3729090ded0::t_c42b0f590472b1 1-52,63-68
+  s_60a3729090ded0::t_7fdf21abb011e5 56-58
+  s_60a3729090ded0::t_cf11190f118228 53-55
+meli/wip/20260609-mp-plugin-hallazgos-v4-2/2-technical/spec.md
+  s_60a3729090ded0::t_249d1145f164cd 1-80,90-325,328-340,343-356,359-371,374-386,389-422,429-432,446-484
+  s_60a3729090ded0::t_336a4205fea804 83,85
+  s_60a3729090ded0::t_99cd5dc7a48b8d 372-373
+  s_60a3729090ded0::t_b49af690af3e4a 81-82,84,86-89
+  s_60a3729090ded0::t_b49e46c937ac67 341-342
+  s_60a3729090ded0::t_82dc58454df053 433-445
+  s_60a3729090ded0::t_1fd4a4fd928ef8 357-358
+  s_60a3729090ded0::t_921c42cb920639 326-327
+  s_60a3729090ded0::t_38a53caefe33f0 387-388
+  s_60a3729090ded0::t_2aee9182dfd6f8 423-428
+  s_60a3729090ded0::t_a8826ac01fd36e 485
+plugins/mercadopago/.mcp.json
+  s_31b23b1fd2d9aa::t_ff4408cb3c3e6e 12
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_90c16db159262c::t_4311ef725f35b0 156
+  s_31b23b1fd2d9aa::t_65d3ab963f2dda 643-646
+  s_31b23b1fd2d9aa::t_bb555cd3bcc1ed 447-448,450
+  s_31b23b1fd2d9aa::t_a422d33ae100b8 482
+  s_31b23b1fd2d9aa::t_33ebd61ae8f424 201,505
+  s_60a3729090ded0::t_16dd5fb991f07c 472-481,483
+  s_31b23b1fd2d9aa::t_992a447eb2cb25 98
+  s_31b23b1fd2d9aa::t_72cff231d080c9 674-675
+  s_31b23b1fd2d9aa::t_edf2d9b1a46064 165,442-443
+  s_31b23b1fd2d9aa::t_6524a6e7b008e8 158,160-162,164,192,196,199-200,202
+  s_90c16db159262c::t_de46c6880aa30a 69
+  s_60a3729090ded0::t_c52630c43b3811 526-533,538-567
+  s_31b23b1fd2d9aa::t_50caa18e1b7b7e 232-249
+  s_31b23b1fd2d9aa::t_0c0ace387e0ad0 124-128,406-409,411,665
+  s_31b23b1fd2d9aa::t_d244001c30927a 15,17-18
+  s_31b23b1fd2d9aa::t_1cc4355beab382 19-41
+  s_60a3729090ded0::t_2b72a6bbe878aa 647-649
+  s_90c16db159262c::t_0b4f99875f9077 204
+  s_31b23b1fd2d9aa::t_6a8e1d48b9bf8a 370-372,374-376,381-385,387-392,395-399
+  s_31b23b1fd2d9aa::t_ce3ab4dc715060 727
+  s_90c16db159262c::t_12f19fbcd6e0e1 45,47,49,51,53-55,57,59-60,62-67,71,73,76-77,79-83,86-97,99-100
+  s_31b23b1fd2d9aa::t_57781e314861a4 173-177,191
+  s_31b23b1fd2d9aa::t_8bfe3e45483f4f 178
+  s_31b23b1fd2d9aa::t_6de1e3c916e68e 606,608-609
+  s_31b23b1fd2d9aa::t_54d377f1ee706f 78,163,194-195,197-198,508
+  s_31b23b1fd2d9aa::t_31a5c43332fdaa 129
+  s_31b23b1fd2d9aa::t_3e1982bad029de 630-631
+  s_60a3729090ded0::t_a54577aebcbbca 574-575
+  s_31b23b1fd2d9aa::t_2dab84ae0d2660 666-669
+  s_31b23b1fd2d9aa::t_3f8ed4329384dc 179-190
+  s_60a3729090ded0::t_4147e06ed333c6 193,203
+  s_31b23b1fd2d9aa::t_efc34ce27caccd 444,446,452
+plugins/mercadopago/README.md
+  s_31b23b1fd2d9aa::t_4e130785f4c444 58
+plugins/mercadopago/skills/mp-integrate/references/guides/checkout-api.md
+  s_31b23b1fd2d9aa::t_5a3b794864f73d 56-57,59-60,75,80,86,157-159,178-179,186
+  s_31b23b1fd2d9aa::t_19b0d898903a63 236-248,251,255-257
+  s_31b23b1fd2d9aa::t_ed1cce94f52232 1-2,5-6,13,15,17-18,24,26,28-29,32,34-38,47-49,51-52,54-55,58,62-74,76-79,81-85,87-96,98-112,114-120,123-125,127,129-156,160-173,175-177,180-185,187-201,204,206-211,213,215-217,219,221-224,229-232,252-254,258
+  s_31b23b1fd2d9aa::t_7d0a1da5bd9546 39-40,42,45
+  s_31b23b1fd2d9aa::t_ad59c7e0b2e406 41,43-44
+  s_31b23b1fd2d9aa::t_9d50e1652cecda 3-4,7-12,14,16,19-23,25,27,30-31,33,46,50,53,61,97,113,121-122,126,128,174,202-203,205,212,214,218,220,225-228,233-235,249-250,259
+plugins/mercadopago/skills/mp-integrate/references/guides/marketplace.md
+  s_31b23b1fd2d9aa::t_08e328892712f2 1,3-9,11,13,16-17,19-20,64-65,72-73,97,111,133-134,139,141,147-148,154,156,163-167,172-178,181
+  s_31b23b1fd2d9aa::t_fc4401d474f120 2,10,12,14-15,18,21-63,66-71,74-96,98-110,112-132,135-138,140,142-146,149-153,155,157-162,168-171,179-180
+plugins/mercadopago/commands/mp-test-cards.md
+  s_31b23b1fd2d9aa::t_eb0e9ab165218b 23-25,27
+  s_31b23b1fd2d9aa::t_5b5d086d59abec 1-22,26,28-60
+  s_31b23b1fd2d9aa::t_c2f304e0033dad 61-65,67-79
+  s_31b23b1fd2d9aa::t_ab3424249ceabb 66
+plugins/mercadopago/llms.txt
+  s_31b23b1fd2d9aa::t_4e130785f4c444 153
+  s_31b23b1fd2d9aa::t_5563c71617bcf9 53-56
+  s_31b23b1fd2d9aa::t_3f42d30b766b8b 1-6,8,10-16,18,20-27,29,31-34,36,38-48,50,52,58-60,62-67,69-71,73-74,76-152,154-167
+CLAUDE.md
+  s_31b23b1fd2d9aa::t_737f18c62f76e0 96,98-100,104-105
+  s_2e3ef2fe06e47c::t_b913bb4bfa94ec 245-265
+plugins/mercadopago/agents/mp-integration-expert.md
+  s_31b23b1fd2d9aa::t_b6bcd702cf86ef 137
+  s_31b23b1fd2d9aa::t_00887d3ea61263 53-56,58
+  s_31b23b1fd2d9aa::t_713ee4cd3ff806 17-25,27
+  s_31b23b1fd2d9aa::t_1b73d64c180bec 203,205
+  s_90c16db159262c::t_720b9c2ba95ece 39,45,47,49,51,59-61,63
+  s_31b23b1fd2d9aa::t_2595d6b056dea6 77,79,81,83
+  s_31b23b1fd2d9aa::t_54d377f1ee706f 26,174
+  s_31b23b1fd2d9aa::t_519dbb068214c1 67,69,71,73
+  s_31b23b1fd2d9aa::t_0f640aaade59d2 106,111-115
+  s_31b23b1fd2d9aa::t_70dce0c05c0299 182-199,201
+  s_31b23b1fd2d9aa::t_9fe8ce7b108478 108-110,117,119
+  s_60a3729090ded0::t_e8bb5ab57c22eb 178-181,207
+  s_31b23b1fd2d9aa::t_9a396c497e71fd 202,204,206
+  s_31b23b1fd2d9aa::t_4e130785f4c444 33,200
+  s_31b23b1fd2d9aa::t_0bdbf8f47993bb 65,75
+  s_31b23b1fd2d9aa::t_64656ff608d4c1 85,87,89-97,99-100,102
+plugins/mercadopago/skills/mp-integrate/references/guides/checkout-pro.md
+  s_31b23b1fd2d9aa::t_1231f817e6d65c 74-76,78-82
+  s_31b23b1fd2d9aa::t_f9b82ec06b7c5f 195
+  s_31b23b1fd2d9aa::t_7b134399203c03 2,19,21-24,26,29,32-38,41-58,61-73,77,83-95,97-115,117-119,121-123,125-134,137,139-143,146-158,160-162,167,169-174,176,178,180,184,186,194,197
+  s_31b23b1fd2d9aa::t_2dce98af235d3c 1,3-18,20,25,27-28,30-31,39-40,59-60,96,116,120,124,135-136,138,159,163-166,168,175,177,179,181-183,185,187-193,196,198-200
+  s_31b23b1fd2d9aa::t_768482ec060810 144-145
+plugins/mercadopago/skills/mp-integrate/references/guides/qr.md
+  s_31b23b1fd2d9aa::t_d70983eefb97ba 2,5-6,10,12,15,18,21-41,44-47,49,52,56-59,61-62,65,67,69-87,91,93-99,101-104,107,109,111-122,125,127-131,137-140
+  s_31b23b1fd2d9aa::t_51e0df95cad139 1,3-4,7-9,11,13-14,16-17,19-20,42-43,48,50-51,53-55,60,63-64,66,68,88-90,92,100,105-106,108,110,123-124,126,132-136,141
+plugins/mercadopago/skills/mp-integrate/references/guides/bricks.md
+  s_31b23b1fd2d9aa::t_0c0ace387e0ad0 20
+  s_31b23b1fd2d9aa::t_99b10ddcec2b4e 8,14,21-30,33,35-48,51,53-57,59,70-71,74-80,82-108,110-112,114-118,121,132,138-151,159,191,193-200,202-213,216,218-226,230-234,240-241,243,250,258,262-264,270,273-274
+  s_31b23b1fd2d9aa::t_62bd838bad662b 2,5,7,16,19,31,52,58,60-69,72-73,81,109,113,125-127,129-131,133,153-158,160-162,165-166,168,170,172,176-185,228-229,237,239,242,244-246,248-249,259-261,271,275-277
+  s_31b23b1fd2d9aa::t_bf5edd3155ad1e 1,3-4,6,9-13,15,17-18,32,34,49-50,119-120,122-124,128,134-137,152,163-164,167,169,171,173-175,186-190,192,201,214-215,217,227,235-236,238,247,251-257,265-269,272,278
+meli/wip/20260616-mp-plugin-p1-offline-mode/3-tasks/tasks.json
+  s_31b23b1fd2d9aa::t_19a7cbcd6a0e23 2-154
+plugins/mercadopago/commands/mp-review.md
+  s_31b23b1fd2d9aa::t_992a447eb2cb25 15-17
+meli/wip/20260609-mp-plugin-hallazgos-v4-2/verdicts/layer3.json
+  s_60a3729090ded0::t_78e98ff6e6382d 1-20
+meli/wip/20260609-mp-plugin-hallazgos-v4-2/1-functional/spec.md
+  s_60a3729090ded0::t_1c5aac598ed724 210-254
+  s_60a3729090ded0::t_7f3c995b4f32ab 1-209
+plugins/mercadopago/skills/mp-integrate/references/journey.md
+  s_31b23b1fd2d9aa::t_54d377f1ee706f 21,44,71,100,152
+  s_31b23b1fd2d9aa::t_25a178e99d246f 56,113,188
+  s_31b23b1fd2d9aa::t_384ab24bf4ed72 1-20,22-43,45-55,57-70,72-99,101-112,114-151,153-187,189-263
+plugins/mercadopago/skills/mp-integrate/references/products.md
+  s_31b23b1fd2d9aa::t_7eace9e56aa220 1-5,7-9,11-13,15-21,23-24,28,30,32-70,74,76,78-81,83-85,87-91,93-114,116-122,124,126,128,130,132-135,137-173,175-176,178-181,183-184,186-189,191-295,297-331,333,335,337-351,353-360,364-366,368-370,372-404,406-439,445,452
+  s_31b23b1fd2d9aa::t_f9bd985b42b929 6
+  s_31b23b1fd2d9aa::t_e7a2b34756f8f8 174,177,182,185,190,296,352
+  s_31b23b1fd2d9aa::t_3b276617997657 453-692,694-699
+  s_31b23b1fd2d9aa::t_32bf581ad6e452 450-451
+plugins/mercadopago/skills/mp-integrate/references/guides/subscriptions.md
+  s_31b23b1fd2d9aa::t_c0d4b828474ccf 2,6,10,12,15,18,21-59,62-63,65-74,77-104,107-109,112,115-119,121,123-125,127,129-133,140-143,149-151
+  s_31b23b1fd2d9aa::t_ef2e9b7df7d1df 1,3-5,7-9,11,13-14,16-17,19-20,60-61,64,75-76,105-106,110-111,113-114,120,122,126,128,134-139,144-148,152
+plugins/mercadopago/skills/mp-integrate/references/recommendation-template.md
+  s_31b23b1fd2d9aa::t_26f08b976b2731 1-142,144,147-198
+  s_31b23b1fd2d9aa::t_0fe38ade87a627 143,145-146
+plugins/mercadopago/skills/mp-integrate/references/terminology-rules.md
+  s_31b23b1fd2d9aa::t_03db067d334574 1-9,22-25,28-83,85,87,100-145
+  s_31b23b1fd2d9aa::t_0c0ace387e0ad0 84,86,88-99
+  s_31b23b1fd2d9aa::t_0054457dcd7324 10-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "8cd520c786a4721b8d9bf28de45cf7ddab976389",
+  "prompts": {},
+  "sessions": {
+    "s_2e3ef2fe06e47c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8047ef9e-29b3-4ef3-ad16-84b8a46e1571",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    },
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    },
+    "s_60a3729090ded0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44796d44-f91f-4fea-b391-6dcffc991bfd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    },
+    "s_90c16db159262c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4bf361b4-a50a-4181-907c-aa31fe54bb94",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
