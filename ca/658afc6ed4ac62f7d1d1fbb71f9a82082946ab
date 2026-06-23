@@ -1,0 +1,19 @@
+plugins/mercadopago/agents/mp-integration-expert.md
+  s_31b23b1fd2d9aa::t_30d08235ef3324 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "ca658afc6ed4ac62f7d1d1fbb71f9a82082946ab",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
