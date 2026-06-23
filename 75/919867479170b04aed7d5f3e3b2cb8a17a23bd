@@ -1,0 +1,26 @@
+plugins/mercadopago/agents/mp-integration-expert.md
+  s_31b23b1fd2d9aa::t_d2325f0271b9b3 100
+  s_31b23b1fd2d9aa::t_5b76653c9ad85f 110-123
+  s_31b23b1fd2d9aa::t_878489591cbf97 140-144
+plugins/mercadopago/skills/mp-test-setup/SKILL.md
+  s_31b23b1fd2d9aa::t_a64f28d937bbcf 15,22-26
+  s_31b23b1fd2d9aa::t_f5b99b25dfc494 3
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_31b23b1fd2d9aa::t_fc794c10098c4f 349
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "75919867479170b04aed7d5f3e3b2cb8a17a23bd",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
