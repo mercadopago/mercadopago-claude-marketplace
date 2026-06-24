@@ -1,0 +1,62 @@
+plugins/mercadopago/.claude-plugin/plugin.json
+  s_60a3729090ded0::t_1d16fd0e305506 4,8-9
+plugins/mercadopago/llms.txt
+  s_60a3729090ded0::t_1f95c1e30a942a 2,7,12,14,16,21,24,27,29,33,35,41,43,51,53
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_31b23b1fd2d9aa::t_d244001c30927a 18
+  s_60a3729090ded0::t_a47f2b6038c9a5 39,41,45,47-48,55
+  s_60a3729090ded0::t_70cbc42c6496f7 112,114,119-124,130-132
+  s_31b23b1fd2d9aa::t_6524a6e7b008e8 118
+  s_31b23b1fd2d9aa::t_6a8e1d48b9bf8a 294
+  s_60a3729090ded0::t_fee031c2e71ddd 345-350,355,357,359
+  s_60a3729090ded0::t_16dd5fb991f07c 379
+plugins/mercadopago/skills/mp-webhooks/SKILL.md
+  s_60a3729090ded0::t_af0df6a9e2f7fa 7
+  s_60a3729090ded0::t_db7d846c93ea09 23-29,31-33,37-42,44-46
+  s_31b23b1fd2d9aa::t_4e130785f4c444 57,177
+  s_60a3729090ded0::t_3bac786af77836 139-140
+  s_60a3729090ded0::t_ec22b96d67daa5 160
+  s_60a3729090ded0::t_571be5d3b6d036 174-175
+plugins/mercadopago/commands/mp-connect.md
+  s_60a3729090ded0::t_cadffc34c1e816 67-80
+plugins/mercadopago/skills/mp-test-setup/SKILL.md
+  s_60a3729090ded0::t_bd97332cb041ac 7
+  s_60a3729090ded0::t_5bdb0144c0c81b 19-20,22,24-26,28-32
+  s_31b23b1fd2d9aa::t_1734cedab63abc 51
+  s_31b23b1fd2d9aa::t_f4fbeafb7d95cf 76
+  s_60a3729090ded0::t_d5279da19397bd 98-99,101
+  s_31b23b1fd2d9aa::t_09a37fa0acafd3 117
+  s_31b23b1fd2d9aa::t_8ef2e1170da8e9 123
+plugins/mercadopago/.mcp.json
+  s_60a3729090ded0::t_aea8b85cfe0d7c 7
+  s_31b23b1fd2d9aa::t_ff4408cb3c3e6e 12
+plugins/mercadopago/skills/mp-integrate/references/products.md
+  s_60a3729090ded0::t_76d8ddf31076f3 2,14,16,24,32,67,109-113,116-119,121
+  s_31b23b1fd2d9aa::t_7eace9e56aa220 6,10,12-13,26-28,30,34-36,44-45,53,55-57,65-66,73-75,83,85,87,107
+plugins/mercadopago/commands/mp-integrate.md
+  s_60a3729090ded0::t_46bc14aea02855 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "1da84be204b0629daa4d5bdc98325b1ead52a2dd",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    },
+    "s_60a3729090ded0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44796d44-f91f-4fea-b391-6dcffc991bfd",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
