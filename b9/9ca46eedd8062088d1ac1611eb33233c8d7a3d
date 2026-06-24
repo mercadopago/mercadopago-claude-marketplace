@@ -1,0 +1,51 @@
+plugins/mercadopago/llms.txt
+  s_31b23b1fd2d9aa::t_feaadca7e14da9 153
+plugins/mercadopago/skills/mp-integrate/references/recommendation-template.md
+  s_31b23b1fd2d9aa::t_feaadca7e14da9 102
+plugins/mercadopago/skills/mp-integrate/references/guides/checkout-api.md
+  s_31b23b1fd2d9aa::t_c692bda02a7a3d 5-7,49
+  s_31b23b1fd2d9aa::t_4f5019ea68b4e1 157-160
+plugins/mercadopago/skills/mp-webhooks/SKILL.md
+  s_31b23b1fd2d9aa::t_fe6437383bd430 153,155,157-159,161,163
+plugins/mercadopago/README.md
+  s_31b23b1fd2d9aa::t_071285420ea686 58
+  s_31b23b1fd2d9aa::t_feaadca7e14da9 45,57
+plugins/mercadopago/commands/mp-integrate.md
+  s_31b23b1fd2d9aa::t_7bb6dad8f595c8 159
+  s_31b23b1fd2d9aa::t_a90b585579ff3b 19-21,169
+  s_31b23b1fd2d9aa::t_4f5019ea68b4e1 105-111
+  s_31b23b1fd2d9aa::t_e63765e6de66c1 103-104,112
+plugins/mercadopago/skills/mp-integrate/references/guides/webhooks.md
+  s_31b23b1fd2d9aa::t_feaadca7e14da9 103,114-116,151
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_31b23b1fd2d9aa::t_a90b585579ff3b 43,343-344
+  s_31b23b1fd2d9aa::t_b7a66f7af2b463 19-25,27
+  s_31b23b1fd2d9aa::t_e3a63613999752 49
+plugins/mercadopago/skills/mp-test-setup/SKILL.md
+  s_31b23b1fd2d9aa::t_a90b585579ff3b 117
+  s_31b23b1fd2d9aa::t_feaadca7e14da9 162
+  s_31b23b1fd2d9aa::t_97fa8dccfd1560 61-62
+plugins/mercadopago/agents/mp-integration-expert.md
+  s_31b23b1fd2d9aa::t_071285420ea686 10,211
+plugins/mercadopago/skills/mp-review/SKILL.md
+  s_31b23b1fd2d9aa::t_97fa8dccfd1560 25-26
+plugins/mercadopago/commands/mp-test-cards.md
+  s_31b23b1fd2d9aa::t_a90b585579ff3b 24-25
+  s_31b23b1fd2d9aa::t_071285420ea686 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "b99ca46eedd8062088d1ac1611eb33233c8d7a3d",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
