@@ -1,0 +1,19 @@
+plugins/mercadopago/skills/mp-integrate/references/guides/qr.md
+  s_31b23b1fd2d9aa::t_c80cae81baa0d7 113-115,118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "4902e7a2345337303cf56bcc1950e734c131d9e9",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
