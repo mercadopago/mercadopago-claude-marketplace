@@ -1,0 +1,40 @@
+plugins/mercadopago/skills/mp-integrate/references/journey.md
+  s_31b23b1fd2d9aa::t_cce6f2b9ff712a 141
+  s_31b23b1fd2d9aa::t_8f00826c88b9a1 84
+  s_31b23b1fd2d9aa::t_87474972d035ba 188
+plugins/mercadopago/skills/mp-integrate/references/guides/checkout-api.md
+  s_31b23b1fd2d9aa::t_8b40d1281e5d9b 2,5-6,15,33,41-48,50,53,58-81,83-87,128-130,150,157,165-168,218-220,227,229,233
+plugins/mercadopago/skills/mp-integrate/references/guides/bricks.md
+  s_31b23b1fd2d9aa::t_c9cea9ebe6ab11 146
+plugins/mercadopago/skills/mp-integrate/SKILL.md
+  s_31b23b1fd2d9aa::t_95c4fa8c658610 425
+  s_31b23b1fd2d9aa::t_48f42a07e3d6c3 646
+plugins/mercadopago/skills/mp-integrate/references/products.md
+  s_31b23b1fd2d9aa::t_dcfe0909c655fc 2,5-6
+plugins/mercadopago/agents/mp-integration-expert.md
+  s_31b23b1fd2d9aa::t_0f39fb09542003 175
+plugins/mercadopago/llms.txt
+  s_31b23b1fd2d9aa::t_ced5de8444c6e2 2
+plugins/mercadopago/README.md
+  s_31b23b1fd2d9aa::t_d1f593fc6eaf7e 5
+  s_31b23b1fd2d9aa::t_197f8772b8e4c5 76
+  s_31b23b1fd2d9aa::t_3344c5d2bd3e56 84
+plugins/mercadopago/commands/mp-test-cards.md
+  s_31b23b1fd2d9aa::t_ba2a26d9b9a3d6 128,130,132,136,138-139,141-143,145-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "e188866461093f8154c0e084c77b4ea7a3ac9061",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
