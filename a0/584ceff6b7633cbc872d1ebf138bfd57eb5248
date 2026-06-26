@@ -1,0 +1,19 @@
+plugins/mercadopago/commands/mp-test-cards.md
+  s_31b23b1fd2d9aa::t_44f3129c1be9e8 23-37,39-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a0584ceff6b7633cbc872d1ebf138bfd57eb5248",
+  "prompts": {},
+  "sessions": {
+    "s_31b23b1fd2d9aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7e6ab2b-95eb-470b-b111-17769f6cdc83",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Edson Bento <edson.bento@mercadolivre.com>"
+    }
+  }
+}
