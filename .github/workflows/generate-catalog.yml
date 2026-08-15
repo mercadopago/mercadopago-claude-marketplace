@@ -1,4 +1,5 @@
 name: Generate Catalog
+permissions: {}
 
 on:
   push:
