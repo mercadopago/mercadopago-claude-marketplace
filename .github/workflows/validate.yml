@@ -119,3 +119,7 @@ jobs:
             exit 1
           fi
           echo "OK: found $skill_count SKILL.md file(s)"
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true

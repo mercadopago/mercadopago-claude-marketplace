@@ -39,3 +39,7 @@ jobs:
           git add docs/components.json
           git diff --cached --quiet || git commit -m "chore: auto-regenerate components.json"
           git push
+
+concurrency:
+  group: generate-catalog-${{ github.ref }}
+  cancel-in-progress: true
