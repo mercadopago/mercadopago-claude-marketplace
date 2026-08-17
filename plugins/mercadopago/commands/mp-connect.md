@@ -15,6 +15,41 @@ Use this command only if the connection is broken or you want to verify the stat
 
 > **Note**: Mercado Pago also supports OAuth-based authentication for marketplace flows (where sellers authorize access to their accounts). This command configures the primary Access Token for the MCP server. For OAuth-based marketplace integrations, use `/mp-integrate product=marketplace`.
 
+## Step 0 — Ensure `.mcp.json` is present in project root
+
+The MCP server (`https://mcp.mercadopago.com/mcp`) is only registered by Claude Code if `.mcp.json` exists in the project root at session start. If the plugin was installed via `claude plugin install` but `.mcp.json` was never copied to the project, the MCP tools (`authenticate`, `application_list`, etc.) will never appear — regardless of authentication state.
+
+Run via `Bash`:
+
+```bash
+PROJECT_MCP="$PWD/.mcp.json"
+PLUGIN_MCP=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/mercadopago/*/ \
+  2>/dev/null | sort -V | tail -1).mcp.json
+
+if [ ! -f "$PROJECT_MCP" ] && [ -f "$PLUGIN_MCP" ]; then
+  cp "$PLUGIN_MCP" "$PROJECT_MCP"
+  echo "COPIED"
+elif [ ! -f "$PROJECT_MCP" ] && [ ! -f "$PLUGIN_MCP" ]; then
+  echo "NOT_FOUND"
+else
+  echo "OK"
+fi
+```
+
+**If `COPIED`:**
+> ⚠️ `.mcp.json` was missing from your project root — it has been copied from the plugin cache. **You must restart Claude Code** for the MCP server to be registered. After restarting, run `/mp-connect` again.
+
+Stop here. Do not proceed to Step 1 until the user confirms they restarted.
+
+**If `NOT_FOUND`:** the plugin cache is empty — the plugin may not be installed. Show:
+> The plugin cache was not found. Run `claude plugin install mercadopago` and then restart Claude Code.
+
+Stop.
+
+**If `OK`:** `.mcp.json` already in project root. Continue to Step 1.
+
+---
+
 ### Pre-check: Is MCP already connected?
 ## Step 1 — Check status
 
@@ -29,12 +64,13 @@ Verify by attempting to call `mcp__plugin_mercadopago_mcp__application_list`:
 
 ## Step 2 — Start OAuth directly
 
-Call `mcp__plugin_mercadopago_mcp__authenticate`. Show the returned URL as a clickable link:
+Call `mcp__plugin_mercadopago_mcp__authenticate`. Show the returned URL as a clickable link **and include the instruction below — always, every time**:
 
-> Open this URL to connect Mercado Pago:
-> **{authorization_url}**
+> 🔗 **[Clique aqui para conectar o Mercado Pago]({authorization_url})**
 >
-> When you see **"Authentication Successful"** in the browser, come back and say anything — I'll verify automatically.
+> ⚠️ **Cmd+Click** no link acima (Mac) ou **Ctrl+Click** (Windows/Linux) — **não copie e cole** a URL no browser. O link usa `redirect_uri=localhost` que só funciona quando o Claude Code intercepta o clique diretamente; abrir num browser externo resulta em erro 403.
+>
+> Quando ver **"Authentication Successful"** no browser, volte aqui e me avise.
 
 When the user responds:
 - **Call `application_list` directly.** If the browser showed "Authentication Successful", the local MCP server already processed the callback and the token is live.
