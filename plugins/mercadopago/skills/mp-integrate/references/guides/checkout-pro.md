@@ -2,7 +2,7 @@
 # Updated: 2026-06-22 | Source: Mercado Pago MCP (search_documentation)
 #
 # TRAP TO AVOID FIRST: Never use sandbox_init_point — use init_point always.
-# Checkout Pro uses Preferences API (/v1/checkout/preferences), NOT Orders API.
+# Checkout Pro uses Preferences API (/checkout/preferences), NOT Orders API.
 
 ---
 
@@ -13,6 +13,16 @@ Hosted redirect checkout. Buyer leaves your site, pays on Mercado Pago's secure 
 **When to use:** fastest integration, full payment method catalog (saved cards, MP balance, cash, BNPL), no customization needed on the payment form.
 
 **Countries:** AR, BR, MX, CL, CO, PE, UY
+
+---
+
+## Mandatory placement in an existing application
+
+Before writing UI, run the bundled CTA detector. Checkout Pro must always place a visible, localized **Pay with Mercado Pago** button at the application's resolved checkout CTA location. Reuse the surrounding layout and button classes; replace the previous checkout action instead of adding a competing second handler.
+
+If no unambiguous CTA is detected, the developer must choose the concrete screen/location where the button will be inserted. Do not finish the scaffold without the button. Checkout Pro redirects to the hosted Mercado Pago page, so it does not create a separate local card-form screen.
+
+Mark the final button with the `data-mp-checkout-cta` attribute set to the Checkout Pro product slug and make it submit to the preference-creation route that redirects to `result.init_point`.
 
 ---
 
@@ -38,6 +48,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+const configuredAppUrl = process.env.APP_URL?.trim();
+const publicAppUrl = Boolean(
+  configuredAppUrl
+  && /^https:\/\//i.test(configuredAppUrl)
+  && !/^https:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::|\/|$)/i.test(configuredAppUrl)
+);
+const baseUrl = configuredAppUrl || `http://localhost:${process.env.PORT || 3000}`;
 
 // ─── GET / — checkout page ────────────────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -49,7 +66,7 @@ app.get('/', (req, res) => {
         <h1>Checkout Pro — Test</h1>
         <p>Product: <strong>Test Product — BRL 10.00</strong></p>
         <form action="/checkout" method="POST">
-          <button type="submit" style="padding:12px 24px;font-size:16px;background:#009ee3;color:#fff;border:none;border-radius:6px;cursor:pointer">
+          <button type="submit" data-mp-checkout-cta="checkout-pro" style="padding:12px 24px;font-size:16px;background:#009ee3;color:#fff;border:none;border-radius:6px;cursor:pointer">
             Pay with Mercado Pago
           </button>
         </form>
@@ -71,13 +88,13 @@ app.post('/checkout', async (req, res) => {
           currency_id: process.env.CURRENCY_ID || 'BRL',
         }],
         back_urls: {
-          success: `${process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`}/success`,
-          failure: `${process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`}/failure`,
-          pending: `${process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`}/pending`,
+          success: `${baseUrl}/success`,
+          failure: `${baseUrl}/failure`,
+          pending: `${baseUrl}/pending`,
         },
         // ⚠️ auto_return only works with a public URL — MP rejects localhost
         // Remove this line during local development; add back in production
-        ...(process.env.APP_URL && !process.env.APP_URL.includes('localhost')
+        ...(publicAppUrl
           ? { auto_return: 'approved' }
           : {}),
         notification_url: process.env.WEBHOOK_URL || undefined,

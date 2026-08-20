@@ -1,10 +1,10 @@
 ---
 name: mp-integrate
-description: Wizard that scaffolds a complete Mercado Pago integration for any product. Asks the developer the minimum questions needed (country, product, variant, SDK, mode), queries the MCP server for live docs, and produces a ready-to-paste code bundle. Use whenever the developer wants to add or migrate a Mercado Pago payment flow.
+description: Wizard that scaffolds a complete Mercado Pago integration from official and bundled sources, using MCP only for selected account actions or documentation gaps. Use whenever the developer wants to add or migrate a Mercado Pago payment flow.
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.0"
+  version: "4.3.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, orders, sdk"
@@ -16,34 +16,27 @@ This skill is the single entry point for building a Mercado Pago integration. It
 
 ## Reference files — read BEFORE generating any code
 
-**Finding the references directory:** `{version}` is the installed plugin version. Resolve it via Bash:
-```bash
-PLUGIN_BASE=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/mercadopago/*/ 2>/dev/null | sort -V | tail -1)
-```
-Then use `$PLUGIN_BASE` as the base path. Example:
-- `$PLUGIN_BASE/skills/mp-integrate/references/terminology-rules.md`
-
-Alternatively use the path: `~/.claude/plugins/cache/claude-plugins-official/mercadopago/{version}/` where `{version}` = the version shown in the plugin listing.
+Use `${CLAUDE_PLUGIN_ROOT}` for every bundled reference and script. Claude Code resolves it to the active plugin version. Never scan an installation cache, load another marketplace copy, or copy the plugin's `.mcp.json` into the developer's project.
 
 | File | Absolute path | Read when |
 |---|---|---|
-| `terminology-rules.md` | `{base}references/terminology-rules.md` | **Always first** |
-| `recommendation-template.md` | `{base}references/recommendation-template.md` | **Always** — mandatory output structure |
-| `guides/checkout-pro.md` | `{base}references/guides/checkout-pro.md` | product = checkout-pro |
-| `guides/checkout-api.md` | `{base}references/guides/checkout-api.md` | product = checkout-api |
-| `guides/bricks.md` | `{base}references/guides/bricks.md` | product = bricks |
-| `guides/qr.md` | `{base}references/guides/qr.md` | product = qr |
-| `guides/point.md` | `{base}references/guides/point.md` | product = point |
-| `guides/subscriptions.md` | `{base}references/guides/subscriptions.md` | product = subscriptions |
-| `guides/marketplace.md` | `{base}references/guides/marketplace.md` | product = marketplace |
-| `guides/webhooks.md` | `{base}references/guides/webhooks.md` | any product + webhooks |
-| `products.md` | `{base}references/products.md` | test cards per country, API reference |
+| `terminology-rules.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/terminology-rules.md` | **Always first** |
+| `recommendation-template.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/recommendation-template.md` | **Always** — mandatory output structure |
+| `guides/checkout-pro.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/checkout-pro.md` | product = checkout-pro |
+| `guides/checkout-api.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/checkout-api.md` | product = checkout-api |
+| `guides/bricks.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/bricks.md` | product = bricks |
+| `guides/qr.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/qr.md` | product = qr |
+| `guides/point.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/point.md` | product = point |
+| `guides/subscriptions.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/subscriptions.md` | product = subscriptions |
+| `guides/marketplace.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/marketplace.md` | product = marketplace |
+| `guides/webhooks.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/webhooks.md` | any product + webhooks |
+| `products.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/products.md` | test cards per country, API reference |
 
 **Do NOT use MCP before reading all applicable files above.** For live documentation, WebFetch the official `{country_domain}/developers/llms.txt` (tier 1 — see Step 3), falling back to `products.md`.
 
 ---
 
-⚠️ **IMPORTANT — when invoked via `/mp-integrate` command:** The command file already ran env check, journey map, MCP state check, and credential fetch. **Start directly at Step 1.a** (auto-detect SDK/client/mode). Do NOT run any pre-flight or Step 0 checks again — they are done.
+⚠️ **IMPORTANT — when invoked via `/mp-integrate` command:** The command file already ran the environment check and readiness flow. **Start directly at Step 1.a** (auto-detect SDK/client/mode). Do not probe MCP state. Credentials are imported only if the developer explicitly selected that MCP-backed option.
 
 ---
 
@@ -61,6 +54,9 @@ The SDK / language is **NEVER** asked via `AskUserQuestion`. Period.
 - If a single manifest is found → record the SDK and **skip the question entirely**.
 - If multiple manifests exist (real polyglot monorepo) → still don't ask. Pick the one that matches the directory the developer is currently editing, or default to `node`. Mention the choice in a single line of chat (`✓ SDK: node — from package.json`) and **continue without asking**.
 - If no manifest exists at all → still don't ask. Default to `node`, mention it (`✓ SDK: node — defaulted (no manifest detected; we'll create package.json during scaffolding)`), and continue.
+- Resolve the official package for that stack and query its official package registry for the current stable release. “Stable” means the registry's default/latest release, excluding alpha, beta, release-candidate, nightly, or preview builds.
+- Compare the installed version with that stable release. Before installing or updating, show the package, current version (or “not installed”), proposed version, and the manifest/lockfile that will change, then request explicit authorization via `AskUserQuestion`.
+- If authorized, install or update to the current stable release, adapt code affected by incompatible changes, update the lockfile, and run relevant tests. If declined, do not mutate dependencies and do not report the integration as ready while its required SDK is missing or outdated.
 
 If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `header="Stack"` or `header="Language"`, **stop immediately**. The SDK is never a picker. The Tabs row at the top of the wizard must NOT include "SDK" as one of the tabs.
 
@@ -99,6 +95,62 @@ The wizard's Tabs row at the top (the `□ Country  □ Product  □ Mode  ✓ S
 - Never include "Mode" in the tabs when `product` is `checkout-pro` / `bricks` / `wallet-connect` / `subscriptions` / `money-out` / `smartapps`.
 - Never include "Environment" in the tabs.
 
+### LOCK 5 — Checkout CTA is mandatory for Pro and API
+
+Immediately after the product is resolved, normalize these aliases before any product branch:
+
+- `checkout-api-orders`, `checkout-transparente`, `checkout-transparent`, `checkout_api` → `checkout-api`
+- `checkout-pro` remains `checkout-pro`
+
+For either normalized value, run this from the target project root before assembling or writing the checkout UI:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-checkout-cta.mjs" "{product}" .
+```
+
+Persist the returned `product`, `status`, `selected`, `candidates`, and `nextAction` for Step 2.5. Do not independently reinterpret `checkout-api-orders` as another product. `nextAction=wire_selected_cta` requires using `selected`; `nextAction=ask_user_for_cta_or_insertion_location` requires an immediate `AskUserQuestion` for a concrete target. A Checkout Pro or Checkout API scaffold may never finish successfully without a wired CTA. This lock applies equally to both products; do not change the working Checkout Pro behavior while fixing Checkout API.
+
+### LOCK 6 — Checkout Pro local back URLs must never enable `auto_return`
+
+When `product=checkout-pro`, `auto_return: "approved"` is valid only when the effective `APP_URL` is a public HTTPS origin. If `APP_URL` is missing, uses `localhost`, `127.0.0.1`, `0.0.0.0`, or is not HTTPS, omit `auto_return` from the preference body. Do not merely provide localhost `back_urls`: the Preferences API rejects that combination before creating the preference.
+
+For applications that support local and production execution, derive an explicit `publicAppUrl` boolean from `APP_URL` (HTTPS and non-local) and conditionally spread `{ auto_return: "approved" }` only when it is true. Before reporting success, run `validate-checkout-pro-server.mjs` as required by Step 3.5.
+
+### LOCK 7 — Point uses Orders API and supports hardware-free test mode
+
+When `product=point`, scaffold only the current Orders API flow: `POST /v1/orders`, `type: "point"`, and `config.point.terminal_id`. Never generate `/point/integration-api/.../payment-intents`, `type: "instore"`, or `config.device.id`.
+
+For a developer without hardware, support the official standard virtual terminal `NEWLAND_N950__SBX0000001`, but only behind an explicit `MP_POINT_TEST_MODE=true` guard. Production must require `MP_POINT_TERMINAL_ID`; it may never silently fall back to the virtual terminal. Include order lookup by ID so the application can reconcile asynchronous status changes. Before reporting success, run:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-point-server.mjs" "{server_file}"
+```
+
+### LOCK 8 — QR uses Orders API with an existing Store and POS
+
+When `product=qr`, scaffold only `POST /v1/orders` with `type: "qr"`, matching
+`total_amount` and `transactions.payments[0].amount`, and
+`config.qr.external_pos_id`. The only valid QR modes are `static`, `dynamic`, and
+`hybrid`. Never generate `/instore/orders/qr/...`, `/instore/qr/...`, a redirect
+Checkout order, or a QR whose content is a Checkout URL. Keep the request minimal:
+do not invent a `payer` and remove legacy `items[].currency_id` and
+`items[].total_amount` fields. Validate client-supplied prices, quantities, and
+the computed total as finite positive values. QR cancellation must not copy the
+Point-only `X-Allow-Cancelable-Status` header.
+
+Store and POS provisioning is a prerequisite, not a hidden side effect of the
+scaffold. Reuse an existing POS when one is explicitly configured. If none is
+available, ask for the real Store location before creating persistent resources;
+never invent an address. Dynamic and hybrid modes render
+`type_response.qr_data` locally. Static mode renders the QR returned when the POS
+was created. Include order lookup and cancellation, and run both acceptance
+checks before reporting success:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-server.mjs" "{server_file}"
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-client.mjs" "{client_file}" 'data-mp-qr-cta="create-order"' "/api/qr/orders"
+```
+
 ---
 
 ---
@@ -119,7 +171,9 @@ The wizard's Tabs row at the top (the `□ Country  □ Product  □ Mode  ✓ S
 | `3ds=` | `yes` / `no` (Checkout API, Bricks) |
 | `marketplace=` | `yes` / `no` (split payments) |
 | `brick=` | `payment` / `card-payment` / `wallet` / `status-screen` (only when `product=bricks`) |
-| `qr-mode=` | `static` / `dynamic` / `attended` (only when `product=qr`) |
+| `qr-mode=` | `static` / `dynamic` / `hybrid` (only when `product=qr`) |
+
+After parsing or inferring `product`, apply LOCK 5 normalization immediately. Use only the normalized internal value for the Product Matrix, guide selection, CTA resolution, and scaffold branches. The presentation-only slug `checkout-api-orders` may appear in the final recommendation metadata, but it must never be used as an internal branch value.
 
 ### Step 1.a — Auto-resolve before asking (MANDATORY — exhaust this step first)
 
@@ -131,10 +185,10 @@ For every dimension, attempt these resolution sources **in order**:
 |-----------|--------------------------------|----------------|-------------------|----------|
 | `product` | If agent resolved from message keywords → **use it, skip question** | Read from `.mp-integrate-progress.md` | — | `AskUserQuestion` picker |
 | `country` | If agent resolved from message keywords → **use it, skip question** | Read from `.mp-integrate-progress.md` | **None — do not grep for country** (unreliable, costs tokens) | `AskUserQuestion` picker. **Persist the answer**. |
-| `sdk` | — | — | **MUST run `Glob` for**: `package.json`→node, `pyproject.toml`/`requirements.txt`→python, `pom.xml`/`build.gradle*`→java, `composer.json`→php, `Gemfile`→ruby, `*.csproj`/`Program.cs`→dotnet, `go.mod`→go. Single match → resolved, do NOT ask. | `AskUserQuestion` (only if no manifest or polyglot) |
+| `sdk` | — | — | **MUST run `Glob` for**: `package.json`→node, `pyproject.toml`/`requirements.txt`→python, `pom.xml`/`build.gradle*`→java, `composer.json`→php, `Gemfile`→ruby, `*.csproj`/`Program.cs`→dotnet, `go.mod`→go. Single match → resolved. Multiple matches → choose the manifest in the active application area. No match → default to node. | **Never ask which SDK**; only ask authorization before an install/update. |
 | `client` | — | — | Inspect `package.json` deps: `react`/`next`→react, `react-native`/`expo`→react-native, `*.xcodeproj`→ios, Android `build.gradle`→android, `pubspec.yaml`→flutter. Single match → resolved. | `AskUserQuestion` (only if product has client component AND ambiguous) |
 | `lang` | — | — | Derive from country (BR→pt, others→es). | Almost never asked — defaulted from country |
-| `mode` | — | Read from progress file | `Grep` for `/v1/orders`/`order.create`→orders; `/v1/payments`/`payment.create`→payments; `/v1/checkout/preferences`/`preference.create`→preferences. Product Matrix may pin to single value (e.g. checkout-pro → always preferences). | `AskUserQuestion` (only when matrix allows >1 AND grep didn't disambiguate) |
+| `mode` | — | Read from progress file | `Grep` for `/v1/orders`/`order.create`→orders; `/v1/payments`/`payment.create`→payments; `/checkout/preferences`/`preference.create`→preferences. Product Matrix may pin to single value (e.g. checkout-pro → always preferences). | `AskUserQuestion` (only when matrix allows >1 AND grep didn't disambiguate) |
 
 **Concrete order of operations for the wizard (INFER FIRST, ASK LAST):**
 
@@ -170,7 +224,7 @@ After auto-resolving, render a single confirmation block listing every value tha
 - Question: `"I auto-detected the following from your repo. Is everything correct?"`
 - Options:
   - `"Yes, continue"` — proceed to Step 1.b with the auto-resolved values.
-  - `"No, let me correct"` — drop ALL auto-resolved values back into the wizard queue and ask each one via `AskUserQuestion` in Step 1.b. Do not try to guess which one was wrong; let the developer reset.
+  - `"No, let me correct"` — drop the user-selectable auto-resolved values back into the wizard queue. Do not add SDK/language to that queue: re-run repository detection for them and explain the selected official SDK without presenting an SDK picker.
 
 Skip this confirmation **only** when there was nothing to auto-resolve (clean repo, no manifest, no locale, no existing MP URLs). In that case the wizard goes straight to asking.
 
@@ -227,7 +281,7 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 | 2 | `mode` | "Mode" | **Cross-reference LOCK 2 first.** Skip entirely when LOCK 2 says "Skip the mode question". When asked, only show modes that LOCK 2 explicitly allows for the chosen product. Never include "Orders API" as an option for `checkout-pro`. |
 | 3 | `client` | "Client" | Only if the product has a client component AND repo signals were ambiguous. Show the 3 most likely + Other. |
 | 4 | `brick` | "Brick" | Only when `product=bricks`. Options: `payment` / `card-payment` / `wallet` / `status-screen`. |
-| 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `attended`. |
+| 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `hybrid`. |
 | 6 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
 | 7 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
 | 8 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
@@ -236,15 +290,13 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 
 **`environment` is NEVER asked.** Mercado Pago no longer has a sandbox/production toggle. Both production credentials and test-user credentials use the `APP_USR-` prefix; the difference is whether the credentials belong to a real account or a test user (handled in `mp-test-setup`). Do not present an "Environment: production / test" picker. Do not write code that branches on `NODE_ENV` to switch MP base URLs.
 
-### Step 1.b.ii — Validate `mode` against the MCP before offering
+### Step 1.b.ii — Resolve `mode` without an eager MCP call
 
-The Product Matrix below is a static fallback. Mercado Pago's API surface evolves (Orders API is being extended to more products over time), so before offering `mode` options for a product, **validate against the MCP**:
+Use the Product Matrix below first. If its `mode` cell is fixed for the selected product, use that value and do not connect to MCP.
 
-1. Call `mcp__plugin_mercadopago_mcp__search_documentation` with a query like `"{product} orders api {country}"` (e.g. `"checkout-api orders api argentina"`). Never run this query for `checkout-pro` — LOCK 2 already forbids Orders for that product.
-2. Inspect the results:
-   - If the docs explicitly say the Orders API is available for this product → include `orders` in the offered options.
-   - If the docs only mention preferences/payments and never Orders for this product → **do NOT include Orders**, even if the developer asks for it.
-3. Cross-check with the Product Matrix below. If the matrix and the MCP disagree, **trust the MCP** and update your understanding for this run; the matrix is the static fallback, not the source of truth.
+Only when the product/mode combination is absent or genuinely ambiguous in the bundled sources, use `mcp__plugin_mercadopago_mcp__search_documentation` with a query like `"{product} orders api {country}"`. This is an MCP-backed fallback: authenticate immediately before that query, not earlier. Never run it for `checkout-pro` — LOCK 2 already forbids Orders for that product.
+
+If the fallback docs explicitly confirm a mode, use it for this run. If they do not, do not offer an unverified mode.
 
 This rule exists because the v4 wizard offered Orders for Checkout Pro when the API does not exist for that product. Never offer a mode that does not exist on the MP API today, even if it is rumored or coming-soon.
 
@@ -371,11 +423,7 @@ Country is **always resolved before Step 3**. Never fetch tier 1 without a resol
 
 **If tier 1 fetch fails:** silently fall to tier 2 (`references/products.md`). Do NOT show an error or retry.
 
-**If MCP is not authenticated at tier 4:** call `mcp__plugin_mercadopago_mcp__authenticate` immediately and show:
-> To access live Mercado Pago documentation, open this link to connect: **[Connect Mercado Pago]({url})**
-> When you see "Authentication Successful" in the browser, come back and continue.
-
-When the user returns, call `application_list` directly (do NOT call `complete_authentication` first), then retry `search_documentation`.
+**Only when tier 3 is actually needed:** attempt `search_documentation` directly. If it is unavailable or returns an authentication error, call `mcp__plugin_mercadopago_mcp__authenticate`, show the OAuth link in the developer's language, and instruct them to Cmd+Click (Mac) or Ctrl+Click (Windows/Linux) without copying the URL into an external browser. When the developer returns, retry `search_documentation` directly. Do not call `application_list` as a probe.
 
 ### Tier 3 — MCP query templates (fallback)
 
@@ -414,7 +462,7 @@ Then stop. Specifically:
 
 ## Step 4 — Assemble the bundle
 
-Render the result with this exact structure. Code blocks come from MCP responses (verbatim where possible). Do not invent payloads or endpoints.
+Render the result with this exact structure. Code blocks come from the resolved documentation tier (verbatim where possible). Do not invent payloads or endpoints.
 
 ````markdown
 # Mercado Pago Integration — {Product} ({Country} · {SDK} · {mode})
@@ -447,7 +495,7 @@ Also ensure `.env` is in `.gitignore` (and `.env.example` is **not** ignored).
 
 ## 3. Server code
 ```{language}
-{snippet from MCP — server-side creation, e.g., create order/preference/subscription/disbursement}
+{snippet from the resolved documentation tier — server-side creation, e.g., create order/preference/subscription/disbursement}
 ```
 
 ## 4. Client code (if applicable)
@@ -460,7 +508,7 @@ Also ensure `.env` is in `.gitignore` (and `.env.example` is **not** ignored).
 ```
 
 ```{language}
-{snippet from MCP — tokenization, brick mount, redirect, etc.}
+{snippet from the resolved documentation tier — tokenization, brick mount, redirect, etc.}
 ```
 
 **Payment feedback states — include ALL THREE in the scaffold (not as TODOs):**
@@ -542,104 +590,196 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
 
 **If the developer chooses to scaffold**, execute this sequence (in order — each step depends on the previous):
 
-1. **Install the SDK** — run `npm install mercadopago` (or the equivalent for the detected SDK) in the directory that contains the server-side manifest. Report any non-zero exit code and stop.
+1. **Install or update the SDK only with authorization** — query the official registry and apply LOCK 1. If a change is needed, ask explicit authorization with the exact stable version before running `npm install mercadopago@latest` (or the equivalent stable-release command for the detected SDK) in the directory that contains the server-side manifest. Never select a prerelease. Update the lockfile, adapt incompatible integration code, run relevant tests, and stop on a non-zero exit. If the current dependency already resolves to the registry's stable release, do not mutate it; report the verified version.
 2. **Write the server snippet** — create or edit the server file (e.g., `backend/index.js`, `backend/src/routes/mercadopago.js`) inserting the snippet from Step 4. If the file already exists, inject the new route after existing routes rather than overwriting.
 
-2.5. **`checkout-api` only — Payment trigger button** (skip for all other products):
+   **When `product=point`:** run the Point server acceptance check immediately after writing the server integration. Fix every failure before continuing or reporting success:
 
-   Scan the project for any element that looks like a payment trigger area. Run two `Bash` passes:
-
-   **Pass 1 — elements by ID/class containing payment keywords (language-agnostic):**
    ```bash
-   grep -rn -i \
-     -e 'id="[^"]*\(pay\|checkout\|pago\|pagar\|pagamento\|compra\|payment\)[^"]*"' \
-     -e "id='[^']*\(pay\|checkout\|pago\|pagar\|pagamento\|compra\|payment\)[^']*'" \
-     -e 'class="[^"]*\(pay\|checkout\|pago\|pagar\|pagamento\|compra\|payment\)[^"]*"' \
-     --include="*.html" --include="*.jsx" --include="*.tsx" --include="*.vue" \
-     . 2>/dev/null | head -20
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-point-server.mjs" "{server_file}"
    ```
 
-   **Pass 2 — button/div text that looks like a payment call-to-action:**
+   **When `product=qr`:** run the QR server acceptance check immediately after writing the server integration. After wiring the client in the application's real charge CTA, run the client acceptance check as well. Fix every failure before continuing or reporting success:
+
    ```bash
-   grep -rn -i \
-     -e '<button[^>]*>\s*\(pay\|pagar\|checkout\|finalizar\|comprar\|pagar\|ir\s*ao\s*pagamento\|proceder\|proceed\)' \
-     -e 'coming.soon\|próximamente\|em\s*breve\|en\s*construcción\|add.*payment\|integrar.*pago' \
-     --include="*.html" --include="*.jsx" --include="*.tsx" --include="*.vue" \
-     . 2>/dev/null | head -20
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-server.mjs" "{server_file}"
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-client.mjs" "{client_file}" 'data-mp-qr-cta="create-order"' "/api/qr/orders"
    ```
 
-   **Evaluate the results:**
+2.5. **`checkout-pro` and `checkout-api` — Mandatory checkout CTA discovery** (skip for all other products):
 
-   - **No matches at all:** Output the warning and snippet below — do not block the flow.
-   - **Exactly one clear match:** Tell the user what was found (`{file}:{line}: {matched line}`) and offer to inject the trigger button there.
-   - **Multiple matches:** Show all candidates with file and line, then ask via `AskUserQuestion`:
-     - header: `"Payment location"`
-     - Question: *"I found multiple potential payment areas. Which one should receive the Mercado Pago checkout form?"*
-     - Options: one per candidate (show filename + matched text, max 4; add "None of these" as Other)
+   This step is unconditional for both checkout products. The scaffold is incomplete until a concrete CTA target has been resolved. The products use the same detector but different wiring in Step 3.5:
 
-   **When injecting into an identified location:**
-   - Edit the file at that location. Replace the matched element (or inject immediately after it) with:
-   ```html
-   <!-- Mercado Pago payment trigger — generated by /mp-integrate -->
-   <button id="mp-pay-btn" onclick="mpShowForm()">
-     💳 Pagar con Mercado Pago
-   </button>
-   <div id="mp-form-container" style="display:none">
-     <!-- Checkout API form mounts here — do not remove this div -->
-   </div>
-   ```
-   Inject this helper in the file's `<script>` block (create one before `</body>` if none exists):
-   ```js
-   function mpShowForm() {
-     document.getElementById('mp-form-container').style.display = 'block';
-     document.getElementById('mp-pay-btn').style.display = 'none';
-   }
-   ```
-   Adapt button classes to match the project's existing style (copy classes from nearby buttons if present).
-   Update the client snippet from Step 4 to mount the form inside `#mp-form-container`.
+   - `checkout-pro`: place a visible **Pay with Mercado Pago** button at the resolved CTA location; it submits to the preference-creation route and redirects to `init_point`.
+   - `checkout-api`: link the resolved CTA to the new, separate checkout screen.
 
-   **Warning + snippet when nothing was found (or user chose "None of these"):**
+   Reuse the LOCK 5 result. If it is unavailable for any reason, run the bundled resolver from the project root exactly once:
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-checkout-cta.mjs" "{product}" .
    ```
-   ⚠️  Integration code is ready, but no payment button was found in your project.
-       Add the snippet below wherever "Pay now" should appear in your UI:
-   ```
-   ```html
-   <!-- Place this where your payment button should appear -->
-   <button id="mp-pay-btn" onclick="mpShowForm()">
-     💳 Pagar con Mercado Pago
-   </button>
-   <div id="mp-form-container" style="display:none">
-     <!-- Checkout API form mounts here — do not remove this div -->
-   </div>
-   <script>
-   function mpShowForm() {
-     document.getElementById('mp-form-container').style.display = 'block';
-     document.getElementById('mp-pay-btn').style.display = 'none';
-   }
-   </script>
-   ```
-   The client code from Step 4 must mount the Checkout API form inside `#mp-form-container`.
 
-3. **Write the client component** — create `frontend/src/components/CheckoutButton.{jsx|tsx|vue|…}` (or the framework-appropriate path/extension) with the client snippet from Step 4. If the file already exists, warn and ask the developer before overwriting.
-4. **Create `.env.example`** — write the template vars (MP_ACCESS_TOKEN, MP_PUBLIC_KEY, MP_WEBHOOK_SECRET, APP_URL) to `.env.example`. Only create `.env` with real values if credentials were already fetched via `get_credentials` in Step 0.b (State A) — in that case `.env` already exists; do NOT overwrite it. In State B (no MCP), never create `.env` — the developer must fill in their own credentials.
+   First replace `{product}` with the normalized internal value returned by LOCK 5. The resolver scans HTML and common web templates/components (JSX, TSX, Vue, Svelte, Astro, PHP, ERB, EJS, Handlebars, Twig, JavaScript, and TypeScript). It scores semantic evidence from visible text, attributes, and the actual click/navigation handler; it contains no application-specific selectors.
+
+   **Resolve the target:**
+
+   1. A match qualifies only when its element, visible text, location, and current handler together indicate the final action that starts checkout. A generic navigation link or a “buy” button on a product card is not sufficient evidence.
+   2. Exclude the submit button inside the generated payment form (`form-checkout`, `type="submit"`, `mp-pay-btn`) — that button submits payment; it is not the link into the form.
+   3. Read the candidate's existing `onclick`, `onClick`, `href`, or `addEventListener` before changing anything.
+   4. If the detector returns `status=selected`, use that CTA and report `{file}:{line}`. This result is mandatory; do not downgrade it to “not found”.
+   5. If it returns `status=ambiguous`, ask via `AskUserQuestion` which candidate is the checkout CTA (maximum four candidates). A target must be selected before scaffolding continues.
+   6. If it returns `status=not_found`, inspect the application's actual cart/order/product entry screens and ask via `AskUserQuestion` where the new checkout CTA should be inserted (maximum four concrete file/location choices). After the developer chooses, set `cta_status=create` and use that exact location.
+   7. If the developer does not provide a target after an ambiguous or not-found result, stop with `BLOCKED: checkout CTA target required`. Never finish the scaffold, silently omit the CTA, or report success.
+
+   Store `{cta_file}`, `{cta_line_or_region}`, `{cta_selector}`, `{cta_status}`, and any existing handler for Step 3.5. Do not edit it yet; the server route and, for Checkout API, the new checkout screen must exist first.
+
+3. **`checkout-api` only — Always create a separate checkout screen in a new file** — generate the client form from Step 4 using the project's architecture. For `checkout-pro`, skip directly to Step 3.5; Checkout Pro redirects to Mercado Pago and must not create a local payment-form screen.
+
+   This is unconditional for Checkout API: the screen is created after Step 2.5 has resolved where its entry CTA will live.
+
+   - **Server-rendered/static app:** create a new HTML/template file for the checkout screen and a GET route or static URL that serves that file.
+   - **React/Vue/Angular/SPA:** create a new page/screen component file and register a dedicated route through the application's existing router.
+   - **Mobile app:** create a new screen file and register it in the existing navigation stack.
+   - **Single-file application without a router:** still create a separate checkout page file and expose it through a URL. Do not append another hidden view to the existing file.
+
+   **Separation rule:** never place the generated payment form inside an existing cart, product, drawer, modal, accordion, tab, or conditionally hidden section. Never append the form markup to an existing screen file. Shared layouts, styles, and components may be imported or reused, but the checkout screen itself must be owned by its new file and opened through its own route/URL/navigation destination.
+
+   Reuse the project's naming and route conventions. Record:
+
+   - `{checkout_screen_file}` — the new file created for the screen;
+   - `{checkout_screen_destination}` — its route, URL, or navigation name;
+   - `{checkout_screen_invocation}` — the framework-appropriate code needed to open it.
+
+   Do not link anything to the destination until the new file exists and the route/navigation registration has been verified.
+
+   **Checkout API public-key delivery — mandatory and application-agnostic:**
+
+   1. Detect the target application's existing client-configuration convention before generating the checkout screen. Reuse its established public runtime configuration for React, Next.js, Vue, Nuxt, Angular, mobile, or server-rendered templates; do not impose an Express-specific pattern on another stack.
+   2. Never put `%MP_PUBLIC_KEY%` or another text-replacement token in generated client files. Never depend on rewriting the checkout HTML response: browsers, CDNs, service workers, and static hosts can retain a stale document containing the literal token.
+   3. For vanilla/no-build applications with a backend, add a JSON configuration endpoint using the project's server framework and route conventions. It must read `MP_PUBLIC_KEY` on the server, return `{ publicKey }`, send `Cache-Control: no-store, max-age=0`, and return a non-2xx response with a clear error when the variable is missing. The checkout screen must request that endpoint with `cache: 'no-store'` before constructing `MercadoPago`.
+   4. For build-based clients, use only the framework's public-variable convention (for example the existing Vite, Next.js, Nuxt, or Angular mechanism) and explain whether a server restart or rebuild is required. Do not expose `MP_ACCESS_TOKEN` or any other private credential.
+   5. A static-only server cannot complete Checkout API because payment creation requires a backend. If the application is currently run with a static file server, wire the generated backend into the project's real start/dev command and tell the developer to use that command. Never claim success while instructing them to open the HTML file directly.
+   6. Mark the generated form or screen root with `data-mp-public-key-source="runtime-endpoint"` or `data-mp-public-key-source="framework-public-config"`, matching the strategy actually used.
+   7. Before success, verify that the generated client contains no unresolved public-key token, the client and server use the exact same config route when the endpoint strategy is selected, the missing-key path is visible and actionable, and the checkout screen is reached through the application's actual server/router.
+
+   **Checkout API secure-field integrity — mandatory and application-agnostic:**
+
+   - Build the smallest valid form. The always-visible card inputs are `cardNumber`, `expirationDate`, `securityCode`, and `cardholderName`.
+   - Payer email and identification are required payment data, but they are not automatically required **visible inputs**. Reuse trusted values already available from the authenticated buyer/session/cart. Only render their inputs when the application does not have those values, and mark the selected strategy on the form with `data-mp-payer-email-source="form|application"` and `data-mp-payer-identification-source="form|application"`.
+   - The SDK JS CardForm map requires `issuer`, `installments`, and `identificationType` even when the product UX does not show those controls. Always render exactly one `<select>` for each, keep it inside the form, mark it with `data-mp-sdk-required-field="issuer|installments|identificationType"`, and reference its exact ID in `mp.cardForm({ form: ... })`. Omitting any of the three is a scaffold failure because the SDK populates them during its payment-method lifecycle and can leave the secure iframe fields unresponsive when their DOM targets do not exist.
+   - When one of those three controls is not part of the visible UX, use a real hidden lifecycle node: `<select hidden aria-hidden="true" tabindex="-1">`. Do not use `disabled`, because disabled controls cannot participate in form/SDK state. These hidden selects are SDK plumbing, not payment data trusted by the backend.
+   - Derive the identification type from the resolved country and buyer context. For example, an individual buyer in Brazil uses `CPF`. Keep the required `identificationType` lifecycle select hidden when the type is known; make it a labeled visible selector only when the application genuinely supports multiple types and cannot infer the correct one.
+   - Keep the required `issuer` lifecycle select hidden by default. Make it a labeled visible selector only if the payment-method metadata reports `additional_info_needed` containing `issuer_id`; do not send `issuer_id` inside Orders API `payment_method`.
+   - Keep the required `installments` lifecycle select hidden for the minimal one-time flow and enforce `installments: 1` on the server. Make it a labeled visible selector only when the developer explicitly wants to offer installments. Never trust the hidden browser value instead of the server rule.
+   - Every field registered under `mp.cardForm({ form: ... })` must have exactly one matching element in the DOM before `mp.cardForm(...)` runs. Never configure an optional field after choosing to source it from application state or omit it from the UI.
+   - The form ID in `form.id` must exactly match the rendered `<form id="...">`.
+   - Render a persistent visible label for every field, localized to the project's language. Placeholders such as `MM/AA` and `CVC` are hints, not labels, and may not render inside secure iframes.
+   - For iframe fields (`cardNumber`, `expirationDate`, `securityCode`), keep the SDK host `<div>` empty and interactive. Never add `disabled`, `readonly`, `pointer-events: none`, or an overlapping decorative element to the host or its iframe.
+   - Give each secure host a non-zero height and `position: relative`; make the injected iframe `display: block`, `width: 100%`, and `height: 100%`. The visible border belongs to the host, not to an overlay.
+   - Mount secure fields only after the new checkout screen route is visible and the host has non-zero dimensions. Use the application's lifecycle/router hook or `requestAnimationFrame`; never initialize into `display: none`, and never use an arbitrary `setTimeout` as the visibility mechanism.
+   - Mount exactly once per visible form instance. In SPAs, unmount/destroy the previous SDK controller or field instances before remounting.
+   - Group each secure host with an external visible label and an accessible relationship, for example:
+
+     ```html
+     <div class="checkout-field" role="group" aria-labelledby="expiration-label">
+       <span id="expiration-label" class="checkout-label">Validade do cartão (MM/AA)</span>
+       <div id="form-checkout__expirationDate" class="secure-input"></div>
+     </div>
+     ```
+
+   - Only disable the payment submit button while fetching or submitting. Never disable card-data fields as part of loading state management.
+   - In `onFormMounted`, verify that every secure host contains exactly one iframe, has non-zero dimensions, has a visible external label, and that neither host nor iframe resolves to `pointer-events: none`. Surface failures both in the console and in a visible form error; do not report the scaffold as successful.
+
+   Before continuing, compare the registered field IDs with the rendered IDs in both directions. Then inspect the generated source for `disabled`, `readonly`, `aria-disabled`, `inert`, overlays, and `pointer-events` affecting secure hosts or their ancestors. Missing labels, hidden mounting, duplicated instances, and non-interactive hosts are scaffold failures and must be fixed immediately.
+
+   Mark every visible field wrapper with `data-mp-field="{fieldName}"`; mark the three SDK iframe hosts with `data-mp-secure-field="cardNumber|expirationDate|securityCode"`; mark the three required CardForm lifecycle selects with `data-mp-sdk-required-field="issuer|installments|identificationType"`. The form must declare whether payer email and identification come from the form or application state using the source markers above. After writing the new screen, run the deterministic acceptance check:
+
+   ```bash
+   # runtime-endpoint strategy: pass the file that implements the config route
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-checkout-screen.mjs" "{checkout_screen_file}" "{server_or_config_route_file}" "{cta_file}"
+
+   # framework-public-config strategy: no server config file is needed
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-checkout-screen.mjs" "{checkout_screen_file}" "" "{cta_file}"
+   ```
+
+   If it fails, fix the new screen and rerun it. Never show a successful scaffold summary until this command exits with code 0.
+
+3.5. **`checkout-pro` and `checkout-api` — Always wire the resolved CTA:**
+
+   A resolved CTA is mandatory. Preserve the surrounding layout and reuse the project's button classes and accessibility conventions. Mark the final element with `data-mp-checkout-cta="{product}"` so the deterministic check can verify the integration.
+
+   **When `product=checkout-api`:** preserve the existing CTA's visible text and styling, then replace only its navigation behavior so it opens `{checkout_screen_destination}`.
+
+   - Existing `<a>`: add `data-mp-checkout-cta="checkout-api"` and set or update `href="{checkout_screen_destination}"`.
+   - Vanilla `<button>`: add `data-mp-checkout-cta="checkout-api"` and replace its existing checkout handler with exactly one `window.location.assign('{checkout_screen_destination}')` action.
+   - React/Vue/router app: add `data-mp-checkout-cta="checkout-api"` and use the existing router navigation API. Do not introduce `window.location` when the application already uses client-side routing.
+   - When `cta_status=create`, insert one project-styled button/link at the exact location selected in Step 2.5 and wire it to the new screen.
+
+   **When `product=checkout-pro`:** place a visible button labeled **Pay with Mercado Pago** (localized to the application language) at the resolved location. The button must start preference creation and redirect to the returned `init_point`; it must not open a local card form.
+
+   - Server-rendered/static app: replace the chosen CTA, or insert at the chosen region, with a form that posts to the preference route:
+
+     ```html
+     <form action="{preference_route}" method="POST">
+       <button type="submit" data-mp-checkout-cta="checkout-pro" class="{existing_button_classes}">
+         Pagar com Mercado Pago
+       </button>
+     </form>
+     ```
+
+   - SPA/framework app: keep one visible project-styled button with `data-mp-checkout-cta="checkout-pro"`; its single handler must call the backend preference route and navigate to the returned `init_point`. Remove the old checkout handler instead of stacking a second listener.
+   - Never create a second checkout page for Checkout Pro. The chosen CTA location is where the Mercado Pago button belongs.
+
+   **Mandatory verification after editing:**
+
+   1. Confirm exactly one final element has `data-mp-checkout-cta="{product}"`.
+   2. For Checkout API, confirm `{checkout_screen_file}` is separate, `{checkout_screen_destination}` resolves to it, and the CTA has exactly one navigation action to that destination.
+   3. For Checkout Pro, confirm the visible button says Mercado Pago and reaches the preference-creation route that redirects to `init_point`.
+   4. Confirm the old CTA handler is gone and clicking cannot trigger two checkout flows.
+   5. For Checkout API, confirm the payment form's own submit button was not mistaken for or rewired as the entry CTA.
+   6. Run the deterministic CTA acceptance check and fix any failure before continuing:
+
+      ```bash
+      node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-checkout-cta.mjs" "{product}" "{cta_file}" "{checkout_screen_destination_or_preference_route}"
+      ```
+
+      For Checkout Pro, also run the server validator. It rejects unconditional `auto_return` when the application has a localhost fallback:
+
+      ```bash
+      node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-checkout-pro-server.mjs" "{server_file}"
+      ```
+
+   7. Report `✓ {cta_file}:{cta_line_or_region} → {checkout_screen_destination_or_preference_route}`. There is no successful “CTA not linked” outcome for Checkout Pro or Checkout API.
+4. **Create `.env.example`** — write the template vars (MP_ACCESS_TOKEN, MP_PUBLIC_KEY, MP_WEBHOOK_SECRET, APP_URL) to `.env.example`. Only create `.env` with real values if the developer explicitly selected credential import and `get_credentials` succeeded; do not overwrite an existing `.env` without confirmation. Otherwise, never create `.env` — the developer must fill in their own credentials.
 5. **Update `.gitignore`** — add `.env`, `.env.*.local`, `.mp-integrate-progress.md` if not already present.
-6. After all writes, print a short summary:
+6. After all writes, print the product-specific summary. Both successful outcomes must include a wired CTA:
 
+**Checkout API:**
 ```
 ✓ npm install mercadopago — OK
-✓ backend/index.js — route /api/create-preference added
-✓ frontend/src/components/CheckoutButton.jsx — created
+✓ {server_file} — Checkout API route added
+✓ {checkout_screen_file} — separate checkout screen created
+✓ MP_PUBLIC_KEY — loaded through {detected_config_strategy}; no HTML placeholder
+✓ {cta_file}:{line} {cta_selector} → {checkout_screen_destination} → {checkout_screen_file}
+✓ .env.example — created (fill in your credentials)
+✓ .gitignore — updated
+```
+
+**Checkout Pro:**
+```
+✓ npm install mercadopago — OK
+✓ {server_file} — preference route added
+✓ {cta_file}:{line} — Pay with Mercado Pago button → {preference_route}
 ✓ .env.example — created (fill in your credentials)
 ✓ .gitignore — updated
 ```
 
 **Scaffold guardrails:**
 - Never write to files outside the current working directory.
-- **If credentials were fetched via `get_credentials`:** `.env` was already created in Step 0.b with real values — do NOT overwrite it here. Only create `.env.example` with placeholders.
-- **If credentials were NOT fetched (State B):** create `.env.example` with `APP_USR-...` placeholders. Never create `.env` here.
+- **If credentials were fetched via `get_credentials`:** do not overwrite the confirmed `.env`; only create `.env.example` with placeholders.
+- **If credentials were not imported:** create `.env.example` with `APP_USR-...` placeholders. Never create `.env` here.
 - If a target file exists and the developer said "write all", inject code rather than overwrite — show a `+diff`-style preview of what changed.
 - If any write fails, report the exact error and stop; do not continue to the next file.
-- **HTML placeholder injection (vanilla JS projects):** When generating server-side code that injects a placeholder (e.g., `%MP_PUBLIC_KEY%`) into an HTML file at runtime, always use a **regex with the global flag** — never a plain string replace. Example: `.replace(/%MP_PUBLIC_KEY%/g, ...)` not `.replace('%MP_PUBLIC_KEY%', ...)`. A plain string replace only substitutes the first occurrence; if the placeholder also appears in an HTML comment (e.g., `<!-- %MP_PUBLIC_KEY% is injected here -->`), the comment is replaced and the actual code line is left with the literal placeholder, silently breaking the SDK initialization. Same rule applies to any other placeholder token (`%MP_ACCESS_TOKEN%`, `%APP_URL%`, etc.).
+- **No HTML credential injection:** Do not generate `%MP_PUBLIC_KEY%`, `.replace(...)`, template-token substitution, or an inline hard-coded public key. Use the detected framework's public configuration convention, or a no-store JSON runtime-config endpoint for vanilla/server applications.
 
 ---
 
@@ -675,6 +815,7 @@ Render only the section that matches the chosen product. These are the experient
 - **⛔ Orders API requires a test user buyer** — `422 unprocessable_content` if you use an arbitrary email. Run `/mp-integrate test-setup` **before** testing. This applies to ALL countries.
 - **`getCardFormData()` returns camelCase** — `paymentMethodId` and `issuerId`, not `payment_method_id` and `issuer_id`. Map them on the server.
 - **`issuer_id` is NOT allowed inside `payment_method`** for Orders API — remove it from the payload or you get `additionalProperties not allowed`.
+- **Minimal Checkout API UI** — always show card number, expiration, security code, and cardholder name. Collect payer email/identification only when trusted application state does not already provide them. Keep the SDK-required `issuer`, `installments`, and `identificationType` selects in the DOM/CardForm map but hidden from the minimal UI; enforce `installments: 1` server-side unless the merchant explicitly offers installments.
 - **`total_amount` and `amount` must be `"10.00"` not `"10"`** — use `Number(x).toFixed(2)`.
 - **Brazil (MLB)**: this product is called **Checkout Transparente** — use that name in MCP queries.
 - Card tokens are single-use and expire in 7 days.
@@ -697,13 +838,17 @@ Render only the section that matches the chosen product. These are the experient
 - **`back_urls` must be on the same origin as the page that mounts the brick.** Cross-domain back_urls fail silently — the redirect after payment lands on a blank page with no error.
 
 ### qr
-- Static QR (printed sticker) requires **Store + POS** to be created via API before generating the QR — they are not auto-created.
-- Dynamic QR has a short TTL — generate one per buyer interaction, not one shared QR.
-- Attended QR (cashier app) with Orders API uses the `orders` topic. Legacy attended QR flows through `merchant_orders` — wire the webhook to `merchant_order` topic only if using the legacy API.
+- New integrations always use Orders API with `type: "qr"`; legacy `/instore/...` routes and QR-encoded Checkout redirect URLs are scaffold failures.
+- Store + POS must exist before the order. `config.qr.external_pos_id` must exactly match the POS `external_id` and belong to the seller whose token creates the order.
+- Valid modes are `static`, `dynamic`, and `hybrid`. Only dynamic and hybrid return `type_response.qr_data`; static uses the QR returned by POS creation.
+- Encode QR data locally and never send it to a third-party image generator. Poll the order and handle `created`, `processed`, `canceled`, `expired`, and `refunded` explicitly.
+- QR Orders webhooks use the `orders` topic. A real processed/refund test still requires scanning with the buyer test account; do not invent the Point `/events` simulator for QR.
 
 ### point
-- The device must be paired to a User ID (not the application). A device paired to the wrong user will silently reject `payment_intent`s.
-- After a firmware update the device may take ~2 minutes to come back online; do not retry `payment_intent` creation aggressively.
+- New integrations use Orders API with `type: "point"` and `config.point.terminal_id`; never scaffold `/point/integration-api/.../payment-intents`, `type: "instore"`, or `config.device.id`.
+- Without physical hardware, use the standard virtual terminal `NEWLAND_N950__SBX0000001` only behind explicit test mode and simulate each order result through `/v1/orders/{order_id}/events`. It is not valid for integration-quality measurement.
+- A physical device must be paired to a User ID (not the application) and run in PDV mode. A device paired to the wrong user will silently reject orders.
+- After a firmware update the device may take ~2 minutes to come back online; do not retry order creation aggressively.
 - Webhook topic for Point (Orders API) is `orders`. The legacy `point_integration_wh` topic belongs to the old Point Integration API — do not use it for new integrations.
 
 ### subscriptions

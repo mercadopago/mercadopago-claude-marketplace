@@ -1,0 +1,53 @@
+{
+  "sourceRef": "efb8c66",
+  "scenarios": [
+    {
+      "id": "cubezone-checkout-pro",
+      "app": "cubezone",
+      "product": "checkout-pro",
+      "country": "AR",
+      "port": 3100,
+      "ctaFile": "index.html",
+      "destination": "/checkout/preferences",
+      "serverFile": "server.js",
+      "prompt": "Integre Checkout Pro para Argentina usando Preferences API. Detecte o CTA real em todo o projeto e coloque nele o botão local visível para pagar com Mercado Pago. Reaproveite o CTA existente, marque-o com data-mp-checkout-cta=\"checkout-pro\" e faça-o criar a preferência em POST /checkout/preferences e redirecionar para init_point. Não crie uma segunda ação concorrente. As credenciais de teste serão injetadas somente em runtime; faça o scaffold usando os nomes das variáveis do .env.example, sem exigir nem ler valores agora. Se precisar instalar ou atualizar SDK, considere autorizado e use a versão estável mais recente. Não faça commit e não execute um pagamento real."
+    },
+    {
+      "id": "folium-checkout-api",
+      "app": "folium",
+      "product": "checkout-api",
+      "country": "AR",
+      "port": 3101,
+      "ctaFile": "index.html",
+      "destination": "/checkout/payment",
+      "checkoutScreen": "public/checkout-payment.html",
+      "serverFile": "server.js",
+      "prompt": "Integre Checkout API transparente para Argentina. Detecte o CTA real em todo o projeto, marque-o com data-mp-checkout-cta=\"checkout-api\" e faça esse CTA navegar para /checkout/payment. Para este fixture, se o detector considerar ambíguos o botão Finalizar compra do carrinho e o botão Ir a pagar dentro do checkout, esta é minha escolha explícita antecipada: use apenas o botão Ir a pagar que atualmente chama checkout(); deixe Finalizar compra como navegação interna. Não peça nova confirmação dessa escolha. O formulário de cartão deve ser criado obrigatoriamente em uma página nova e separada em public/checkout-payment.html, nunca embutido na página, modal, carrinho ou checkout já existente. Todos os campos visíveis precisam de labels associados e devem aceitar digitação. Mantenha issuer, installments e identificationType exigidos pelo ciclo interno do CardForm como selects hidden, nunca disabled, e mapeie-os na configuração. Carregue MP_PUBLIC_KEY por GET /api/mp-config com cache no-store e falha explícita se a variável não existir. As credenciais de teste serão injetadas somente em runtime; faça o scaffold usando os nomes das variáveis do .env.example, sem exigir nem ler valores agora. Se precisar instalar ou atualizar SDK, considere autorizado e use a versão estável mais recente. Não faça commit e não execute um pagamento real."
+    },
+    {
+      "id": "brewpoint-point-virtual",
+      "app": "brewpoint",
+      "product": "point",
+      "country": "AR",
+      "port": 3102,
+      "pointClientFile": "index.html",
+      "pointClientMarker": "data-mp-point-cta=\"create-order\"",
+      "destination": "/api/point/orders",
+      "serverFile": "server.js",
+      "prompt": "Integre Mercado Pago Point para Argentina usando exclusivamente a Orders API e permitindo teste completo sem dispositivo físico. O CTA real é o botão Cobrar existente no PDV: preserve seu texto e estilo, marque-o com data-mp-point-cta=\"create-order\", remova o fluxo QR atual e faça exatamente uma chamada para POST /api/point/orders. O endpoint deve aceitar JSON com amount, validar e formatar o valor com duas casas decimais, criar uma order com type=point, external_reference único, X-Idempotency-Key e config.point.terminal_id. Implemente também GET /api/point/orders/:orderId para consultar e reconciliar o estado. Em teste, MP_POINT_TEST_MODE=true deve habilitar o terminal virtual oficial NEWLAND_N950__SBX0000001; fora desse modo, MP_POINT_TERMINAL_ID deve ser obrigatório e nunca pode haver fallback silencioso para o terminal virtual. Atualize a interface existente para mostrar carregamento, order ID e tratar explicitamente processed, failed, refunded, canceled, expired e action_required; action_required deve orientar a verificar a terminal, e failed nunca deve virar timeout genérico. Não crie QR nem redirecione para checkout online. Respeite PORT do ambiente. Não use Payment Intents, /point/integration-api, type=instore nem config.device. As credenciais de teste do seller A serão injetadas apenas em runtime; crie somente placeholders em .env.example e nunca leia ou grave valores reais. Se precisar instalar ou atualizar SDK, considere autorizado e use a versão estável mais recente. Rode validate-point-server.mjs e validate-point-client.mjs antes de concluir. Não faça commit, não use MCP se nenhuma tool autenticada for necessária e não tente pagamento físico."
+    },
+    {
+      "id": "brewpoint-qr-orders-dynamic",
+      "app": "brewpoint",
+      "product": "qr",
+      "country": "AR",
+      "port": 3103,
+      "commandArguments": "product=qr country=AR qr-mode=dynamic",
+      "qrClientFile": "index.html",
+      "qrClientMarker": "data-mp-qr-cta=\"create-order\"",
+      "destination": "/api/qr/orders",
+      "serverFile": "server.js",
+      "prompt": "Migre a cobrança QR existente do Brewpoint para Mercado Pago QR pela Orders API. Esta autorização de migração é explícita. O CTA real é o botão Cobrar existente no PDV: preserve seu texto, estilo e comportamento de carrinho, marque-o com data-mp-qr-cta=\"create-order\", remova o handler concorrente atual e faça exatamente uma chamada para POST /api/qr/orders. Use type=qr, total_amount e transactions.payments[0].amount como a mesma string de duas casas decimais, external_reference único, X-Idempotency-Key e config.qr com external_pos_id vindo de MP_QR_EXTERNAL_POS_ID e mode vindo de MP_QR_MODE, restrito a static, dynamic ou hybrid. Para este cenário, o runtime usará dynamic. Mantenha o payload mínimo: não envie payer fictício, items[].currency_id nem items[].total_amount. Valide no backend que cada preço, quantidade e o total calculado são finitos e positivos antes de chamar Mercado Pago. Implemente GET /api/qr/orders/:orderId e POST /api/qr/orders/:orderId/cancel sem usar o header Point-only X-Allow-Cancelable-Status. Renderize type_response.qr_data localmente para dynamic e hybrid usando a biblioteca QR já presente; nunca envie qr_data a serviço externo. Suporte staticQrImage para static sem expor o access token. Mostre total, carregamento, QR, order ID, erro acionável e trate explicitamente created, processed, canceled, expired e refunded. Ao cancelar uma order ainda created, chame o endpoint de cancelamento. Não mantenha a order online/redirect atual, checkout_url, /create-order ou QR de URL de Checkout. O Store e o POS já existem; não os crie nem altere. As credenciais seller A e MP_QR_EXTERNAL_POS_ID serão injetadas apenas em runtime; crie somente placeholders em .env.example e nunca leia ou grave valores reais. Respeite PORT do ambiente. Se precisar instalar ou atualizar SDK, considere autorizado e use a versão estável mais recente. Rode validate-qr-server.mjs e validate-qr-client.mjs antes de concluir. Não faça commit e não use MCP se nenhuma tool autenticada for necessária."
+    }
+  ]
+}

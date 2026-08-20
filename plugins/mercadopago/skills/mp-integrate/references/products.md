@@ -65,7 +65,7 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 - Always verify payment status server-side after redirect — never trust `back_url` query params alone
 - `auto_return: "approved"` requires `back_urls.success` set; otherwise silently ignored
 - `currency_id` must match the country (ARS, BRL, MXN, CLP, COP, PEN, UYU)
-- The Orders API does NOT exist for Checkout Pro — always use `/v1/checkout/preferences`
+- The Orders API does NOT exist for Checkout Pro — always use `/checkout/preferences`
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/checkout-pro/landing
 
@@ -219,17 +219,17 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 | Dynamic | One QR per transaction — most secure and auditable | Short TTL per transaction |
 | Hybrid | Static QR + amount displayed on screen | Per transaction |
 
-**Setup flow (dynamic QR):**
-1. Create a Store via `POST /stores`
-2. Create a POS linked to that store via `POST /pos`
-3. Create a QR order (amount + items) via `PUT /instore/orders/qr/seller/collectors/{user_id}/pos/{external_pos_id}/qrs`
+**Setup flow (all QR modes):**
+1. Create a Store via the Stores API
+2. Create a POS linked to that store via the POS API and retain its `external_id` and static QR response
+3. Create a QR order via `POST /v1/orders` with `type: "qr"`, `config.qr.external_pos_id`, and `config.qr.mode`
 4. Display the QR to the buyer
 5. Receive webhook notification when buyer pays
 
 **Best practices:**
-- Static QR requires Store + POS to be created first — they are not auto-created
-- Dynamic QR has a short TTL — generate one per buyer interaction, not one shared QR
-- Wire webhooks to `orders` topic (Orders API) or `merchant_order` (legacy)
+- Store + POS are prerequisites and are never silently auto-created with an invented address
+- Dynamic and hybrid use `type_response.qr_data`; static uses the QR returned by POS creation
+- Wire new integrations only to the `orders` topic
 - Use `external_pos_id` for reconciliation across multiple registers
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/qr-code/landing
@@ -238,7 +238,7 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 
 ### MP Point
 
-**What it is:** Physical card reader terminals (Point Smart 1, Point Smart 2) controlled via API. Accepts chip, NFC, magnetic stripe, and QR.
+**What it is:** Physical card reader terminals (Point Smart 1, Point Smart 2) controlled through the Orders API. Accepts chip, NFC, magnetic stripe, and QR.
 
 **When to use:**
 - Physical retail with unified POS management
@@ -246,16 +246,24 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 - When you want to create payment intents from your system and push them to a device
 
 **Flow:**
-1. Pair device to a User ID (NOT just the application)
-2. Create a payment intent via API → terminal loads the payment request automatically
-3. Buyer selects method and pays on the device
-4. Receive webhook notification with result
+1. Pair the physical terminal to a User ID (NOT just the application) and enable PDV mode
+2. Create a `type: "point"` order via `POST /v1/orders` with `config.point.terminal_id`
+3. The terminal loads the order and the buyer pays on the device
+4. Receive an `orders` webhook and reconcile the returned order/payment IDs
+
+**Testing without hardware:**
+- Use the standard virtual terminal `NEWLAND_N950__SBX0000001` with app test credentials
+- Create a fresh order per scenario and simulate the result through `POST /v1/orders/{order_id}/events`
+- Exercise `processed`, `failed`, `refunded`, `canceled`, `expired`, and `action_required`
+- The virtual terminal is not valid for official integration-quality measurement or final hardware validation
 
 **Critical gotchas:**
-- Device must be paired to the correct User ID — wrong user pairing silently rejects payment intents
+- New integrations must use Orders API; `/point/integration-api/.../payment-intents` is deprecated
+- Use `type: "point"` and `config.point.terminal_id`; `type: "instore"` and `config.device.id` are invalid for this flow
+- A production device must be paired to the correct User ID — wrong user pairing silently rejects orders
 - After a firmware update the device may take ~2 min to come back online; don't retry aggressively
 - Webhook topic for Orders API is `orders`. The legacy `point_integration_wh` topic belongs to the old API — do not use for new integrations
-- Requires physical terminal purchase + Mercado Pago mobile app for initial setup
+- A physical terminal is still required for final card, PIN, printing, connectivity, and production checks
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/mp-point/landing
 
@@ -465,10 +473,10 @@ Re-fetch when this reference ages:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/v1/preferences` | Create preference |
-| GET | `/v1/preferences/{id}` | Get preference |
-| PUT | `/v1/preferences/{id}` | Update preference |
-| GET | `/v1/preferences/search` | Search preferences |
+| POST | `/checkout/preferences` | Create preference |
+| GET | `/checkout/preferences/{id}` | Get preference |
+| PUT | `/checkout/preferences/{id}` | Update preference |
+| GET | `/checkout/preferences/search` | Search preferences |
 
 **Create preference (Node.js):**
 ```js
@@ -629,30 +637,26 @@ const sub = await fetch('https://api.mercadopago.com/preapproval', {
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/stores` | Create store |
-| GET | `/stores/{id}` | Get store |
-| PUT | `/stores/{id}` | Update store |
-| DELETE | `/stores/{id}` | Delete store |
-| GET | `/stores/search` | Search stores |
-| POST | `/pos` | Create POS |
-| GET | `/pos/{id}` | Get POS |
-| PUT | `/pos/{id}` | Update POS |
-| DELETE | `/pos/{id}` | Delete POS |
-| GET | `/pos` | List POS |
-| PUT | `/instore/orders/qr/seller/collectors/{user_id}/pos/{external_pos_id}/qrs` | Create dynamic QR order |
-| DELETE | `/instore/orders/qr/seller/collectors/{user_id}/pos/{external_pos_id}/qrs` | Delete QR order |
-| GET | `/instore/qr/v2/orders/{id}` | Get QR order |
+| POST | `/v1/orders` | Create QR order (`type: "qr"`) |
+| GET | `/v1/orders/{id}` | Retrieve and reconcile QR order |
+| POST | `/v1/orders/{id}/cancel` | Cancel a QR order while it is `created` |
+| POST | `/v1/orders/{id}/refund` | Refund a processed QR order |
 
-**Create QR order (dynamic):**
+**Create QR order:**
 ```js
-await fetch(`https://api.mercadopago.com/instore/orders/qr/seller/collectors/${userId}/pos/${externalPosId}/qrs`, {
-  method: 'PUT',
-  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+await fetch('https://api.mercadopago.com/v1/orders', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'X-Idempotency-Key': randomUUID(),
+  },
   body: JSON.stringify({
+    type: 'qr',
+    total_amount: '100.00',
     external_reference: 'order-uuid',
-    total_amount: 100.0,
-    items: [{ title: 'Product', unit_price: 100.0, quantity: 1, unit_measure: 'unit', total_amount: 100.0 }],
-    notification_url: 'https://yoursite.com/webhooks/mp'
+    config: { qr: { external_pos_id: externalPosId, mode: 'dynamic' } },
+    transactions: { payments: [{ amount: '100.00' }] },
   })
 });
 ```

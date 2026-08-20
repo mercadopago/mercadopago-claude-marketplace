@@ -1,13 +1,37 @@
-# Guide: MP Point (Card Readers)
-# Updated: 2026-06-22 | Source: Mercado Pago MCP (search_documentation)
+# Guide: MP Point (Orders API)
+# Updated: 2026-08-20 | Source: official Mercado Pago Point documentation
 #
-# TRAP TO AVOID FIRST:
-#   Device must be paired to correct USER ID — not just the application.
-#   Use Orders API — Payment Intents API is deprecated.
+# TRAPS TO AVOID FIRST:
+#   New integrations use Orders API. Payment Intents is deprecated.
+#   Production uses a physical terminal paired to the correct user in PDV mode.
+#   Tests without hardware use the standard virtual terminal serial SBX0000001.
 
 ---
 
-## Complete working app (Node.js + Express)
+## Hardware-independent test mode
+
+The official Point test flow supports the standard virtual terminal
+`NEWLAND_N950__SBX0000001`. It can create Point orders and simulate their final
+status without a physical reader.
+
+The virtual terminal is for test credentials only and is not valid for the
+official integration-quality measurement. Never silently use it in production.
+Resolve the terminal with an explicit test guard:
+
+```js
+const VIRTUAL_POINT_TERMINAL = 'NEWLAND_N950__SBX0000001';
+const pointTestMode = process.env.MP_POINT_TEST_MODE === 'true';
+const pointTerminalId = process.env.MP_POINT_TERMINAL_ID?.trim()
+  || (pointTestMode ? VIRTUAL_POINT_TERMINAL : '');
+
+if (!pointTerminalId) {
+  throw new Error('MP_POINT_TERMINAL_ID is required outside Point test mode');
+}
+```
+
+---
+
+## Complete working server (Node.js + Express)
 
 ### Install
 
@@ -20,126 +44,159 @@ npm install express dotenv
 ```js
 import 'dotenv/config';
 import express from 'express';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-const TOKEN = process.env.MP_ACCESS_TOKEN;
+const token = process.env.MP_ACCESS_TOKEN?.trim();
+const VIRTUAL_POINT_TERMINAL = 'NEWLAND_N950__SBX0000001';
+const pointTestMode = process.env.MP_POINT_TEST_MODE === 'true';
+const pointTerminalId = process.env.MP_POINT_TERMINAL_ID?.trim()
+  || (pointTestMode ? VIRTUAL_POINT_TERMINAL : '');
 
-// ─── GET / — list devices + create order ─────────────────────────────────────
-app.get('/', async (req, res) => {
-  let devices = [];
-  try {
-    const r = await fetch('https://api.mercadopago.com/terminals/v1/list', {
-      headers: { Authorization: `Bearer ${TOKEN}` },
-    });
-    const data = await r.json();
-    devices = data.data || [];
-  } catch (e) { /* ignore */ }
+if (!token) throw new Error('MP_ACCESS_TOKEN is required');
+if (!pointTerminalId) {
+  throw new Error('MP_POINT_TERMINAL_ID is required outside Point test mode');
+}
 
-  res.send(`
-    <!DOCTYPE html><html><body>
-    <h1>MP Point Test</h1>
-    <h2>Devices</h2>
-    ${devices.length === 0
-      ? '<p>No devices found. Pair your Point device to this account first.</p>'
-      : devices.map(d => `<p>${d.id} — ${d.operating_mode}</p>`).join('')
-    }
-    <hr/>
-    <h2>Create Payment Order</h2>
-    <form action="/create-order" method="POST">
-      <label>Device ID: <input name="device_id" value="${devices[0]?.id || ''}" required /></label><br/>
-      <label>Amount (BRL): <input name="amount" type="number" value="10" step="0.01" /></label><br/>
-      <button type="submit">Send to Device</button>
-    </form>
-    </body></html>
-  `);
-});
+function pointHeaders(withIdempotency = false) {
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...(withIdempotency ? { 'X-Idempotency-Key': randomUUID() } : {}),
+  };
+}
 
-// ─── POST /create-order ───────────────────────────────────────────────────────
-app.post('/create-order', async (req, res) => {
-  const { device_id, amount } = req.body;
+app.post('/api/point/orders', async (req, res) => {
+  const amount = Number(req.body.amount);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return res.status(400).json({ error: 'amount must be a positive number' });
+  }
 
+  const amountString = amount.toFixed(2);
   const response = await fetch('https://api.mercadopago.com/v1/orders', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Type': 'application/json',
-      'X-Idempotency-Key': randomUUID(),
-    },
+    headers: pointHeaders(true),
     body: JSON.stringify({
-      type: 'instore',
-      processing_mode: 'automatic',
-      total_amount: String(parseFloat(amount)),
-      external_reference: `point-${Date.now()}`,
+      type: 'point',
+      external_reference: `point-${randomUUID()}`,
+      expiration_time: 'PT10M',
       transactions: {
-        payments: [{
-          amount: String(parseFloat(amount)),
-          payment_method: { type: 'credit_card', installments: 1 },
-        }],
+        payments: [{ amount: amountString }],
       },
       config: {
-        device: { id: device_id },
+        point: {
+          terminal_id: pointTerminalId,
+          print_on_terminal: 'no_ticket',
+        },
       },
+      description: 'Point order',
     }),
   });
 
-  const order = await response.json();
-  if (!response.ok) return res.status(400).json(order);
+  const order = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return res.status(response.status).json({
+      error: order.message || 'Could not create Point order',
+      detail: order,
+    });
+  }
 
-  res.send(`
-    <h1>✅ Order sent to device</h1>
-    <p>Order ID: ${order.id}</p>
-    <p>Status: ${order.status}</p>
-    <p>Present card on the Point terminal.</p>
-    <a href="/">← New order</a>
-  `);
+  return res.status(201).json({
+    orderId: order.id,
+    paymentId: order.transactions?.payments?.[0]?.id,
+    status: order.status,
+  });
 });
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log(`\n🚀 Point Server at http://localhost:${process.env.PORT || 3000}\n`)
-);
+app.get('/api/point/orders/:orderId', async (req, res) => {
+  const response = await fetch(
+    `https://api.mercadopago.com/v1/orders/${encodeURIComponent(req.params.orderId)}`,
+    { headers: pointHeaders() },
+  );
+  const order = await response.json().catch(() => ({}));
+  return res.status(response.status).json(order);
+});
+
+app.listen(Number(process.env.PORT || 3000));
 ```
 
-### .env
+### `.env.example`
 
-```
+```dotenv
 MP_ACCESS_TOKEN=APP_USR-...
+MP_POINT_TEST_MODE=true
+# Required in production. Optional only when MP_POINT_TEST_MODE=true.
+MP_POINT_TERMINAL_ID=
 PORT=3000
 ```
 
-### package.json
+---
 
-```json
-{ "type": "module", "scripts": { "start": "node server.js" } }
+## Test the integration without a device
+
+Use app test credentials and create a fresh order for every scenario. After
+creation, simulate its status with:
+
+```text
+POST /v1/orders/{order_id}/events
 ```
 
-### Run
+Supported official scenarios include:
 
-```bash
-node server.js
-# open: http://localhost:3000
-# Pair your device in developer mode first
-# Select device → set amount → click "Send to Device" → tap card on terminal
-```
+- `processed` with payment metadata and `status_detail: accredited`;
+- `failed`, including decline details such as `insufficient_amount`;
+- `refunded`;
+- `canceled`;
+- `expired`;
+- `action_required`.
+
+`refunded` is the only scenario that must reuse an order already in
+`processed`; do not apply it directly to a newly created order.
+
+The client must handle every status explicitly. Treat `processed`, `failed`,
+`refunded`, `canceled`, and `expired` as terminal outcomes. When
+`action_required` is returned, show an actionable "check the terminal" state
+instead of leaving a generic spinner or eventually reporting a timeout. Keep
+`created` and `at_terminal` as pending states. Never report `failed` as a
+timeout.
+
+Most transitions take up to 10 seconds. `action_required` can take up to 40
+seconds. Except for `refunded`, the order normally passes through `at_terminal`
+before reaching the simulated final state.
+
+The simulation endpoint is a test operation. Do not expose a public application
+route that lets arbitrary clients choose an order's simulated status. Test code
+may call Mercado Pago directly with credentials injected only into the test
+process.
 
 ---
 
 ## Critical rules
 
-- Device must be paired to correct `user_id` (not just app)
-- Device must be in **developer mode** for testing
-- Use `orders` webhook topic — `point_integration_wh` is legacy
-- After firmware update: wait ~2 min before retrying
+- Use `type: "point"`, not `instore` or `online`.
+- Send the reader as `config.point.terminal_id`, not `config.device.id`.
+- Format every payment amount with exactly two decimal places.
+- Keep the baseline payload minimal. Do not send
+  `config.payment_method.default_installments`: it is rejected for Point orders
+  in markets where installments are not configurable through that property.
+- Send `X-Idempotency-Key` on create, cancel, and refund operations.
+- A real terminal must be paired to the correct `user_id` and use PDV mode.
+- Use the `orders` webhook topic; `point_integration_wh` is legacy.
+- Do not use `/point/integration-api/.../payment-intents` in new code.
+- The virtual terminal does not replace final hardware or quality validation.
 
 ---
 
 ## Pre-production checklist
 
-- [ ] Device paired to correct user_id
-- [ ] Orders API used (not Payment Intents)
-- [ ] Webhook on `orders` topic
-- [ ] `X-Idempotency-Key` on every order
-- [ ] Run `/mp-review` before production
+- [ ] Orders API used; no Payment Intents endpoint remains
+- [ ] Physical terminal ID configured through `MP_POINT_TERMINAL_ID`
+- [ ] Test-mode virtual fallback cannot activate in production
+- [ ] Physical device paired to the correct `user_id` in PDV mode
+- [ ] `orders` webhook configured and HMAC validated
+- [ ] Idempotency keys present on every mutating request
+- [ ] Client handles `processed`, `failed`, `refunded`, `canceled`, `expired`, and `action_required`
+- [ ] Final card/PIN/printing/connectivity checks executed on hardware
+- [ ] `/mp-review` completed before production

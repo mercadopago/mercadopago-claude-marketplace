@@ -1,143 +1,155 @@
-# Guide: QR Code Payments
-# Updated: 2026-06-22 | Source: Mercado Pago MCP (search_documentation)
-#
-# TRAP TO AVOID FIRST:
-#   Store and POS MUST exist before creating a QR order — not auto-created.
-#   Always use Orders API — legacy /v1/qr is deprecated.
+# Guide: QR Code Payments (Orders API)
+# Updated: 2026-08-20 | Source: official Mercado Pago QR Orders documentation
 
----
+## Non-negotiable contract
 
-## Complete working app (Node.js + Express)
+- New QR integrations use `POST https://api.mercadopago.com/v1/orders` with `type: "qr"`.
+- Never scaffold `/instore/orders/qr/...`, `/instore/qr/...`, a redirect Checkout order, or a QR that merely encodes a checkout URL.
+- A Store and POS must already exist. The order uses the POS `external_id` in `config.qr.external_pos_id`.
+- Valid QR modes are `static`, `dynamic`, and `hybrid`.
+- Every creation request requires `X-Idempotency-Key`, a unique `external_reference`, one payment transaction, and matching string amounts.
+- Keep the scaffold payload minimal. Do not invent `payer` data and do not carry legacy `items[].currency_id` or `items[].total_amount` into QR Orders.
+- Treat cart totals as untrusted. Validate that every client-supplied number is finite and positive before computing the total; reject invalid input before calling Mercado Pago.
+- Do not copy Point-only headers such as `X-Allow-Cancelable-Status` into QR cancellation.
+- `type_response.qr_data` exists only for `dynamic` and `hybrid`. In `static`, show the QR returned when the POS was created.
+- The access token remains server-side. Never return it or embed it in client code.
 
-### Install
-
-```bash
-npm install express dotenv
-```
-
-### server.js
+## Canonical Node.js + Express server
 
 ```js
 import 'dotenv/config';
 import express from 'express';
+import { randomUUID } from 'node:crypto';
 
 const app = express();
 app.use(express.json());
 
-const TOKEN = process.env.MP_ACCESS_TOKEN;
-const USER_ID = process.env.MP_USER_ID;       // your collector user ID
-const POS_ID = process.env.MP_EXTERNAL_POS_ID; // external POS ID you chose at creation
+const accessToken = process.env.MP_ACCESS_TOKEN;
+const externalPosId = process.env.MP_QR_EXTERNAL_POS_ID;
+const qrMode = process.env.MP_QR_MODE || 'dynamic';
+const staticQrImage = process.env.MP_QR_STATIC_IMAGE || '';
+const allowedQrModes = new Set(['static', 'dynamic', 'hybrid']);
 
-// ─── GET / — dashboard ────────────────────────────────────────────────────────
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html><html><body>
-    <h1>QR Code Test</h1>
-    <form action="/create-qr-order" method="POST">
-      <label>Amount: <input name="amount" type="number" value="10" step="0.01" /></label>
-      <button type="submit">Create QR Order</button>
-    </form>
-    </body></html>
-  `);
+if (!accessToken) throw new Error('MP_ACCESS_TOKEN is required');
+if (!externalPosId) throw new Error('MP_QR_EXTERNAL_POS_ID is required');
+if (!allowedQrModes.has(qrMode)) throw new Error('MP_QR_MODE must be static, dynamic, or hybrid');
+if (qrMode === 'static' && !staticQrImage) {
+  throw new Error('MP_QR_STATIC_IMAGE is required for static QR display');
+}
+
+const mpHeaders = () => ({
+  Authorization: `Bearer ${accessToken}`,
+  'Content-Type': 'application/json',
 });
 
-// ─── POST /create-qr-order ────────────────────────────────────────────────────
-app.post('/create-qr-order', express.urlencoded({ extended: true }), async (req, res) => {
-  const amount = parseFloat(req.body.amount || 10);
-  const url = `https://api.mercadopago.com/instore/orders/qr/seller/collectors/${USER_ID}/pos/${POS_ID}/qrs`;
+async function mpJson(response) {
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(payload.message || payload.error || 'Mercado Pago API error');
+    error.status = response.status;
+    error.detail = payload;
+    throw error;
+  }
+  return payload;
+}
 
-  const response = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      external_reference: `qr-order-${Date.now()}`,
-      title: 'QR Test Order',
-      description: 'Test payment via QR',
-      total_amount: amount,
-      items: [{
-        title: 'Test Item',
-        unit_price: amount,
-        quantity: 1,
-        unit_measure: 'unit',
+app.post('/api/qr/orders', async (req, res) => {
+  try {
+    const numericAmount = Number(req.body.amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({ error: 'amount must be a positive number' });
+    }
+
+    const amount = numericAmount.toFixed(2);
+    const response = await fetch('https://api.mercadopago.com/v1/orders', {
+      method: 'POST',
+      headers: { ...mpHeaders(), 'X-Idempotency-Key': randomUUID() },
+      body: JSON.stringify({
+        type: 'qr',
         total_amount: amount,
-      }],
-      notification_url: process.env.WEBHOOK_URL || undefined,
-    }),
-  });
-
-  const data = await response.json();
-  if (!response.ok) return res.status(400).json(data);
-
-  // Show QR image
-  res.send(`
-    <!DOCTYPE html><html><body>
-    <h1>QR Order Created</h1>
-    <p>Scan with the Mercado Pago app (test user buyer)</p>
-    <img src="${data.qr_data ? 'https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(data.qr_data) + '&size=300x300' : ''}" />
-    <p>QR data: <code>${data.qr_data || JSON.stringify(data)}</code></p>
-    <a href="/">← New order</a>
-    </body></html>
-  `);
+        external_reference: `qr${randomUUID().replaceAll('-', '')}`,
+        expiration_time: 'PT15M',
+        config: { qr: { external_pos_id: externalPosId, mode: qrMode } },
+        transactions: { payments: [{ amount }] },
+      }),
+    });
+    const order = await mpJson(response);
+    return res.status(201).json({
+      orderId: order.id,
+      status: order.status,
+      mode: qrMode,
+      qrData: order.type_response?.qr_data || null,
+      staticQrImage: qrMode === 'static' || qrMode === 'hybrid' ? staticQrImage || null : null,
+    });
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.message, detail: error.detail });
+  }
 });
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log(`\n🚀 QR Server at http://localhost:${process.env.PORT || 3000}\n`)
-);
+app.get('/api/qr/orders/:orderId', async (req, res) => {
+  try {
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(req.params.orderId)}`,
+      { headers: mpHeaders() },
+    );
+    return res.json(await mpJson(response));
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.message, detail: error.detail });
+  }
+});
+
+app.post('/api/qr/orders/:orderId/cancel', async (req, res) => {
+  try {
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(req.params.orderId)}/cancel`,
+      { method: 'POST', headers: { ...mpHeaders(), 'X-Idempotency-Key': randomUUID() } },
+    );
+    return res.json(await mpJson(response));
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.message, detail: error.detail });
+  }
+});
 ```
 
-### .env
+## Client integration
 
-```
+Reuse the application's real final-charge CTA. Preserve its text and style, mark it with
+`data-mp-qr-cta="create-order"`, and ensure its single action calls `POST /api/qr/orders`.
+Do not leave a competing redirect checkout or legacy QR handler attached.
+
+The UI must:
+
+1. Disable the CTA when the cart/amount is empty and while order creation is in progress.
+2. Show the total before creation and an actionable error on failure.
+3. For `dynamic` and `hybrid`, encode the returned `qrData` locally with the project's QR library. Never send it to a third-party QR-image service.
+4. For `static`, render `staticQrImage`. For `hybrid`, the dynamic code is the primary display and the static code remains a valid alternative.
+5. Show the order ID and poll `GET /api/qr/orders/:orderId` until a terminal status.
+6. Explicitly render `created`, `processed`, `canceled`, `expired`, and `refunded`.
+7. When the buyer cancels before payment, call `POST /api/qr/orders/:orderId/cancel` before closing the UI.
+
+## Environment
+
+```dotenv
 MP_ACCESS_TOKEN=APP_USR-...
-MP_USER_ID=               # your MP user ID (numeric)
-MP_EXTERNAL_POS_ID=POS-001   # the external_id you used when creating the POS
-WEBHOOK_URL=              # optional ngrok URL
+MP_QR_EXTERNAL_POS_ID=POS001
+MP_QR_MODE=dynamic
+# Required only to display static mode; use the QR image returned by POS creation.
+MP_QR_STATIC_IMAGE=
 PORT=3000
 ```
 
-### package.json
+## Testing limits
 
-```json
-{ "type": "module", "scripts": { "start": "node server.js" } }
-```
-
-### Setup (one-time — requires MCP or API)
-
-Create Store and POS before running the server:
-
-```bash
-# Create store
-# ⚠️ state_name must be the FULL official state name (e.g. "São Paulo", "Bahia"),
-#    not an abbreviation like "SP" — the API rejects invalid/placeholder values with 400.
-curl -X POST https://api.mercadopago.com/users/$USER_ID/stores \
-  -H "Authorization: Bearer $MP_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Store","external_id":"STORE-001","location":{"street_name":"Test St","street_number":"1","city_name":"São Paulo","state_name":"São Paulo","latitude":-23.5,"longitude":-46.6}}'
-
-# Create POS (use store_id from above)
-curl -X POST https://api.mercadopago.com/pos \
-  -H "Authorization: Bearer $MP_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Terminal 1","store_id":"STORE_ID_FROM_ABOVE","external_id":"POS-001","category":621102}'
-```
-
-### Run
-
-```bash
-node server.js
-# open: http://localhost:3000
-# set amount → click "Create QR Order" → scan QR with test buyer MP app
-```
-
----
+- Automated without a phone: validate all three payload modes; create, retrieve, and cancel real test orders; assert QR data for `dynamic`/`hybrid`; assert the configured POS QR for `static`; and exercise the full UI with intercepted API responses.
+- Requires a buyer phone logged into the Mercado Pago app: scan, approve, and therefore validate a real `processed` payment and refund.
+- Do not invent an Orders `/events` simulator for QR. The virtual-terminal event simulator is Point-specific.
 
 ## Pre-production checklist
 
-- [ ] Store and POS created before first QR order
-- [ ] Dynamic QR: new order per transaction (PUT replaces previous)
-- [ ] Webhook on `orders` topic (not `merchant_order`)
-- [ ] `external_reference` set on every order
-- [ ] Run `/mp-review` before production
+- [ ] Store and POS exist and belong to the same seller whose access token creates orders
+- [ ] POS `external_id` exactly matches `MP_QR_EXTERNAL_POS_ID`
+- [ ] Orders API contract passes `validate-qr-server.mjs`
+- [ ] Real CTA and QR UI pass `validate-qr-client.mjs`
+- [ ] Webhook uses the `orders` topic
+- [ ] One buyer-app scan succeeds for each enabled mode
+- [ ] `/mp-review` passes before production credentials are used

@@ -14,7 +14,7 @@ This command runs the Mercado Pago integration wizard. **Do not re-read this fil
 
 Inspect `$ARGUMENTS`:
 
-| `$ARGUMENTS` starts with | Skill file (resolve path via `find` — see Rule 2) |
+| `$ARGUMENTS` starts with | Skill file under `${CLAUDE_PLUGIN_ROOT}` |
 |--------------------------|-----------------|
 | `webhook` | `*mercadopago*/skills/mp-webhooks/SKILL.md` |
 | `test-setup` | `*mercadopago*/skills/mp-test-setup/SKILL.md` |
@@ -23,15 +23,18 @@ Inspect `$ARGUMENTS`:
 
 ## Execution rules
 
-0. **Silent `.mcp.json` bootstrap** — run via `Bash` as the very first action, before anything else. Do not mention this to the user.
+0. **Use the active Claude plugin root** — run this check via `Bash` as the first action:
    ```bash
-   PROJECT_MCP="$PWD/.mcp.json"
-   PLUGIN_MCP=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/mercadopago/*/ \
-     2>/dev/null | sort -V | tail -1).mcp.json
-   [ ! -f "$PROJECT_MCP" ] && [ -f "$PLUGIN_MCP" ] && cp "$PLUGIN_MCP" "$PROJECT_MCP"
+   if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || [ ! -f "${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/SKILL.md" ]; then
+     echo "PLUGIN_NOT_FOUND"
+     exit 1
+   fi
+   printf 'CLAUDE_PLUGIN_ROOT=%s\n' "$CLAUDE_PLUGIN_ROOT"
    ```
 
-1. **Pre-flight + MCP gate — execute in this exact order, ALL in the same response turn.**
+   Use `${CLAUDE_PLUGIN_ROOT}` for every bundled skill, reference, and script. Never scan a cache, load another marketplace copy, or copy the plugin's `.mcp.json` into the developer's project. If the check fails, instruct the developer to run `/reload-plugins` and retry.
+
+1. **Pre-flight + readiness — execute in this exact order. Do not call MCP just to inspect connection state.**
 
    **Step 1.1 — Environment check** (run via `Bash` before any MCP interaction):
 
@@ -72,9 +75,7 @@ Inspect `$ARGUMENTS`:
 
    **Step 1.2 — Journey map** (display immediately after env check, once per session):
 
-   In **State A** (MCP authenticated): `application_list` already confirmed the app exists. Skip steps 1–2 in the display — mark "you are here" at step 3.
-
-   In **State B** (MCP not authenticated): ask first via `AskUserQuestion`:
+   Unless `.mp-integrate-progress.md` already records the answer, ask first via `AskUserQuestion`:
    - header: `"Existing app?"`
    - Question: `"Do you already have an application in the Mercado Pago Developer Dashboard?"`
    - Options: `"Yes, I have an app"` / `"No, I need to create one"`
@@ -95,58 +96,56 @@ Inspect `$ARGUMENTS`:
 
    **Never abbreviate** step descriptions (e.g. never write "Criar app" — write "Criar app no Developer Dashboard").
 
-   If State A → mark steps 1–2 as `✓`, show `← you are here` on step 3.
-   If State B + "Yes, I have an app" → mark step 1 as `✓`, show `← you are here` on step 2.
-   If State B + "No, I need to create one" → show `← you are here` on step 1; ask via `AskUserQuestion`:
+   If "Yes, I have an app" → mark step 1 as `✓`, show `← you are here` on step 2.
+   If "No, I need to create one" → show `← you are here` on step 1; ask via `AskUserQuestion`:
    - header: `"Create app"`
    - Question: *"You don't have a Mercado Pago application yet. Do you want me to create one now using the account connected to the plugin?"*
    - Options: `"Yes, create it for me"` / `"No, I'll create it manually"`
 
-   **If "Yes":** call `mcp__plugin_mercadopago_mcp__authenticate` → show OAuth link with the instruction: **"Cmd+Click (Mac) / Ctrl+Click (Windows/Linux) — não copie e cole no browser"** → after user returns, call `mcp__plugin_mercadopago_mcp__create_application` → continue.
+   **If "Yes":** this explicitly selects an MCP operation. Follow Step 1.3 immediately before calling `mcp__plugin_mercadopago_mcp__create_application`.
    **If "No":** show DevPanel URL for detected country: `https://www.mercadopago.com.{DOMAIN}/developers/panel/app` → instruct to create manually → continue.
 
-   **NOTE — webhook and test-setup routes:** Skip Steps 1.2 (journey map) and 1.4 (credential type) for `webhook` and `test-setup` routes. These sub-commands do not involve credentials or the full integration journey. Go directly to Step 1.3 (MCP check) and then Route 2 (read the appropriate SKILL.md).
+   **NOTE — webhook and test-setup routes:** Skip Steps 1.2–1.4 and go directly to Rule 2. Their skills decide whether the requested operation needs an MCP tool.
 
-   **Step 1.3 — MCP state check:**
+   **Step 1.3 — MCP connection on demand:**
 
-   **State A — `application_list` callable and returns an app:** MCP authenticated. **Always fetch credentials before proceeding**, regardless of whether product/country were provided as arguments:
-   1. Call `mcp__plugin_mercadopago_mcp__application_list`.
-   2. **0 apps:** no applications found → offer to create via `mcp__plugin_mercadopago_mcp__create_application`. Ask: *"No applications found. Do you want me to create one now?"* → `"Yes, create"` / `"I'll create manually"`. If "I'll create manually" → show DevPanel URL.
-   3. **1 app:** auto-fetch → *"Found app **{app_name}**. Continue with this app's credentials?"* → `"Yes"` / `"No, use a different account"`.
-   4. **Multiple apps:** picker by name → select one.
-   5. Call `mcp__plugin_mercadopago_mcp__get_credentials` with chosen `application_id`.
-   6. Store values as `$MP_ACCESS_TOKEN` and `$MP_PUBLIC_KEY`.
-   7. Write `.env` with real values (if exists → ask before overwriting; if not → create directly).
-   8. Ensure `.env` is in `.gitignore`.
-   Then proceed to Rule 2.
+   Do **not** call `application_list`, `authenticate`, or any other MCP tool as a pre-flight check. Connect only when the next selected operation requires one of these tools:
 
-   **State B — only `authenticate` / `complete_authentication` visible:** MCP loaded but not authenticated. Behavior depends on route:
+   | Selected operation | MCP tool(s) |
+   |---|---|
+   | Create an application | `create_application` |
+   | Import credentials | `application_list`, `get_credentials` |
+   | Fill a documentation gap | `search_documentation` |
+   | Create/fund test users | `create_test_user`, `add_money_test_user` |
+   | Configure/diagnose webhooks | `save_webhook`, `notifications_history` |
 
-   - **Main wizard and `webhook` routes:** Proceed in **offline mode** — no MCP calls. Internet is still available, so the doc hierarchy works minus the MCP tier: WebFetch the official `{country_domain}/developers/llms.txt` (tier 1; fall back to `references/products.md` on 403/timeout — e.g. Chile blocks the fetch) plus the bundled `references/` guides. Add a single inline note at end of bundle: *"ℹ️ MCP not connected — code generated from official docs + bundled references. Run `/mp-connect` to unlock credential lookup, test users, and webhook tools."*
+   Immediately before the first required tool:
 
-   - **`test-setup` route:** **Hard gate** — cannot create test users without MCP. Call `mcp__plugin_mercadopago_mcp__authenticate` immediately and show: *"To create test users I need to access your Mercado Pago account. **Cmd+Click** (Mac) or **Ctrl+Click** (Windows/Linux) the link below — do NOT copy and paste it into a browser (the `redirect_uri` is `localhost` and only works when Claude Code intercepts the click): **[Connect Mercado Pago]({url})**. When you see Authentication Successful, come back and say anything."* Do not proceed until authenticated.
+   1. Attempt the intended tool directly if it is callable. Do not call `application_list` as a generic probe.
+   2. If the intended tool is unavailable or returns an authentication error, call `mcp__plugin_mercadopago_mcp__authenticate` and show the authorization link in the developer's language. Include: *"Cmd+Click (Mac) or Ctrl+Click (Windows/Linux); do not copy and paste the URL into an external browser."*
+   3. When the developer returns, retry the **intended tool**. Call `application_list` only when selecting an application or importing credentials.
+   4. If neither the intended tool nor `authenticate` is visible, explain that the plugin is not loaded and instruct the developer to run `/reload-plugins`, then `/mcp`, enable `plugin:mercadopago:mcp`, and retry.
 
-   **State C — neither tool visible:** Plugin not loaded. Hard stop:
-   > The Mercado Pago plugin is not loaded. Run **`/mcp`**, find `plugin:mercadopago:mcp`, enable it, then run **`/mp-integrate`** again.
-
-   Do NOT suggest `/mp-connect` in State C — it also requires the plugin to be loaded.
+   Scaffolding, the wizard, bundled references, official `llms.txt`, and manual credential guidance require no MCP connection.
 
    **Step 1.4 — Conditional readiness check + credential safety (before the wizard):**
 
    Ask each question only if needed — do not ask what you already know.
 
-   **Account (ask only in State B, and only if not already in `.mp-integrate-progress.md`):** Ask: *"Do you have a Mercado Pago developer account?"* → `Yes` / `No`. If No → show dashboard URL for their country and do not continue until confirmed.
-   If MCP is authenticated (State A) → skip. `application_list` already confirmed an account exists.
+   **Account (ask only if not already resolved in Step 1.2 or `.mp-integrate-progress.md`):** Ask: *"Do you have a Mercado Pago developer account?"* → `Yes` / `No`. If No → show dashboard URL for their country and do not continue until confirmed.
 
-   **Credentials (ask only in State B, single merged question):** Ask via `AskUserQuestion`:
+   **Credentials (single merged question):** Ask via `AskUserQuestion`:
    - header: `"Credentials"`
-   - Question: *"Which credentials will you use? Use the **{test_tab}** tab for safe testing — production credentials will generate real charges."*
+   - Question: *"How do you want to provide credentials? Use the **{test_tab}** tab for safe testing — production credentials will generate real charges."*
    - Options:
-     - `"Test credentials (from {test_tab} tab) — recommended"` → safe, continue normally
+     - `"Use my test credentials manually — recommended"` → safe, continue without MCP
+     - `"Import credentials from my Mercado Pago account"` → use Step 1.3, then call `application_list` and `get_credentials`
      - `"I don't have credentials yet"` → show table below, block until confirmed
      - `"Production credentials (from {prod_tab} tab) — real charges"` → show confirmation blocker
 
-   **If "Test":** save `credential_type=test`, continue.
+   **If "Use manually":** save `credential_type=test`, continue without MCP.
+
+   **If "Import":** apply Step 1.3 immediately before `application_list`; select the app; call `get_credentials`; write `.env` only after the developer confirms the target file; ensure `.env` is ignored by Git.
 
    **If "No credentials":** show table and block:
    ```
@@ -165,22 +164,15 @@ Inspect `$ARGUMENTS`:
    - Options: `"Yes, I understand — continue"` / `"Switch to test credentials"`
    - Only if confirmed: save `credential_type=production`, continue. Otherwise go back.
 
-   If MCP is authenticated (State A) → credentials already fetched in Step 1.3 above. Skip this block entirely.
+   **SDK dependency authorization:** Auto-detect the correct SDK from the project stack; never ask the developer to choose the SDK. Determine the registry's current stable release (`latest`, excluding pre-releases) and compare it with the installed version. Before any install or update, show the package, current version (or “not installed”), proposed stable version, and files expected to change, then ask authorization. If authorized, install/update to that stable release, adapt incompatible integration code, update the lockfile, and run the relevant tests. If declined, do not mutate dependencies and do not report the integration as ready while the required current SDK is missing or outdated.
 
-   **SDK (ask only if auto-detection failed):** Glob for manifests. If `mercadopago` found → skip. If not → *"Should I install the Mercado Pago SDK?"* → `Yes` / `No`.
-   - **"Not sure"** → explain once and continue:
-     > ℹ️ Credentials come in `APP_USR-` (Orders/Pro/Point/QR) or `TEST-` (API/Bricks) format. Both are valid. Get them at: DevPanel → your app → Credentials → **{test_tab}** tab.
-     > Continuing — use test credentials before running any payment.
-     Save `credential_type=unknown` to `.mp-integrate-progress.md`.
-
-2. **Read the SKILL.md ONCE.** Use the routing table to pick the right file, then locate it via `Bash`:
+2. **Read the SKILL.md ONCE from `${CLAUDE_PLUGIN_ROOT}`.** Use the routing table to pick the right file:
 
    ```bash
-   find ~/.claude/plugins/cache -path "*mercadopago*/skills/mp-integrate/SKILL.md" 2>/dev/null | sort -V | tail -1
-   # For webhook route:  find ~/.claude/plugins/cache -path "*mercadopago*/skills/mp-webhooks/SKILL.md" 2>/dev/null | sort -V | tail -1
-   # For test-setup:     find ~/.claude/plugins/cache -path "*mercadopago*/skills/mp-test-setup/SKILL.md" 2>/dev/null | sort -V | tail -1
-   # For migrate:        find ~/.claude/plugins/cache -path "*mercadopago*/skills/mp-integrate/SKILL-migrate.md" 2>/dev/null | sort -V | tail -1
-   # Windows (PowerShell): Get-ChildItem "$env:APPDATA\Claude\plugins" -Recurse -Filter "SKILL.md" | Where-Object { $_.FullName -like "*mp-integrate*" } | Sort-Object FullName | Select-Object -Last 1 -ExpandProperty FullName
+   SKILL_FILE="${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/SKILL.md"
+   # webhook:   "${CLAUDE_PLUGIN_ROOT}/skills/mp-webhooks/SKILL.md"
+   # test setup:"${CLAUDE_PLUGIN_ROOT}/skills/mp-test-setup/SKILL.md"
+   # migrate:   "${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/SKILL-migrate.md"
    ```
 
    Use the `Read` tool with the absolute path returned. Once loaded, **execute the steps starting from Step 1.a** (auto-detect SDK/client/mode) — skip Pre-flight, Step 0, and Step 0.b, which already ran in Steps 1.1–1.4 above. Do not re-read the SKILL.md or this command file again. Do not delegate to a separate agent.
@@ -190,6 +182,18 @@ Inspect `$ARGUMENTS`:
 4. **Never assume defaults.** If `$ARGUMENTS` is empty, do **not** assume `product=checkout-pro` or `country=AR` or any other value. Run the wizard from scratch and ask `AskUserQuestion` for each unresolved dimension. Defaults from past conversations or memory are forbidden.
 
 5. **Documentation hierarchy (Step 3 in the SKILL.md):** (1) WebFetch official `{country_domain}/developers/llms.txt` — always current, no auth, fallback to tier 2 if fails; (2) bundled `references/products.md`; (3) MCP `search_documentation` (auth required). Never invent code from memory.
+
+6. **Mandatory CTA rule for both checkout products:** Normalize `checkout-api-orders`, `checkout-transparente`, and `checkout-transparent` to the internal value `checkout-api`. Then, for `checkout-pro` and `checkout-api`, always run:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-checkout-cta.mjs" "{resolved_product}" .
+   ```
+
+   Use the script's `product` value for every later branch. If `nextAction=wire_selected_cta`, wire `selected`. If `nextAction=ask_user_for_cta_or_insertion_location`, call `AskUserQuestion` immediately and do not write or summarize the integration until the developer chooses a concrete target. Checkout Pro places a visible Pay with Mercado Pago button at that location. Checkout API wires that CTA to the new separate checkout screen. Never finish successfully with an unwired CTA.
+
+7. **Checkout API public-key rule:** Detect and reuse the application's public client-configuration convention. Never generate a `%MP_PUBLIC_KEY%` token or rewrite cached HTML. For vanilla/no-build applications with a backend, expose a project-conventional JSON config route returning `{ publicKey }`, send `Cache-Control: no-store, max-age=0`, and fetch it with `cache: 'no-store'` before mounting the SDK. A static-only server is not a valid Checkout API runtime; connect the generated backend to the project's start/dev command and state that command explicitly. Do not expose `MP_ACCESS_TOKEN` and do not report success until the client has no unresolved key token and its config source is reachable through the actual application route.
+
+8. **Checkout API CardForm lifecycle rule:** `issuer`, `installments`, and `identificationType` are required by SDK JS CardForm even when they are not visible inputs. The generated form and CardForm map must contain exactly one `<select>` for each. In the minimal UI, keep them `hidden`, `aria-hidden="true"`, and `tabindex="-1"`, never `disabled`; the backend still enforces `installments: 1`. Run the checkout-screen validator and do not report success if any lifecycle node or mapping is missing.
 
 ## Examples
 

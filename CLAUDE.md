@@ -10,7 +10,7 @@ This project follows an **MCP-first orchestration architecture** where:
 
 ### The Golden Rules
 
-1. **The MCP must always be connected.** This is non-negotiable. The agent and every skill check `ListMcpResourcesTool` first; if the MCP is not authenticated, they stop and ask the user to run `/mp-connect`. **There is no offline mode**, no WebFetch substitute for an unauthenticated MCP.
+1. **Connect MCP only when the selected operation needs an MCP tool.** Static scaffolding, bundled references, test cards, webhook receiver generation, and local security checks remain available offline. Authenticate immediately before account data/actions, test-user operations, live documentation fallback, webhook administration, or official quality operations.
 2. **One agent (`mp-integration-expert`).** It is the only directly invocable component. Skills are passive reference documents.
 3. **Four skills only.** `mp-integrate`, `mp-webhooks`, `mp-test-setup`, `mp-review`. Adding a fifth requires rethinking the architecture — most additions belong inside `mp-integrate` as another wizard branch.
 4. **No documentation duplication.** If a piece of information is in the public Mercado Pago docs or returned by an MCP tool, it does not live in this repo.
@@ -188,14 +188,13 @@ To:
 
 > **Validation checklist update:** Remove the check `test -z "$(find plugins/mercadopago/skills -name 'references' -type d)"` — `references/` is now intentional in `mp-integrate`. Update to: `find plugins/mercadopago/skills -name 'references' -type d | grep -v mp-integrate && echo "ERROR: unexpected references dirs" || echo "OK"`.
 
-### Mudança 5 — MCP auto-config on install (already resolved)
+### Mudança 5 — MCP auto-config on install
 
-**Status: `.mcp.json` already exists at `plugins/mercadopago/.mcp.json`.**
+**Status: `.mcp.json` exists at `plugins/mercadopago/.mcp.json` and is declared by the plugin manifest.**
 
-The root cause of the test session was a manual install that did not copy `.mcp.json` to the project. No code change needed. Action required:
+Claude Code registers MCP servers bundled by an enabled plugin. Runtime instructions must use `${CLAUDE_PLUGIN_ROOT}` for bundled files and must never scan an installation cache.
 
-**Document the manual install path** in `commands/mp-connect.md` or a README:
-> If you installed the plugin manually (not via `claude plugin install`), copy `plugins/mercadopago/.mcp.json` to your project root and restart Claude Code. The file configures the MCP server at `https://mcp.mercadopago.com/mcp` automatically.
+Never copy the plugin's `.mcp.json` into the developer's project. For local development, load the plugin directory using Claude Code's local plugin workflow and run `/reload-plugins` after changes.
 
 ---
 
@@ -211,6 +210,10 @@ python3 -m json.tool plugins/mercadopago/.claude-plugin/plugin.json
 
 # Hook compilation
 python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
+
+# Checkout tooling
+for script in plugins/mercadopago/scripts/*.mjs; do node --check "$script"; done
+node plugins/mercadopago/scripts/test-checkout-tools.mjs
 
 # Skill count (currently 4 — must stay at 4 unless architecture changes)
 find plugins/mercadopago/skills -name "SKILL.md" | wc -l

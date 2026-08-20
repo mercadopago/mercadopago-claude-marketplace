@@ -75,7 +75,7 @@ Never combine both languages in the same term (never write "Prueba/Teste").
 |---|---|---|
 | "legacy payments" | "Payments API (`/v1/payments`)" | Be specific about which API |
 | "new orders" | "Orders API (`/v1/orders`)" | Be specific |
-| "old checkout" | "Preferences API (`/v1/checkout/preferences`)" | For Checkout Pro |
+| "old checkout" | "Preferences API (`/checkout/preferences`)" | For Checkout Pro |
 | "QR legacy" | "QR Code with Payments API" | Legacy = Payments API path |
 | "orders mode" | "Orders API" | Spell it out |
 

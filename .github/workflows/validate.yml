@@ -39,6 +39,13 @@ jobs:
       - name: Python hook syntax check
         run: python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
 
+      - name: Checkout tooling syntax and regression tests
+        run: |
+          for script in plugins/mercadopago/scripts/*.mjs; do node --check "$script"; done
+          node plugins/mercadopago/scripts/test-checkout-tools.mjs
+          node plugins/mercadopago/scripts/test-point-tools.mjs
+          node plugins/mercadopago/scripts/test-qr-tools.mjs
+
       - name: Test hook blocks real token
         run: |
           echo '{"dependencies":{"mercadopago":"^2.0.0"}}' > package.json

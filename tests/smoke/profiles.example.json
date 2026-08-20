@@ -1,0 +1,11 @@
+{
+  "profiles": [
+    {
+      "id": "seller-a",
+      "sellerCredentialsFile": "/absolute/path/to/seller-a.env",
+      "buyerCredentialsFile": "/absolute/path/to/buyer.env",
+      "country": "AR",
+      "maxTestAmount": 10
+    }
+  ]
+}

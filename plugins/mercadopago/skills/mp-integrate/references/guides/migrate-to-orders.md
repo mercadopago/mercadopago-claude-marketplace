@@ -39,8 +39,8 @@
 | `sponsor_id` | `integration_data.sponsor.id` | nested |
 | `site_id` | `country_code` (uppercase) | e.g. `"AR"` |
 | — | `type: "qr"` | **new required field** |
-| — | `external_reference` (max 64 chars, alphanumeric, no hyphens) | **new required field** |
-| — | `transactions: { payments: [{ amount: "10.00" }] }` | **new required field** for static mode |
+| — | `external_reference` (max 64 chars; letters, numbers, hyphens, and underscores) | **new required field** |
+| — | `transactions: { payments: [{ amount: "10.00" }] }` | **new required field for every QR mode** |
 | — | `X-Idempotency-Key` header (UUID) | **new required header** |
 
 ### Status mapping
@@ -73,10 +73,10 @@
 | external_id in URL path | `config.qr.external_pos_id` | moved to body — hyphens and underscores are allowed per API docs |
 | `expiration_date` (absolute) | `expiration_time` (ISO 8601 duration) | e.g. `"PT10M"` |
 | amounts as numbers | amounts as string decimals | `"10.00"` not `10` |
-| `external_reference` optional | `external_reference` **required** (64 chars max, alphanumeric, no hyphens) | |
+| `external_reference` optional | `external_reference` **required** (64 chars max; letters, numbers, hyphens, and underscores) | |
 | `items[].total_amount` | **removed entirely** | field does not exist in Orders API spec — strip from diff |
 | — | `type: "qr"` | **new required** |
-| — | `transactions: { payments: [{ amount: "10.00" }] }` | **new required** for static mode |
+| — | `transactions: { payments: [{ amount: "10.00" }] }` | **new required for every QR mode** |
 | — | `X-Idempotency-Key` header (UUID) on create AND cancel | **new required** — cancel returns `400 empty_required_header` if missing |
 | response: `204 No Content` | response: `201 Created` + full order object | update response handling |
 
@@ -90,7 +90,7 @@
 >
 > | Legacy method | `config.qr.mode` | `transactions.payments` in request |
 > |---------------|------------------|------------------------------------|
-> | `POST /instore/orders/qr/seller/collectors/.../qrs` | `"dynamic"` | **NOT required** |
+> | `POST /instore/orders/qr/seller/collectors/.../qrs` | `"dynamic"` | **REQUIRED** |
 > | `PUT /instore/orders/qr/seller/collectors/.../qrs` | `"hybrid"` | **REQUIRED** |
 >
 > Always grep the legacy file for the HTTP method before inferring the mode. Never default to `"dynamic"` without checking. A wrong mode changes QR behavior silently: `dynamic` creates a new QR per transaction; `hybrid` updates a fixed QR tied to a specific POS.
@@ -106,21 +106,22 @@
 ### Key changes
 - `type: "qr"` required
 - `config.qr.external_pos_id` replaces URL path params — hyphens and underscores are allowed per API docs
-- `external_reference` required at root level (alphanumeric, no hyphens, max 64 chars)
-- `transactions: { payments: [{ amount }] }` — only required for `mode: "hybrid"` (PUT legacy). Do NOT add for `mode: "dynamic"` (POST legacy).
+- `external_reference` required at root level (letters, numbers, hyphens, and underscores; max 64 chars)
+- `transactions: { payments: [{ amount }] }` — required for `static`, `dynamic`, and `hybrid`.
 - `items[].total_amount` — **remove entirely**. Field does not exist in Orders API spec. Strip it from the diff regardless of legacy value.
 - `X-Idempotency-Key` — required on **both** create AND cancel (`POST /v1/orders/{id}/cancel`). Cancel returns `400 empty_required_header` if missing.
 
 ### Payload shape — dynamic (POST legacy)
 
 ```js
-// ✅ POST legacy → mode: "dynamic" — transactions NOT needed
+// ✅ POST legacy → mode: "dynamic"
 {
   type: 'qr',
   external_reference: 'alphanumericOnly',
   description: '...',
   total_amount: '10.00',
   items: [{ title: '...', unit_price: '10.00', quantity: 1, unit_measure: 'unit' }],
+  transactions: { payments: [{ amount: '10.00' }] },
   config: { qr: { mode: 'dynamic', external_pos_id: 'POS-001' } }
 }
 ```

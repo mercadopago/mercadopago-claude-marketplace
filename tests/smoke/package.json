@@ -1,0 +1,20 @@
+{
+  "name": "mercadopago-plugin-smoke-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dry-run": "node runner.mjs --dry-run",
+    "smoke:prepare": "node runner.mjs --prepare",
+    "smoke": "node runner.mjs --execute",
+    "smoke:point:runtime": "node runtime-point.mjs",
+    "smoke:point:ui": "node runtime-point-ui.mjs",
+    "smoke:qr:runtime": "node runtime-qr.mjs",
+    "smoke:qr:ui": "node runtime-qr-ui.mjs",
+    "inspect:qr": "node inspect-qr-resources.mjs",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}

@@ -196,3 +196,5 @@ Key topics for {product}: `{relevant_topics}`
 | `{document_number}` | From `references/products.md` for resolved country |
 | `{relevant_topics}` | From `references/guides/webhooks.md` topics table |
 | `{product-slug}` | checkout-pro \| checkout-api-orders \| checkout-bricks \| qr-code \| mp-point \| subscriptions \| marketplace |
+
+`{product-slug}` is presentation metadata only. Before any routing or scaffold branch, normalize `checkout-api-orders` back to the internal product value `checkout-api`; otherwise the mandatory Checkout API CTA flow will be skipped.

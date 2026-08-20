@@ -4,7 +4,7 @@ description: Create test users and add funds to them for Mercado Pago testing. W
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.0"
+  version: "4.3.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, testing, test-user, sandbox, credentials"
@@ -28,7 +28,7 @@ Before creating test users, confirm the basics via `AskUserQuestion` (up to 3 qu
 3. **Credential type** — "Are you using TEST credentials — from the {test_tab}?" → `Yes, test credentials` / `No, production credentials` / `I don't know`
 
 - **No account** → point to the dashboard for the country (Chile: `https://www.mercadopago.cl/developers` — no `.com`; others `https://www.mercadopago.com.{cc}/developers`).
-- **No credentials** → once the MCP is authenticated (Step 0 → State A): (1) call `application_list`, (2) ask via `AskUserQuestion` *"Which app do you want to use?"* listing each app by name, (3) call `mcp__plugin_mercadopago_mcp__get_credentials` with the chosen `application_id`, (4) display credentials inline. **Never write to file or commit.** If MCP is not authenticated, complete Step 0 first.
+- **No credentials** → if the developer chooses to import them: apply the on-demand procedure in Step 0 immediately before `application_list`, ask via `AskUserQuestion` *"Which app do you want to use?"*, then call `mcp__plugin_mercadopago_mcp__get_credentials` with the chosen `application_id` and display credentials inline. **Never write to file or commit.** Manual dashboard guidance requires no MCP.
 - **Credential type — No, production credentials** OR **I don't know** → show this **BLOCKING WARNING** and do NOT create a test user:
 
   > ⛔ **WARNING — Production credentials detected**
@@ -37,7 +37,7 @@ Before creating test users, confirm the basics via `AskUserQuestion` (up to 3 qu
 
   Re-show question 3 until the developer confirms "Yes, test credentials". **This gate has no Skip option** — do not proceed to Step 2 (test user creation) otherwise.
 
-> Unlike `mp-integrate`, this skill's MCP gate stays **hard**: creating test users requires authenticated MCP calls, so there is no scaffold-only path here.
+> Creating or funding a test user requires MCP, but readiness guidance and bundled test cards do not. Connect only if the developer proceeds to an MCP-backed action.
 
 ---
 
@@ -52,26 +52,15 @@ Before creating test users, confirm the basics via `AskUserQuestion` (up to 3 qu
 
 ---
 
-## Step 0 — Verify MCP is actually authenticated
+## Step 0 — Connect only before the selected MCP tool
 
-`ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
+Do not probe MCP when this skill starts. Use this procedure immediately before `application_list`, `get_credentials`, `create_test_user`, `add_money_test_user`, or the `search_documentation` fallback:
 
-Check whether `mcp__plugin_mercadopago_mcp__application_list` is callable AND returns at least one application. If not, **call `mcp__plugin_mercadopago_mcp__authenticate` immediately** and show:
-
-> To create test users I need access to your Mercado Pago account. Open this link to connect:
-**[Connect Mercado Pago]({url})**
-
-```
-{url}
-```
-
-If the link is not clickable, copy the URL from the code block above.
-
-When you see "Authentication Successful" in the browser, come back and say anything.
-
-**Retry limit:** maximum 2 `authenticate` calls per session. After 2 failures, offer: 'Try again' / 'Continue offline' / 'Cancel'.
-
-When the user returns, call `application_list` directly — do NOT call `complete_authentication` first. Never ask the user to paste the callback URL.
+1. Attempt the intended tool directly if callable. Do not use `application_list` as a generic connection check.
+2. If it is unavailable or returns an authentication error, call `mcp__plugin_mercadopago_mcp__authenticate` and show the OAuth link in the developer's language.
+3. Instruct the developer to Cmd+Click (Mac) or Ctrl+Click (Windows/Linux), without copying the URL into an external browser.
+4. When the developer returns, retry the intended tool directly. Call `application_list` only when the actual operation is choosing an app or importing credentials.
+5. Never ask for the callback URL. After two authentication failures, offer to retry, continue with offline guidance/test cards, or cancel the MCP-backed action.
 
 ---
 
@@ -86,6 +75,8 @@ The MCP does not currently return a `site_id` (its `application_list` only retur
 Do **not** grep the repo for `currency_id`/`site_id` literals or locale strings — they're unreliable on a clean repo and waste tokens.
 
 ## Step 2 — Create a test user
+
+Apply Step 0 immediately before the following MCP call.
 
 Call `mcp__plugin_mercadopago_mcp__create_test_user` with:
 
@@ -109,6 +100,8 @@ The tool returns the user id, email, password, and `APP_USR-` credentials.
 
 ## Step 3 — Load funds (when needed)
 
+Apply Step 0 immediately before the following MCP call if the session is not already authenticated.
+
 Call `mcp__plugin_mercadopago_mcp__add_money_test_user` with:
 
 | Param | Required |
@@ -124,8 +117,8 @@ Country-specific limits apply. If the call fails with a limit error, ask for a s
 
 For card testing, do **not** invent card numbers.
 
-1. **First**, read `~/.claude/plugins/cache/claude-plugins-official/mercadopago/{version}/skills/mp-integrate/references/products.md` — it has curated, version-pinned test cards for **AR, BR, MX, CO, CL** (numbers, CVV, expiry, and the `APRO`/`OTHE`/`FUND`/… status-code table). For these five countries, no MCP call is needed.
-2. **Only if the country is not listed there** (e.g. PE, UY), fall back to MCP `search_documentation` with `"test cards {country}"` (e.g., `"test cards peru"`).
+1. **First**, read `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/products.md` — it has curated, version-pinned test cards for **AR, BR, MX, CO, CL** (numbers, CVV, expiry, and the `APRO`/`OTHE`/`FUND`/… status-code table). Claude Code resolves this to the active plugin version. Never search another marketplace or an installation cache. For these five countries, no MCP call is needed.
+2. **Only if the country is not listed there** (e.g. PE, UY), apply Step 0 and fall back to MCP `search_documentation` with `"test cards {country}"` (e.g., `"test cards peru"`).
 
 ---
 

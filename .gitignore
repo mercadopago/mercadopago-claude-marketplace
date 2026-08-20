@@ -40,6 +40,13 @@ yarn-error.log*
 .pytest_cache/
 coverage/
 *.coverage
+tests/smoke/.auth/
+tests/smoke/.work/
+tests/smoke/artifacts/
+tests/smoke/playwright-report/
+tests/smoke/test-results/
+tests/smoke/profiles.local.json
+tests/smoke/*.local.json
 
 # Internal MELI dev process (not for public repo)
 meli/
