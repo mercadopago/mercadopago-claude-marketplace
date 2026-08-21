@@ -228,3 +228,36 @@ A real authorized subscription is intentionally not automated by default: it can
 charge immediately and continue charging. That final opt-in test requires a fresh
 test-buyer card token, verification of the first result, and immediate cancellation
 through `PUT /preapproval/{id}`.
+
+### Marketplace runtimes without seller authorization or charge
+
+The three Marketplace fixtures cover seller OAuth plus Checkout Pro, Checkout API,
+and Wallet Brick. Start the generated CubeZone app and run the matching deterministic
+browser contract:
+
+```bash
+node start-server.mjs .work/<run>/cubezone /path/to/seller-a.env 3111 marketplace-smoke
+
+node runtime-marketplace-ui.mjs \
+  http://localhost:3111 \
+  checkout-pro \
+  /marketplace-sellers.html \
+  /index.html \
+  artifacts/marketplace-checkout-pro
+```
+
+Repeat with `checkout-api` or `bricks-wallet` and the paths declared in
+`scenarios.json`. The runtime validates the OAuth authorization redirect, one-time
+state shape, dedicated checkout contract, public-key delivery, secure fields or
+Wallet initialization, and trusted browser payloads. OAuth token exchange and all
+preference/payment calls are intercepted, so it creates no seller connection,
+preference, payment, or charge.
+
+The real API probe uses Seller A only for read-only identity and payment-method
+checks:
+
+```bash
+node runtime-marketplace-api.mjs \
+  /absolute/path/to/seller-a.env \
+  artifacts/marketplace-api
+```

@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 
 const [appDirectory, credentialsPath, portValue, runtimeMode = 'default', runtimeResourceId = ''] = process.argv.slice(2);
 if (!appDirectory || !credentialsPath || !portValue) {
-  console.error('Usage: node start-server.mjs <app-directory> <seller.env> <port> [default|point-virtual|qr-dynamic|subscriptions-with-plan] [resource-id]');
+  console.error('Usage: node start-server.mjs <app-directory> <seller.env> <port> [default|point-virtual|qr-dynamic|subscriptions-with-plan|marketplace-smoke] [resource-id]');
   process.exit(2);
 }
 
@@ -43,7 +43,7 @@ const requiredCredentials = ['point-virtual', 'qr-dynamic'].includes(runtimeMode
 for (const key of requiredCredentials) {
   if (!credentials[key]) throw new Error(`Missing ${key} in seller credentials file`);
 }
-if (!['default', 'point-virtual', 'qr-dynamic', 'subscriptions-with-plan'].includes(runtimeMode)) throw new Error(`Unknown runtime mode: ${runtimeMode}`);
+if (!['default', 'point-virtual', 'qr-dynamic', 'subscriptions-with-plan', 'marketplace-smoke'].includes(runtimeMode)) throw new Error(`Unknown runtime mode: ${runtimeMode}`);
 if (runtimeMode === 'qr-dynamic' && !/^[A-Za-z0-9_-]{1,40}$/.test(runtimeResourceId)) {
   throw new Error('qr-dynamic requires a valid POS external_id as resource-id');
 }
@@ -70,6 +70,12 @@ const child = spawn('npm', ['start'], {
     } : {}),
     ...(runtimeMode === 'subscriptions-with-plan' ? {
       MP_SUBSCRIPTION_PLAN_ID: runtimeResourceId,
+    } : {}),
+    ...(runtimeMode === 'marketplace-smoke' ? {
+      MP_APP_ID: '123456789012345',
+      MP_CLIENT_SECRET: 'marketplace-smoke-client-secret-not-real',
+      MP_OAUTH_REDIRECT_URI: `http://localhost:${port}/oauth/mercadopago/callback`,
+      MP_TOKEN_ENCRYPTION_KEY: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     } : {}),
   },
   stdio: 'inherit',

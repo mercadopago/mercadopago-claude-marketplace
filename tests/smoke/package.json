@@ -15,6 +15,8 @@
     "smoke:bricks:real": "node runtime-bricks-real.mjs",
     "smoke:subscriptions:ui": "node runtime-subscriptions-ui.mjs",
     "smoke:subscriptions:api": "node runtime-subscriptions-api.mjs",
+    "smoke:marketplace:ui": "node runtime-marketplace-ui.mjs",
+    "smoke:marketplace:api": "node runtime-marketplace-api.mjs",
     "inspect:qr": "node inspect-qr-resources.mjs",
     "test:browser": "playwright test"
   },

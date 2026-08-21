@@ -69,7 +69,7 @@ If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `hea
 | `bricks` | `payments` | Internal routing value. `card-payment` and `payment` create Payments API payments; `wallet` creates `/checkout/preferences`; `status-screen` only displays a `paymentId`. Never add `v1` to the preferences path. |
 | `qr` | `orders` | **Always `orders` in ALL countries.** |
 | `point` | `orders` | **Always `orders` in ALL countries.** |
-| `marketplace` | `orders` | Always `orders`. |
+| `marketplace` | `preferences` or `payments` | Resolve `marketplace-checkout=` first. Checkout Pro and Wallet Brick use Preferences; Checkout API uses Payments API. Marketplace is not a standalone Orders API mode. |
 | `wallet-connect` | `orders` | Always `orders`. Never ask. |
 | `subscriptions` | n/a (uses its own `preapproval` API) | Skip the mode question. |
 | `money-out` | n/a (uses its own `disbursements` API) | Skip the mode question. |
@@ -200,6 +200,31 @@ Before reporting success:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-subscriptions-integration.mjs" . "{subscription-model}"
 ```
 
+### LOCK 11 — Marketplace is OAuth + one supported checkout
+
+When `product=marketplace`, resolve `marketplace-checkout=` before writing code
+and read `references/guides/marketplace.md`. The only supported values are
+`checkout-pro`, `checkout-api`, and `bricks-wallet`.
+
+- `checkout-pro` uses the connected seller OAuth access token, exactly
+  `/checkout/preferences`, and `marketplace_fee`.
+- `checkout-api` uses the integrator public key, the connected seller OAuth
+  access token, `/v1/payments`, secure tokenization, and `application_fee`.
+- `bricks-wallet` uses the integrator public key, seller OAuth access token,
+  exactly `/checkout/preferences`, `marketplace_fee`, a dynamic `preferenceId`,
+  and `marketplace: true`.
+
+Every contract must implement one-time server-side OAuth state, exact redirect
+URI matching, authorization-code exchange, encrypted persistent seller tokens,
+refresh-token rotation, and trusted server-side seller/cart/commission
+resolution. Never accept seller ID, amount, commission, collector ID, or OAuth
+tokens from the browser. Marketplace is not a standalone Orders API flow and
+must not silently fall back to the platform token. Before reporting success:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-marketplace-integration.mjs" . "{marketplace-checkout}"
+```
+
 ---
 
 ---
@@ -222,6 +247,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-subscriptions-integration.mjs" . "{
 | `brick=` | `payment` / `card-payment` / `wallet` / `status-screen` (only when `product=bricks`) |
 | `qr-mode=` | `static` / `dynamic` / `hybrid` (only when `product=qr`) |
 | `subscription-model=` | `with-plan` / `without-plan-authorized` / `without-plan-pending` (only when `product=subscriptions`) |
+| `marketplace-checkout=` | `checkout-pro` / `checkout-api` / `bricks-wallet` (only when `product=marketplace`) |
 
 After parsing or inferring `product`, apply LOCK 5 normalization immediately. Use only the normalized internal value for the Product Matrix, guide selection, CTA resolution, and scaffold branches. The presentation-only slug `checkout-api-orders` may appear in the final recommendation metadata, but it must never be used as an internal branch value.
 
@@ -333,6 +359,7 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 | 4 | `brick` | "Brick" | Only when `product=bricks`. Options: `payment` / `card-payment` / `wallet` / `status-screen`. |
 | 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `hybrid`. |
 | 5.5 | `subscription-model` | "Subscription" | Only when `product=subscriptions`. Options: `with-plan` / `without-plan-authorized` / `without-plan-pending`. |
+| 5.6 | `marketplace-checkout` | "Marketplace" | Only when `product=marketplace`. Options: `checkout-pro` / `checkout-api` / `bricks-wallet`. |
 | 6 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
 | 7 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
 | 8 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
@@ -404,6 +431,7 @@ Fields to persist (write after each is resolved, do not wait until the end):
 - brick: card-payment
 - qr_mode: dynamic
 - subscription_model: with-plan
+- marketplace_checkout: checkout-pro
 - recurrent: no
 - three_ds: no
 ```
@@ -424,7 +452,7 @@ Fields to persist (write after each is resolved, do not wait until the end):
 | `qr` | yes | n/a | **`orders` (ALL countries)** | n/a | n/a | n/a | `qr-mode=` |
 | `point` | yes | n/a | **`orders` (ALL countries)** | n/a | n/a | n/a | n/a |
 | `subscriptions` | yes | conditional (authorized contracts use MercadoPago.js) | n/a (own `preapproval` API) | implicit | n/a | optional | `subscription-model=` |
-| `marketplace` | yes | n/a | **`orders` (ALL countries)** | n/a | n/a | implicit | n/a |
+| `marketplace` | yes | conditional | `preferences` for Checkout Pro/Wallet; `payments` for Checkout API | n/a | n/a | implicit | `marketplace-checkout=` |
 | `wallet-connect` | yes | n/a | `orders` | n/a | n/a | n/a | n/a |
 | `money-out` | yes | n/a | n/a (own `disbursements` API) | n/a | n/a | n/a | n/a |
 | `smartapps` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
@@ -672,6 +700,14 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
 
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-subscriptions-integration.mjs" . "{subscription-model}"
+   ```
+
+   **When `product=marketplace`:** apply LOCK 11 after seller OAuth,
+   encrypted persistence/refresh, the selected checkout contract, and both the
+   seller-connect and buyer-checkout CTAs have been written:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-marketplace-integration.mjs" . "{marketplace-checkout}"
    ```
 
 2.5. **`checkout-pro` and `checkout-api` — Mandatory checkout CTA discovery** (skip for all other products):
@@ -930,9 +966,10 @@ Render only the section that matches the chosen product. These are the experient
 - The `back_url` must be HTTPS in production; HTTP is only acceptable for a local-development fallback.
 
 ### marketplace
-- `application_fee` cannot exceed configured limits per country — check before charging.
-- OAuth Access Tokens for sellers expire in 6 months; always store the `refresh_token` and renew before expiry.
-- Splits require both seller's `collector_id` and `application_fee` in the payment payload — missing either makes the payment land in the marketplace owner's account.
+- Marketplace is OAuth plus a checkout contract, not a standalone Orders API. Resolve Checkout Pro, Checkout API/Payments, or Wallet Brick first.
+- Use a cryptographic one-time OAuth `state`, the exact configured redirect URI, encrypted persistent tokens, and atomic refresh-token rotation. Never expose or log seller tokens.
+- Resolve seller, cart amount, and commission from trusted server state. Never accept `seller_id`, `collector_id`, amount, or fee from the buyer request.
+- Checkout Pro/Wallet use `marketplace_fee` on `/checkout/preferences`; Checkout API uses `application_fee` on `/v1/payments`. The seller OAuth token in the Authorization header determines the receiving seller; do not invent `collector_id` in the payment payload.
 
 ### wallet-connect
 - The user must approve the linkage in MP wallet UI — there is no silent linking.

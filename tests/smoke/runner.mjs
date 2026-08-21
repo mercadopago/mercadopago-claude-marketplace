@@ -106,6 +106,8 @@ const profilesFileValue = valueAfter('--profiles', process.env.MP_SMOKE_PROFILES
 const scenarioFilter = valueAfter('--scenario');
 const profileFilter = valueAfter('--profile');
 const maxBudgetUsd = valueAfter('--max-budget-usd', '5');
+const effort = valueAfter('--effort', 'medium');
+if (!['low', 'medium', 'high'].includes(effort)) throw new Error(`Invalid --effort value: ${effort}`);
 const config = readJson(configFile);
 
 assertFile(path.join(source, '.git/HEAD'), 'Rubistore Git checkout');
@@ -165,6 +167,7 @@ for (const scenario of scenarios) {
       sellerCredentialsFile: profile.sellerCredentialsFile,
       buyerCredentialsFile: profile.buyerCredentialsFile,
       maxTestAmount: profile.maxTestAmount,
+      effort,
     }, null, 2)}\n`);
 
     console.log(`Prepared ${runId} at ${appRoot}`);
@@ -178,7 +181,7 @@ for (const scenario of scenarios) {
       '--permission-mode', 'acceptEdits',
       '--allowedTools', 'Read,Grep,Glob,Edit,Write,Bash(node *),Bash(npm *)',
       '--model', 'sonnet',
-      '--effort', 'medium',
+      '--effort', effort,
       '--max-budget-usd', maxBudgetUsd,
       '--plugin-dir', pluginRoot,
       `/mercadopago:mp-integrate${scenario.commandArguments ? ` ${scenario.commandArguments}` : ''}\n\n${scenario.prompt}`,
@@ -250,6 +253,11 @@ for (const scenario of scenarios) {
     if (scenario.product === 'subscriptions') {
       const subscriptionsValidator = path.join(pluginRoot, 'scripts/validate-subscriptions-integration.mjs');
       run(process.execPath, [subscriptionsValidator, appRoot, scenario.subscriptionsModel], { cwd: appRoot });
+    }
+
+    if (scenario.product === 'marketplace') {
+      const marketplaceValidator = path.join(pluginRoot, 'scripts/validate-marketplace-integration.mjs');
+      run(process.execPath, [marketplaceValidator, appRoot, scenario.marketplaceContract], { cwd: appRoot });
     }
 
     if (fs.existsSync(path.join(appRoot, '.mp-integrate-progress.md'))) {

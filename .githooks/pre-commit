@@ -13,6 +13,7 @@ node plugins/mercadopago/scripts/test-bricks-tools.mjs
 node plugins/mercadopago/scripts/test-point-tools.mjs
 node plugins/mercadopago/scripts/test-qr-tools.mjs
 node plugins/mercadopago/scripts/test-subscriptions-tools.mjs
+node plugins/mercadopago/scripts/test-marketplace-tools.mjs
 
 claude plugins validate .
 

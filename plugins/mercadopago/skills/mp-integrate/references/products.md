@@ -283,7 +283,7 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 
 ### Marketplace
 
-**What it is:** Split payment platform where a marketplace collects payments and distributes funds to sellers, keeping an `application_fee`.
+**What it is:** Split Payments 1:1 where each connected seller authorizes the marketplace through OAuth and the selected checkout applies the platform commission.
 
 **When to use:**
 - Platforms with multiple sellers (e marketplace, on-demand services, gig economy)
@@ -291,27 +291,34 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 
 **How it works:**
 1. Seller authorizes your platform via OAuth flow → you receive seller's access token
-2. Payment is created using seller's token + `application_fee` for your platform
+2. Resolve the trusted seller/cart and create the selected checkout using the seller OAuth token
 3. Funds split automatically at settlement
 
-**Key payload:**
+**Supported contracts:**
+- Checkout Pro: exactly `/checkout/preferences` + `marketplace_fee`
+- Checkout API/Transparente: `/v1/payments` + `application_fee`
+- Wallet Brick: exactly `/checkout/preferences` + `marketplace_fee`, dynamic `preferenceId`, and `marketplace: true`
+
+**Checkout API key payload:**
 ```json
 {
   "transaction_amount": 100.0,
   "application_fee": 5.0,
-  "collector_id": "<seller_collector_id>",
-  "token": "<card_token>",
-  "installments": 1
+  "token": "<single_use_card_token>",
+  "installments": 1,
+  "external_reference": "<trusted_order_id>"
 }
 ```
 
 **Best practices:**
-- `application_fee` cannot exceed configured limits per country — check before charging
-- OAuth Access Tokens for sellers expire in 6 months — always store `refresh_token` and renew before expiry
-- Both `collector_id` and `application_fee` are required; missing either sends the full amount to the marketplace owner
+- Generate and consume one-time OAuth `state`; require the exact configured redirect URI
+- Encrypt seller access/refresh tokens at rest and rotate both values atomically on refresh
+- Use the seller OAuth access token in the backend Authorization header; never expose it to the browser
+- Derive seller, items, amount, and commission from trusted server-side state
+- Do not add `collector_id` to the payment payload; OAuth `user_id` is stored as the seller connection identity
 - Sellers must explicitly authorize your platform — there is no silent linking
 
-**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/marketplace/landing
+**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/split-payments/split-1-1/overview
 
 ---
 
