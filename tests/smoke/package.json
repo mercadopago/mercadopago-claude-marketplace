@@ -11,6 +11,10 @@
     "smoke:point:ui": "node runtime-point-ui.mjs",
     "smoke:qr:runtime": "node runtime-qr.mjs",
     "smoke:qr:ui": "node runtime-qr-ui.mjs",
+    "smoke:bricks:ui": "node runtime-bricks-ui.mjs",
+    "smoke:bricks:real": "node runtime-bricks-real.mjs",
+    "smoke:subscriptions:ui": "node runtime-subscriptions-ui.mjs",
+    "smoke:subscriptions:api": "node runtime-subscriptions-api.mjs",
     "inspect:qr": "node inspect-qr-resources.mjs",
     "test:browser": "playwright test"
   },

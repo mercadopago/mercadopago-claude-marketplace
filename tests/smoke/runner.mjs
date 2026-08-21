@@ -242,6 +242,20 @@ for (const scenario of scenarios) {
       ], { cwd: appRoot });
     }
 
+    if (scenario.product === 'bricks') {
+      const bricksValidator = path.join(pluginRoot, 'scripts/validate-bricks-integration.mjs');
+      run(process.execPath, [bricksValidator, appRoot, scenario.bricksVariant], { cwd: appRoot });
+    }
+
+    if (scenario.product === 'subscriptions') {
+      const subscriptionsValidator = path.join(pluginRoot, 'scripts/validate-subscriptions-integration.mjs');
+      run(process.execPath, [subscriptionsValidator, appRoot, scenario.subscriptionsModel], { cwd: appRoot });
+    }
+
+    if (fs.existsSync(path.join(appRoot, '.mp-integrate-progress.md'))) {
+      throw new Error(`Claude left .mp-integrate-progress.md after successful scaffold: ${appRoot}`);
+    }
+
     writeDiffStat(baselineRoot, appRoot, path.join(target, 'changes.stat'));
     console.log(`Validated ${runId}`);
   }

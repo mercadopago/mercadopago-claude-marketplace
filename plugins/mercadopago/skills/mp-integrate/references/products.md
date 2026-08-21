@@ -1,5 +1,5 @@
 # Mercado Pago — Product Reference
-# Version: 4.2.0 | Updated: 2026-06-10
+# Version: 4.3.1 | Updated: 2026-08-21
 # Source: Official Mercado Pago developer documentation
 #
 # This file is tier-2 in the documentation hierarchy:
@@ -134,70 +134,25 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 - You want card tokenization handled by Mercado Pago (no PCI scope)
 - You need to support multiple payment methods (cards + cash + wallet)
 
-**Components:**
+**Variant contracts:**
 
-#### CardPayment Brick
-Card-only form. Collects number, expiry, CVV, name, ID, email. Tokenizes and calls `onSubmit`.
+| Variant | SDK component | Backend behavior |
+|---|---|---|
+| Card Payment | `CardPayment` / `cardPayment` | Tokenizes card; `onSubmit` creates a Payments API payment |
+| Payment | `Payment` / `payment` | Multi-method form; `onSubmit` creates the selected method through Payments API |
+| Wallet | `Wallet` / `wallet` | Mount with a preference created dynamically at `/checkout/preferences` |
+| Status Screen | `StatusScreen` / `statusScreen` | Mount with an existing Payments API `payment.id`; does not create a payment |
 
-```jsx
-import { CardPayment } from '@mercadopago/sdk-react';
-
-<CardPayment
-  initialization={{ amount: 100.00 }}
-  onSubmit={async (formData) => {
-    // formData.token = card token, formData.installments, formData.issuer_id
-    const response = await fetch('/api/process-payment', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-    });
-    return response.json(); // must return a Promise
-  }}
-  onError={(error) => console.error(error)}
-/>
-```
-
-**Critical:** `onSubmit` MUST return a Promise. Returning void keeps the brick in loading state forever.
-
-#### Payment Brick
-Full multi-method form (cards + MP wallet + cash). Superset of CardPayment.
-
-```jsx
-import { Payment } from '@mercadopago/sdk-react';
-
-<Payment
-  initialization={{ amount: 100.00, preferenceId: '<preference_id>' }}
-  onSubmit={async (formData) => { /* same as CardPayment */ }}
-/>
-```
-
-Note: `preferenceId` must be created server-side per buyer session. Never hardcode a placeholder.
-
-#### Wallet Brick
-MP wallet button. Buyer must be logged into Mercado Pago.
-
-```jsx
-import { Wallet } from '@mercadopago/sdk-react';
-<Wallet initialization={{ preferenceId: '<preference_id>' }} />
-```
-
-#### StatusScreen Brick
-Post-payment result display. Shows success, pending, or error state.
-
-```jsx
-import { StatusScreen } from '@mercadopago/sdk-react';
-<StatusScreen initialization={{ paymentId: '<payment_id_from_order>' }} />
-```
-
-**Critical:** Pass `payment_id` from `order.transactions.payments[0].id`, NOT the `order_id`.
-
-**Best practices for all Bricks:**
-- The container `<div id="...">` must exist in the DOM before `bricksBuilder.create()`
-- Call `brickController.unmount()` in React `useEffect` cleanup before re-mounting
-- `back_urls` must be on the same origin as the page mounting the brick
-- Ad-blockers (uBlock, Brave) block `sdk.mercadopago.com` → brick shows `FIELDS_SETUP_FAILED`
-- Debit cards do NOT show installment selector — this is correct, not a bug
-- Always show the total amount above the brick — the brick does not display it prominently
-- Always scaffold loading/success/error states; never leave them as TODOs
+**Critical behavior:**
+- `onSubmit` for Payment/Card Payment must return a Promise and settle only after the server response. Returning void leaves the Brick loading.
+- Wallet preference IDs are generated server-side per checkout session. Never hardcode a placeholder; the preferences path has no version segment.
+- Status Screen receives `paymentId`, not an Orders API order ID.
+- The vanilla mount container must exist before `bricksBuilder.create()`; retain and unmount the returned controller before rebuilding it.
+- React SDK components manage their own controller lifecycle.
+- Ad-blockers can block `sdk.mercadopago.com` and produce `FIELDS_SETUP_FAILED`.
+- Debit cards do not show an installments selector; that is expected behavior.
+- Show the trusted total above Payment/Card Payment and scaffold initializing, processing, success, and actionable error states.
+- Load `MP_PUBLIC_KEY` through the framework's public configuration mechanism or a no-store runtime JSON endpoint; never substitute a placeholder into cached HTML.
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/checkout-bricks/landing
 
@@ -278,27 +233,49 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 - Donation platforms (variable amounts)
 - Subscription boxes or recurring services
 
-**Two models:**
-| Model | How | Best for |
+**Three integration contracts:**
+| Contract | How | Buyer experience |
 |-------|-----|---------|
-| With plan | Create a `preapproval_plan` first, then subscriptions reference it | Multiple subscribers to the same tier |
-| Without plan | Create a `preapproval` directly per subscriber | One-off or custom subscriptions |
+| With plan | Provision a reusable `preapproval_plan`; create each `preapproval` with its server-controlled ID, a secure card token, and `authorized` status | Card is tokenized on the merchant page |
+| Without plan, authorized | Create `preapproval` with trusted recurrence terms, a secure card token, and `authorized` status | Card is tokenized on the merchant page |
+| Without plan, pending | Create `preapproval` with trusted recurrence terms and `pending` status, without a token | Redirect buyer to returned `init_point` to select a payment method |
 
-**Key payload (preapproval with plan):**
-```json
+**Minimal payloads:**
+```jsonc
+// With plan
 {
-  "preapproval_plan_id": "<plan_id>",
+  "preapproval_plan_id": "<server-controlled-plan-id>",
   "payer_email": "subscriber@example.com",
-  "card_token_id": "<token>",
-  "back_url": "https://yoursite.com/subscription/confirm"
+  "card_token_id": "<single-use-secure-token>",
+  "external_reference": "subscription-uuid",
+  "back_url": "https://yoursite.com/subscription/confirm",
+  "status": "authorized"
+}
+
+// Without plan, pending
+{
+  "reason": "Monthly membership",
+  "external_reference": "subscription-uuid",
+  "payer_email": "subscriber@example.com",
+  "auto_recurring": {
+    "frequency": 1,
+    "frequency_type": "months",
+    "transaction_amount": 100,
+    "currency_id": "BRL"
+  },
+  "back_url": "https://yoursite.com/subscription/confirm",
+  "status": "pending"
 }
 ```
 
 **Best practices:**
 - A `preapproval` without `preapproval_plan_id` cannot be migrated to a plan later — choose model upfront
+- Never ask a buyer to paste a token and never collect raw card fields. Authorized contracts tokenize with MercadoPago.js CardForm or Card Payment Brick; pending omits the token and redirects through `init_point`.
+- Plan ID, amount, currency, frequency, billing rules, and trial settings are trusted server-side configuration, not browser input.
+- Associated-plan subscriptions do not repeat browser-supplied recurrence terms; the plan owns them.
 - Recurring charges retry automatically on failure; `paused` status is reachable both manually and after N failed attempts
 - `back_url` for plan signup must be HTTPS in production
-- Monitor `subscription_preapproval` and `subscription_authorized_payment` webhook topics
+- Monitor `subscription_preapproval_plan`, `subscription_preapproval`, `subscription_authorized_payment`, and `payments` webhook topics as applicable
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/subscriptions/landing
 
@@ -609,25 +586,33 @@ await customerClient.createCard({ customerId: id, body: { token: cardToken } });
 | GET | `/preapproval/{id}` | Get subscription |
 | PUT | `/preapproval/{id}` | Update subscription (pause/cancel) |
 | GET | `/preapproval/search` | Search subscriptions |
-| GET | `/authorized_payment/{id}` | Get invoice |
-| GET | `/authorized_payment/search` | Search invoices |
-| GET | `/preapproval/{id}/payments/search` | List subscription payments |
+| GET | `/authorized_payments/{id}` | Get invoice |
+| GET | `/authorized_payments/search` | Search invoices |
+| GET | `/v1/payments/search` | Search underlying payments (last 12 months) |
 
-**Create plan + subscription:**
+**Create a plan (operator/deployment action) and an authorized subscription:**
 ```js
-// Step 1: Create plan
+// Step 1: provision once; do not expose this as a buyer-facing route
 const plan = await fetch('https://api.mercadopago.com/preapproval_plan', {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    reason: 'Monthly subscription',
-    auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: 100.0, currency_id: 'BRL' }
+    reason: 'Monthly subscription', back_url: 'https://yoursite.com/subscription/confirm',
+    auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: 100.0, currency_id: 'BRL' },
   })
-});
-// Step 2: Create subscription for a buyer
+}).then(response => response.json());
+// Step 2: cardToken comes only from secure MercadoPago.js tokenization
 const sub = await fetch('https://api.mercadopago.com/preapproval', {
   method: 'POST',
-  body: JSON.stringify({ preapproval_plan_id: plan.id, payer_email: 'buyer@example.com', card_token_id: token })
+  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    preapproval_plan_id: plan.id,
+    payer_email: 'buyer@example.com',
+    card_token_id: cardToken,
+    external_reference: crypto.randomUUID(),
+    back_url: 'https://yoursite.com/subscription/confirm',
+    status: 'authorized',
+  }),
 });
 ```
 

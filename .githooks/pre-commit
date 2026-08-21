@@ -9,8 +9,10 @@ for script in plugins/mercadopago/scripts/*.mjs; do
   node --check "$script"
 done
 node plugins/mercadopago/scripts/test-checkout-tools.mjs
+node plugins/mercadopago/scripts/test-bricks-tools.mjs
 node plugins/mercadopago/scripts/test-point-tools.mjs
 node plugins/mercadopago/scripts/test-qr-tools.mjs
+node plugins/mercadopago/scripts/test-subscriptions-tools.mjs
 
 claude plugins validate .
 

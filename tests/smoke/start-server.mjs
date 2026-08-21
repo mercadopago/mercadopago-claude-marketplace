@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 
 const [appDirectory, credentialsPath, portValue, runtimeMode = 'default', runtimeResourceId = ''] = process.argv.slice(2);
 if (!appDirectory || !credentialsPath || !portValue) {
-  console.error('Usage: node start-server.mjs <app-directory> <seller.env> <port> [default|point-virtual|qr-dynamic] [resource-id]');
+  console.error('Usage: node start-server.mjs <app-directory> <seller.env> <port> [default|point-virtual|qr-dynamic|subscriptions-with-plan] [resource-id]');
   process.exit(2);
 }
 
@@ -43,9 +43,12 @@ const requiredCredentials = ['point-virtual', 'qr-dynamic'].includes(runtimeMode
 for (const key of requiredCredentials) {
   if (!credentials[key]) throw new Error(`Missing ${key} in seller credentials file`);
 }
-if (!['default', 'point-virtual', 'qr-dynamic'].includes(runtimeMode)) throw new Error(`Unknown runtime mode: ${runtimeMode}`);
+if (!['default', 'point-virtual', 'qr-dynamic', 'subscriptions-with-plan'].includes(runtimeMode)) throw new Error(`Unknown runtime mode: ${runtimeMode}`);
 if (runtimeMode === 'qr-dynamic' && !/^[A-Za-z0-9_-]{1,40}$/.test(runtimeResourceId)) {
   throw new Error('qr-dynamic requires a valid POS external_id as resource-id');
+}
+if (runtimeMode === 'subscriptions-with-plan' && !/^[A-Za-z0-9_-]{10,80}$/.test(runtimeResourceId)) {
+  throw new Error('subscriptions-with-plan requires a syntactically valid smoke plan ID as resource-id');
 }
 
 const child = spawn('npm', ['start'], {
@@ -64,6 +67,9 @@ const child = spawn('npm', ['start'], {
       MP_QR_MODE: 'dynamic',
       MP_QR_EXTERNAL_POS_ID: runtimeResourceId,
       MP_QR_STATIC_IMAGE: '',
+    } : {}),
+    ...(runtimeMode === 'subscriptions-with-plan' ? {
+      MP_SUBSCRIPTION_PLAN_ID: runtimeResourceId,
     } : {}),
   },
   stdio: 'inherit',

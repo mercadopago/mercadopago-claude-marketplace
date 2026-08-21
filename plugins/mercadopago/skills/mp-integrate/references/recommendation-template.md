@@ -148,7 +148,7 @@ Key topics for {product}: `{relevant_topics}`
 ### Section 3 — Server code
 - Snippet must come from `references/guides/{product}.md` or MCP `search_documentation`.
 - Never reconstruct from memory.
-- Always include `X-Idempotency-Key` in headers.
+- Include `X-Idempotency-Key` when the official endpoint documents/supports it. For Subscriptions, the current API reference documents `Authorization` but not that header; use a unique persisted `external_reference` plus application-level duplicate-submit protection and do not claim unsupported idempotency semantics.
 - Always include `external_reference`.
 
 ### Section 4 — Client code

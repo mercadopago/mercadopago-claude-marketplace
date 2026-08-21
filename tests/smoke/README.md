@@ -19,6 +19,13 @@ Rubistore working tree is dirty.
 - A separate Brewpoint fixture validates QR Orders API scaffolding and replacement
   of its redirect-based pseudo-QR flow. It covers `dynamic`, `static`, and `hybrid`,
   real test-order create/lookup/cancel, local QR rendering, and explicit UI states.
+- Four Kreativa fixtures validate Card Payment, Payment, Wallet, and Status Screen
+  as distinct Bricks contracts. The fixture is disposable; the validator itself
+  scans framework-agnostic source files across any application root.
+- Three Folium fixtures validate Subscriptions with plan, without plan/authorized,
+  and without plan/pending. They preserve the existing dedicated signup page,
+  replace its demo CTA, enforce trusted recurrence configuration, and distinguish
+  secure card tokenization from the pending `init_point` redirect.
 - Every scenario runs once per configured IT user.
 - The initial runner scaffolds and statically validates generated code. Browser
   payment execution is intentionally a separate opt-in stage.
@@ -141,3 +148,83 @@ one CTA action, local QR rendering, order ID visibility, reconciliation for
 phone logged into the Mercado Pago app is still required for the final real scan,
 processed payment, and refund smoke test; QR has no Point-style `/events`
 simulator.
+
+### Bricks browser runtime without a real charge
+
+After generating a Bricks fixture, start it with seller A credentials injected
+into the child process, then run the deterministic browser contract. The browser
+replaces MercadoPago.js and the local payment/preference route with controlled
+test doubles; it verifies runtime public-key loading, the selected Brick,
+callbacks, exactly one backend request, `preferenceId`, and `paymentId` without
+creating a real preference or payment:
+
+```bash
+node start-server.mjs .work/<run>/kreativa /path/to/seller-a.env 3104
+
+node runtime-bricks-ui.mjs \
+  http://localhost:3104 \
+  card-payment \
+  /checkout/bricks/card-payment \
+  artifacts/bricks-card-payment
+```
+
+Repeat with `payment`, `wallet`, or `status-screen` and the destination declared
+in `scenarios.json`. Card field tokenization against the real MercadoPago.js SDK,
+Wallet buyer login/redirect, and an actual payment remain separate opt-in tests.
+
+To validate the real Card Payment SDK without submitting a charge, keep the same
+server running and include the fixture's purchase context in the destination:
+
+```bash
+node runtime-bricks-real.mjs \
+  http://localhost:3104 \
+  '/checkout/bricks/card-payment?serviceId=1&packageIndex=0&email=buyer@example.com' \
+  artifacts/bricks-card-payment-real
+```
+
+This loads the real MercadoPago.js, asserts that at least three secure iframe
+inputs mounted with non-zero dimensions and remain editable, and stores only
+sanitized URLs. It does not fill a card or call the payment endpoint.
+
+### Subscriptions runtimes without a recurring charge
+
+Generate one of the three Folium scenarios, start its disposable server, and run
+the deterministic browser contract. MercadoPago.js and the local subscription
+route are replaced with controlled doubles, so no plan, subscription, invoice,
+or payment is created:
+
+```bash
+node start-server.mjs \
+  .work/<run>/folium \
+  /path/to/seller-a.env \
+  3108 \
+  subscriptions-with-plan \
+  2c938084000000000000000000000000
+
+node runtime-subscriptions-ui.mjs \
+  http://localhost:3108 \
+  with-plan \
+  /checkout-suscripcion.html \
+  artifacts/subscriptions-with-plan
+```
+
+Repeat with `without-plan-authorized` on port 3109 or
+`without-plan-pending` on port 3110. The authorized contracts assert three
+editable secure iframe fields, runtime public-key loading, and a single fake
+token submission. The pending contract asserts that no public key or token is
+used and that the buyer is redirected only to the returned `init_point`.
+
+The API probe authenticates with seller A, performs read-only plan/subscription
+searches, and sends one deliberately invalid create request that must be rejected.
+It verifies current API availability/schema without leaving a resource behind:
+
+```bash
+node runtime-subscriptions-api.mjs \
+  /absolute/path/to/seller-a.env \
+  artifacts/subscriptions-api
+```
+
+A real authorized subscription is intentionally not automated by default: it can
+charge immediately and continue charging. That final opt-in test requires a fresh
+test-buyer card token, verification of the first result, and immediate cancellation
+through `PUT /preapproval/{id}`.

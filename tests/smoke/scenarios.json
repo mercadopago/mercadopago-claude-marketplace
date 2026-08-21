@@ -48,6 +48,90 @@
       "destination": "/api/qr/orders",
       "serverFile": "server.js",
       "prompt": "Migre a cobrança QR existente do Brewpoint para Mercado Pago QR pela Orders API. Esta autorização de migração é explícita. O CTA real é o botão Cobrar existente no PDV: preserve seu texto, estilo e comportamento de carrinho, marque-o com data-mp-qr-cta=\"create-order\", remova o handler concorrente atual e faça exatamente uma chamada para POST /api/qr/orders. Use type=qr, total_amount e transactions.payments[0].amount como a mesma string de duas casas decimais, external_reference único, X-Idempotency-Key e config.qr com external_pos_id vindo de MP_QR_EXTERNAL_POS_ID e mode vindo de MP_QR_MODE, restrito a static, dynamic ou hybrid. Para este cenário, o runtime usará dynamic. Mantenha o payload mínimo: não envie payer fictício, items[].currency_id nem items[].total_amount. Valide no backend que cada preço, quantidade e o total calculado são finitos e positivos antes de chamar Mercado Pago. Implemente GET /api/qr/orders/:orderId e POST /api/qr/orders/:orderId/cancel sem usar o header Point-only X-Allow-Cancelable-Status. Renderize type_response.qr_data localmente para dynamic e hybrid usando a biblioteca QR já presente; nunca envie qr_data a serviço externo. Suporte staticQrImage para static sem expor o access token. Mostre total, carregamento, QR, order ID, erro acionável e trate explicitamente created, processed, canceled, expired e refunded. Ao cancelar uma order ainda created, chame o endpoint de cancelamento. Não mantenha a order online/redirect atual, checkout_url, /create-order ou QR de URL de Checkout. O Store e o POS já existem; não os crie nem altere. As credenciais seller A e MP_QR_EXTERNAL_POS_ID serão injetadas apenas em runtime; crie somente placeholders em .env.example e nunca leia ou grave valores reais. Respeite PORT do ambiente. Se precisar instalar ou atualizar SDK, considere autorizado e use a versão estável mais recente. Rode validate-qr-server.mjs e validate-qr-client.mjs antes de concluir. Não faça commit e não use MCP se nenhuma tool autenticada for necessária."
+    },
+    {
+      "id": "kreativa-bricks-card-payment",
+      "app": "kreativa",
+      "product": "bricks",
+      "bricksVariant": "card-payment",
+      "country": "AR",
+      "port": 3104,
+      "commandArguments": "product=bricks country=AR brick=card-payment",
+      "destination": "/checkout/bricks/card-payment",
+      "serverFile": "server.js",
+      "prompt": "Integre o Card Payment Brick na Kreativa como uma integração genérica de Checkout Bricks para Argentina. Inspecione o projeto inteiro e use o CTA final já existente Pagar con Mercado Pago, preservando texto e estilo, removendo o handler de checkout concorrente e navegando para uma página nova e apartada em /checkout/bricks/card-payment. Marque a página com data-mp-bricks-page=\"card-payment\" e o CTA com data-mp-bricks-cta=\"card-payment\". A página deve reutilizar o estado confiável da compra no servidor, mostrar o total acima do Brick, e montar somente o Card Payment Brick oficial; não crie inputs próprios de cartão. Em vanilla, obtenha MP_PUBLIC_KEY por GET /api/mp-config com Cache-Control no-store e fetch cache no-store, nunca por placeholder no HTML. O onSubmit deve retornar a Promise de POST /api/bricks/payments. O backend deve derivar e validar o valor da compra no servidor, mapear token, installments, payment_method_id, issuer_id apenas quando presente e payer.email, enviar X-Idempotency-Key e external_reference a POST https://api.mercadopago.com/v1/payments, e retornar paymentId/status sem registrar token. Mostre estados explícitos de inicialização, processamento, sucesso com paymentId e erro acionável. Respeite PORT. As credenciais seller A serão injetadas somente em runtime; crie placeholders sem valores reais. A atualização para a versão estável mais recente de mercadopago está autorizada; não instale React nem @mercadopago/sdk-react numa aplicação vanilla. Rode validate-bricks-integration.mjs . card-payment antes de concluir. Não faça commit, não execute pagamento real e não use MCP se nenhuma tool autenticada for necessária."
+    },
+    {
+      "id": "kreativa-bricks-payment",
+      "app": "kreativa",
+      "product": "bricks",
+      "bricksVariant": "payment",
+      "country": "AR",
+      "port": 3105,
+      "commandArguments": "product=bricks country=AR brick=payment",
+      "destination": "/checkout/bricks/payment",
+      "serverFile": "server.js",
+      "prompt": "Integre o Payment Brick oficial na Kreativa para Argentina. Detecte o CTA final em todo o projeto, preserve seu texto/estilo, remova o fluxo anterior concorrente e vincule-o a uma página nova /checkout/bricks/payment marcada data-mp-bricks-page=\"payment\"; marque o CTA data-mp-bricks-cta=\"payment\". Use a aplicação apenas como fixture, sem regras específicas do nome Kreativa no scaffold genérico. Monte o Payment Brick, não campos próprios. Entregue MP_PUBLIC_KEY por /api/mp-config JSON no-store. Mostre o total confiável acima do Brick e estados de inicialização, processamento, sucesso e erro acionável. O onSubmit deve aguardar POST /api/bricks/payments. No servidor, derive/valide o total pela compra persistida e trate os dados por paymentType sem forçar campos de cartão a Pix/ticket; para cartões mapeie token, installments, payment_method_id, issuer_id opcional e payer.email. Use Payments API /v1/payments, X-Idempotency-Key, external_reference, retorne paymentId/status e não registre token. Respeite PORT. Credenciais seller A entram só em runtime. A atualização para a versão estável mais recente de mercadopago está autorizada; não instale React numa aplicação vanilla. Rode validate-bricks-integration.mjs . payment. Não faça commit nem pagamento real e não use MCP sem necessidade de tool autenticada."
+    },
+    {
+      "id": "kreativa-bricks-wallet",
+      "app": "kreativa",
+      "product": "bricks",
+      "bricksVariant": "wallet",
+      "country": "AR",
+      "port": 3106,
+      "commandArguments": "product=bricks country=AR brick=wallet",
+      "destination": "/checkout/bricks/wallet",
+      "serverFile": "server.js",
+      "prompt": "Integre o Wallet Brick oficial na Kreativa para Argentina. Detecte o CTA final no projeto inteiro, preserve texto/estilo, remova o checkout concorrente e vincule-o à página nova /checkout/bricks/wallet marcada data-mp-bricks-page=\"wallet\"; marque o CTA data-mp-bricks-cta=\"wallet\". Entregue MP_PUBLIC_KEY por /api/mp-config JSON no-store. Antes de montar Wallet, chame POST /api/bricks/preference e crie uma preferência nova no servidor a partir da compra confiável. Envie do navegador apenas identificadores opacos e rederive itens, quantidade, moeda e preço no servidor; nunca confie em unit_price enviado pelo cliente. O endpoint remoto correto é exatamente https://api.mercadopago.com/checkout/preferences, sem v1. Retorne preferenceId e nunca use placeholder/ID fixo. Omita auto_return para localhost; use back_urls somente com APP_URL HTTPS público. Mostre estados de inicialização, processamento, sucesso e erro acionável e explique que Wallet exige comprador logado. Respeite PORT. Credenciais seller A entram só em runtime. A atualização para a versão estável mais recente de mercadopago está autorizada; não instale React numa aplicação vanilla. Rode validate-bricks-integration.mjs . wallet. Não faça commit, não abra login real e não use MCP sem necessidade de tool autenticada."
+    },
+    {
+      "id": "kreativa-bricks-status-screen",
+      "app": "kreativa",
+      "product": "bricks",
+      "bricksVariant": "status-screen",
+      "country": "AR",
+      "port": 3107,
+      "commandArguments": "product=bricks country=AR brick=status-screen",
+      "destination": "/checkout/bricks/status",
+      "serverFile": "server.js",
+      "prompt": "Integre o Status Screen Brick oficial na Kreativa para Argentina em uma página nova /checkout/bricks/status marcada data-mp-bricks-page=\"status-screen\". Essa variante é uma tela de resultado: não substitua o CTA de início da compra nem crie uma nova cobrança. A página deve ler payment_id da URL, validar formato/presença, inicializar o Brick com paymentId e exibir erro visível quando ausente/inválido. Nunca passe orderId e não crie iframe 3DS próprio. Entregue MP_PUBLIC_KEY por /api/mp-config JSON com Cache-Control no-store e fetch cache no-store, sem placeholder no HTML. Inclua estados de inicialização, processamento/consulta, sucesso e erro acionável. Adicione ao fluxo de sucesso de pagamento existente apenas uma navegação documentada para /checkout/bricks/status?payment_id=<id>, sem inventar um ID. Respeite PORT. Credenciais seller A entram só em runtime. Não é necessário instalar SDK Node somente para esta tela; não instale React numa aplicação vanilla. Rode validate-bricks-integration.mjs . status-screen. Não faça commit, não execute pagamento real e não use MCP sem necessidade de tool autenticada."
+    },
+    {
+      "id": "folium-subscriptions-with-plan",
+      "app": "folium",
+      "product": "subscriptions",
+      "subscriptionsModel": "with-plan",
+      "country": "AR",
+      "port": 3108,
+      "commandArguments": "product=subscriptions country=AR subscription-model=with-plan",
+      "destination": "/checkout-suscripcion.html",
+      "serverFile": "server.js",
+      "prompt": "Integre Subscriptions para Argentina usando obrigatoriamente o contrato with-plan. A aplicação já possui uma página apartada checkout-suscripcion.html e vários links de entrada que chegam nela; preserve esses links e a página. O CTA final é exclusivamente o botão Suscribirme ahora dentro dessa página: remova seu handler de demonstração, preserve texto/estilo e marque exatamente esse botão com data-mp-subscription-cta=\"with-plan\"; marque a raiz da página data-mp-subscriptions-page=\"with-plan\". Substitua apenas o bloco de integração de pagamento por MercadoPago.js CardForm seguro, com labels visíveis persistentes, hosts iframe editáveis para número/validade/CVV, nome no cartão e e-mail, e selects hidden nunca disabled para issuer, installments e identificationType mapeados na configuração. Obtenha MP_PUBLIC_KEY por GET /api/mp-config JSON no-store. O backend deve usar MP_SUBSCRIPTION_PLAN_ID definido somente no servidor, nunca aceitar plan_id/valor/frequência do browser, receber token single-use sem logar e criar POST https://api.mercadopago.com/preapproval com preapproval_plan_id, payer_email, card_token_id, external_reference, back_url e status authorized. Não repita auto_recurring no preapproval com plano e não exponha rota pública para criar planos. Implemente GET /api/subscriptions/:id e uma rota de ação com allowlist pause->paused, reactivate->authorized e cancel->canceled via PUT /preapproval/:id. Trate initializing, processing, authorized, pending, paused, canceled e erro acionável; impeça duplo submit. Respeite PORT. Credenciais seller A e o plan ID serão injetados apenas em runtime; crie placeholders em .env.example. Se precisar instalar ou atualizar SDK, considere autorizado e use a versão estável mais recente; não instale React numa aplicação vanilla. Rode validate-subscriptions-integration.mjs . with-plan. Não faça commit, não crie plano real, não crie assinatura real e não use MCP sem necessidade de tool autenticada."
+    },
+    {
+      "id": "folium-subscriptions-without-plan-authorized",
+      "app": "folium",
+      "product": "subscriptions",
+      "subscriptionsModel": "without-plan-authorized",
+      "country": "AR",
+      "port": 3109,
+      "commandArguments": "product=subscriptions country=AR subscription-model=without-plan-authorized",
+      "destination": "/checkout-suscripcion.html",
+      "serverFile": "server.js",
+      "prompt": "Integre Subscriptions para Argentina usando obrigatoriamente o contrato without-plan-authorized. Preserve a página apartada checkout-suscripcion.html e os links existentes que chegam nela. O CTA final é apenas Suscribirme ahora nessa página: preserve aparência/texto, remova doCheckout e marque-o data-mp-subscription-cta=\"without-plan-authorized\"; marque a raiz data-mp-subscriptions-page=\"without-plan-authorized\". No bloco de pagamento, use MercadoPago.js CardForm seguro: labels sempre visíveis, hosts iframe editáveis para cartão/validade/CVV, nome e e-mail, e os selects issuer/installments/identificationType hidden mas nunca disabled e mapeados. Carregue MP_PUBLIC_KEY por /api/mp-config JSON no-store. O navegador envia somente offerId, dados de pagador ausentes da sessão e token single-use. O backend resolve razão, valor, moeda e frequência de um catálogo confiável e cria exatamente POST https://api.mercadopago.com/preapproval com reason, external_reference, payer_email, card_token_id, auto_recurring, back_url e status authorized; não aceite nenhum termo recorrente do browser e não logue token. Implemente GET /api/subscriptions/:id e rota allowlisted de pause/reactivate/cancel via PUT /preapproval/:id. Trate initializing, processing, authorized, pending, paused, canceled e erro acionável, impedindo duplo submit. Respeite PORT. Credenciais seller A entram só em runtime. Se precisar instalar/atualizar SDK, está autorizado a usar a versão estável mais recente; não instale React numa app vanilla. Rode validate-subscriptions-integration.mjs . without-plan-authorized. Não faça commit, não crie assinatura real e não use MCP sem necessidade."
+    },
+    {
+      "id": "folium-subscriptions-without-plan-pending",
+      "app": "folium",
+      "product": "subscriptions",
+      "subscriptionsModel": "without-plan-pending",
+      "country": "AR",
+      "port": 3110,
+      "commandArguments": "product=subscriptions country=AR subscription-model=without-plan-pending",
+      "destination": "/checkout-suscripcion.html",
+      "serverFile": "server.js",
+      "prompt": "Integre Subscriptions para Argentina usando obrigatoriamente o contrato without-plan-pending. Preserve checkout-suscripcion.html como página apartada e os links que chegam nela. O CTA final é apenas o botão Suscribirme ahora nessa página: preserve texto/estilo, remova o handler demo, marque data-mp-subscription-cta=\"without-plan-pending\" e marque a raiz data-mp-subscriptions-page=\"without-plan-pending\". Este contrato não coleta cartão e não usa MercadoPago.js: remova o placeholder de formulário e explique que o método será escolhido no Mercado Pago. Ao clicar, envie apenas offerId e payer_email para POST /api/subscriptions. O backend resolve reason, valor, moeda e frequência de catálogo confiável, cria exatamente POST https://api.mercadopago.com/preapproval com reason, external_reference, payer_email, auto_recurring, back_url e status pending, sem card_token_id, e retorna id/status/init_point. Redirecione somente para init_point. Implemente GET /api/subscriptions/:id e rota allowlisted pause/reactivate/cancel via PUT /preapproval/:id. Trate initializing, processing, pending, authorized, paused, canceled e erro acionável, impedindo duplo submit. Nunca aceite plan ID ou termos recorrentes do browser. Respeite PORT. Credenciais seller A entram só em runtime. Não é necessário SDK de browser; se o SDK Node realmente for usado, atualizar para a versão estável mais recente está autorizado. Rode validate-subscriptions-integration.mjs . without-plan-pending. Não faça commit, não crie assinatura real e não use MCP sem necessidade."
     }
   ]
 }

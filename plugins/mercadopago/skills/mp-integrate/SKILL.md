@@ -66,7 +66,7 @@ If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `hea
 |---------|------------------------------|-----------------|
 | `checkout-pro` | `preferences` (the Orders API does **not** exist for Checkout Pro) | **Skip the mode question entirely.** Do not call `AskUserQuestion` with `header="Mode"`. Do not show "Orders API" as an option. Use `mode=preferences` silently. |
 | `checkout-api` | `orders` | **Always `orders` in ALL countries.** |
-| `bricks` | `payments` | **Always `payments` in ALL countries.** Bricks tokenizes client-side; server calls `POST /v1/payments`. |
+| `bricks` | `payments` | Internal routing value. `card-payment` and `payment` create Payments API payments; `wallet` creates `/checkout/preferences`; `status-screen` only displays a `paymentId`. Never add `v1` to the preferences path. |
 | `qr` | `orders` | **Always `orders` in ALL countries.** |
 | `point` | `orders` | **Always `orders` in ALL countries.** |
 | `marketplace` | `orders` | Always `orders`. |
@@ -151,6 +151,55 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-server.mjs" "{server_file}"
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-client.mjs" "{client_file}" 'data-mp-qr-cta="create-order"' "/api/qr/orders"
 ```
 
+### LOCK 9 — Bricks behavior is variant-specific
+
+Resolve `brick=` before writing code and read `references/guides/bricks.md`. Never
+apply one Brick's backend to all four variants:
+
+- `card-payment`: `CardPayment`/`cardPayment` creates a Payments API payment.
+- `payment`: `Payment`/`payment` creates the selected method via Payments API.
+- `wallet`: `Wallet`/`wallet` creates a preference using exactly
+  `/checkout/preferences`; the path has no version segment.
+- `status-screen`: `StatusScreen`/`statusScreen` renders a validated `paymentId`;
+  it does not create a payment and must not receive an order ID.
+
+Use the application's actual framework and scan the whole project for a real
+checkout CTA. When one exists, preserve its presentation and link it to the new
+dedicated Brick page after removing the competing old handler. If none exists,
+create the page anyway and report the exact route/invocation the developer must
+link. Never collect raw card fields around a Brick. Before reporting success:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-bricks-integration.mjs" . "{brick}"
+```
+
+### LOCK 10 — Subscriptions contracts never mix
+
+When `product=subscriptions`, resolve `subscription-model=` before writing code
+and read `references/guides/subscriptions.md`. The only valid values are
+`with-plan`, `without-plan-authorized`, and `without-plan-pending`.
+
+- `with-plan` uses a server-controlled `preapproval_plan_id`, a securely
+  tokenized `card_token_id`, and `status: "authorized"`. Never accept a plan ID
+  from the browser or create a plan from the buyer CTA.
+- `without-plan-authorized` sends trusted server-side recurrence terms, a
+  securely tokenized `card_token_id`, and `status: "authorized"`.
+- `without-plan-pending` sends trusted recurrence terms and `status: "pending"`,
+  omits `card_token_id`, and redirects only to the returned `init_point`.
+
+Authorized flows must use MercadoPago.js CardForm or the official Card Payment
+Brick. Never ask the buyer to paste a card token, never collect raw card data,
+and never omit the CardForm lifecycle selects (`issuer`, `installments`, and
+`identificationType`). Scan the whole application for every subscription CTA.
+All marketing/entry CTAs must converge on the existing or generated dedicated
+signup page; only its final CTA may create a preapproval. Remove competing demo
+handlers and orphan server routes so exactly one preapproval creator remains.
+Before reporting success:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-subscriptions-integration.mjs" . "{subscription-model}"
+```
+
 ---
 
 ---
@@ -172,6 +221,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-client.mjs" "{client_file}" 'dat
 | `marketplace=` | `yes` / `no` (split payments) |
 | `brick=` | `payment` / `card-payment` / `wallet` / `status-screen` (only when `product=bricks`) |
 | `qr-mode=` | `static` / `dynamic` / `hybrid` (only when `product=qr`) |
+| `subscription-model=` | `with-plan` / `without-plan-authorized` / `without-plan-pending` (only when `product=subscriptions`) |
 
 After parsing or inferring `product`, apply LOCK 5 normalization immediately. Use only the normalized internal value for the Product Matrix, guide selection, CTA resolution, and scaffold branches. The presentation-only slug `checkout-api-orders` may appear in the final recommendation metadata, but it must never be used as an internal branch value.
 
@@ -282,6 +332,7 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 | 3 | `client` | "Client" | Only if the product has a client component AND repo signals were ambiguous. Show the 3 most likely + Other. |
 | 4 | `brick` | "Brick" | Only when `product=bricks`. Options: `payment` / `card-payment` / `wallet` / `status-screen`. |
 | 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `hybrid`. |
+| 5.5 | `subscription-model` | "Subscription" | Only when `product=subscriptions`. Options: `with-plan` / `without-plan-authorized` / `without-plan-pending`. |
 | 6 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
 | 7 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
 | 8 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
@@ -352,6 +403,7 @@ Fields to persist (write after each is resolved, do not wait until the end):
 - application_id: 123456789012345
 - brick: card-payment
 - qr_mode: dynamic
+- subscription_model: with-plan
 - recurrent: no
 - three_ds: no
 ```
@@ -368,10 +420,10 @@ Fields to persist (write after each is resolved, do not wait until the end):
 |---|---|---|---|---|---|---|---|
 | `checkout-pro` | yes | optional | **`preferences` only** — Checkout Pro does NOT have an Orders API mode | n/a | n/a | optional | n/a |
 | `checkout-api` | yes | yes | **`orders` (ALL countries)** | yes | yes | optional | n/a |
-| `bricks` | yes (server) | yes | **`payments` (ALL countries)** — server calls `POST /v1/payments` | yes (payment, card-payment) | yes (payment, card-payment, status-screen) | optional | `brick=` |
+| `bricks` | yes (server) | yes | internal `payments` routing; backend is variant-specific per LOCK 9 | yes (payment, card-payment) | yes (payment, card-payment, status-screen) | optional | `brick=` |
 | `qr` | yes | n/a | **`orders` (ALL countries)** | n/a | n/a | n/a | `qr-mode=` |
 | `point` | yes | n/a | **`orders` (ALL countries)** | n/a | n/a | n/a | n/a |
-| `subscriptions` | yes | n/a | n/a (own `preapproval` API) | implicit | n/a | optional | n/a |
+| `subscriptions` | yes | conditional (authorized contracts use MercadoPago.js) | n/a (own `preapproval` API) | implicit | n/a | optional | `subscription-model=` |
 | `marketplace` | yes | n/a | **`orders` (ALL countries)** | n/a | n/a | implicit | n/a |
 | `wallet-connect` | yes | n/a | `orders` | n/a | n/a | n/a | n/a |
 | `money-out` | yes | n/a | n/a (own `disbursements` API) | n/a | n/a | n/a | n/a |
@@ -606,6 +658,22 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
    node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-qr-client.mjs" "{client_file}" 'data-mp-qr-cta="create-order"' "/api/qr/orders"
    ```
 
+   **When `product=bricks`:** apply LOCK 9 and run the application-wide validator
+   after the dedicated Brick page, server route (when applicable), runtime public
+   configuration, and CTA wiring have all been written:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-bricks-integration.mjs" . "{brick}"
+   ```
+
+   **When `product=subscriptions`:** apply LOCK 10 after the subscription CTA,
+   signup page, tokenization (when authorized), server route, and lifecycle routes
+   have been written:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-subscriptions-integration.mjs" . "{subscription-model}"
+   ```
+
 2.5. **`checkout-pro` and `checkout-api` — Mandatory checkout CTA discovery** (skip for all other products):
 
    This step is unconditional for both checkout products. The scaffold is incomplete until a concrete CTA target has been resolved. The products use the same detector but different wiring in Step 3.5:
@@ -751,6 +819,7 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
    7. Report `✓ {cta_file}:{cta_line_or_region} → {checkout_screen_destination_or_preference_route}`. There is no successful “CTA not linked” outcome for Checkout Pro or Checkout API.
 4. **Create `.env.example`** — write the template vars (MP_ACCESS_TOKEN, MP_PUBLIC_KEY, MP_WEBHOOK_SECRET, APP_URL) to `.env.example`. Only create `.env` with real values if the developer explicitly selected credential import and `get_credentials` succeeded; do not overwrite an existing `.env` without confirmation. Otherwise, never create `.env` — the developer must fill in their own credentials.
 5. **Update `.gitignore`** — add `.env`, `.env.*.local`, `.mp-integrate-progress.md` if not already present.
+5.5. **Delete `.mp-integrate-progress.md` after successful scaffolding** — this file is only a crash/cancel resume checkpoint. Remove it before running the final product validator and before printing a success summary. Keep it only when the run is canceled, blocked, or failed. Never leave a completed integration with this file present.
 6. After all writes, print the product-specific summary. Both successful outcomes must include a wired CTA:
 
 **Checkout API:**
@@ -792,7 +861,7 @@ Always close with:
 2.5. **For Orders API products (checkout-api / qr / point — ALL countries):** Ask via `AskUserQuestion` before listing next steps:
    - Question: *"Orders API requires a test buyer user to process payments. Do you want me to create one now?"*
    - Options: `"Yes, create test user now"` → invoke `mp-test-setup` skill inline; `"No, I'll do it later"` → show reminder: *"⚠️ Run `/mp-integrate test-setup` before testing — Orders API returns 422 without a test user."*
-   - Note: Bricks uses Payments API (`/v1/payments`), not Orders API — this step does not apply to Bricks.
+   - Note: Card Payment and Payment Bricks use Payments API and do not require the Orders buyer flow. Wallet still needs a buyer logged into Mercado Pago; Status Screen needs an existing payment ID.
 
 3. **Run `/mp-review` — MANDATORY before going to production.** This is **step 6 of 7** in your integration journey. The auto-checker validates your integration automatically after the first payment. Do **not** switch to production credentials (step 7) until `/mp-review` passes.
 
@@ -822,7 +891,7 @@ Render only the section that matches the chosen product. These are the experient
 - Always send an idempotency key on payment creation; retries without it create duplicate charges.
 
 ### bricks
-- **Server-side uses Payments API, not Orders API.** The Brick tokenizes the card client-side and calls `onSubmit` with the token. Your backend must call `POST /v1/payments` (not `/v1/orders`) with `transaction_amount`, `token`, `installments`, `payment_method_id`, and `payer.email`.
+- **The backend is variant-specific.** `card-payment` and `payment` create via Payments API; `wallet` creates a dynamic preference at `/checkout/preferences` (without `v1`); `status-screen` only displays an existing `paymentId`.
 - **Always show the charge amount above the brick.** The brick does not render the total prominently — buyers cannot see what they're paying. Add `<p>Total: <strong>{currency} {amount}</strong></p>` above the container div.
 - **Always include three payment states in your UI.** (1) Loading/spinner while the brick initializes and while `onSubmit` runs. (2) Success state showing payment ID and "Payment approved" message. (3) Error state with an actionable message ("Card declined — try a different card"), not the raw API error string. Missing these states means buyers don't know if the payment went through.
 - The container `<div id="..."></div>` must exist in the DOM **before** calling `bricksBuilder.create(...)`. A `setTimeout` is not a fix; use `onReady` or React `useEffect` with the ref mounted.
@@ -833,8 +902,10 @@ Render only the section that matches the chosen product. These are the experient
 - **Ad-blockers (uBlock, AdBlock Plus, Brave shields) block `sdk.mercadopago.com`** → the brick raises `FIELDS_SETUP_FAILED` and silently fails to mount. If a developer reports "the brick doesn't appear", check the ad-blocker before debugging code.
 - **Debit cards do NOT show an installments selector** — this is correct behavior, not a bug. Make sure the server accepts `installments: 1` for debit and does not require the selector field to be present.
 - **Never hardcode `preferenceId` as a placeholder** (e.g., `<PREFERENCE_ID>`, `YOUR_PREFERENCE_ID`, `"preference_id"`): the brick fails silently. The `preferenceId` must always be created dynamically on the server per buyer session.
+- **Never trust Wallet item prices from the browser.** Send an opaque cart/purchase ID and rebuild the preference items and amount from trusted server-side state before calling Mercado Pago.
+- **Preferences never use a version prefix or segment.** The valid path is exactly `/checkout/preferences`.
 - **Status Screen Brick needs a `payment_id`** — extract it from the `POST /v1/payments` response (`response.id`) and pass it to the brick. Do not pass an order ID.
-- **React: call `brickController.unmount()` in the `useEffect` cleanup** before re-mounting. Re-rendering without unmounting leaves zombie listeners that break form submission silently.
+- **Vanilla builder lifecycle:** retain the controller returned by `bricksBuilder.create()` and call `controller.unmount()` before rebuilding or removing its container. The React SDK component owns its own controller lifecycle; do not create a second controller around it.
 - **`back_urls` must be on the same origin as the page that mounts the brick.** Cross-domain back_urls fail silently — the redirect after payment lands on a blank page with no error.
 
 ### qr
@@ -852,9 +923,11 @@ Render only the section that matches the chosen product. These are the experient
 - Webhook topic for Point (Orders API) is `orders`. The legacy `point_integration_wh` topic belongs to the old Point Integration API — do not use it for new integrations.
 
 ### subscriptions
-- A `preapproval` without a `preapproval_plan_id` is allowed but cannot be migrated to a plan later — pick one model upfront.
-- Recurring charges retry on failure; the `paused` status is reachable both manually and after N failed attempts.
-- The `back_url` for plan signup must be HTTPS in production — http only works locally.
+- Pick `with-plan`, `without-plan-authorized`, or `without-plan-pending` before scaffolding. A preapproval created without a plan cannot be migrated to one later.
+- Never expose a manual card-token field. Authorized contracts require secure MercadoPago.js tokenization; pending omits the token and redirects to `init_point`.
+- Associated plan IDs and all recurrence terms are server-controlled. Never accept plan ID, amount, currency, or frequency from the browser.
+- Recurring charges retry on failure; support `authorized`, `pending`, `paused`, and `canceled` explicitly and reconcile through GET/webhooks.
+- The `back_url` must be HTTPS in production; HTTP is only acceptable for a local-development fallback.
 
 ### marketplace
 - `application_fee` cannot exceed configured limits per country — check before charging.
