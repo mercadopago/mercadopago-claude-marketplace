@@ -88,7 +88,7 @@ Mercado Pago removed the sandbox environment. There is no staging URL. Every int
 
 If you find `sandbox_init_point` in existing code, flag it as a bug: the redirect will fail silently or land on an error page.
 
-**Also applies to test users:** test users created via `create_test_user` operate against the production API using `APP_USR-` credentials. There is no separate test base URL, no `TEST-` prefix, and no toggle. Code using `sandbox_init_point` with test-user credentials will not work.
+**Also applies to test users:** test users created via `create_test_user` operate against the production API host using the `APP_USR-` credentials returned for that test-user account. There is no separate test base URL or sandbox toggle. This does **not** make `TEST-` credentials invalid: static test credentials for Checkout API, Bricks, and Payments API may use `TEST-`. Code using `sandbox_init_point` with any credential will not work.
 
 ### LOCK 4 — Tabs row must reflect only the questions that will actually be asked
 
@@ -644,7 +644,7 @@ If `search_documentation` returns a result that contains **only overview or land
 Then stop. Specifically:
 
 - **Do NOT reconstruct code from training-data memory** — a reconstructed snippet (this is what produced the `CardForm` hallucination) must never be presented as if it were MCP-verified.
-- **Do NOT use WebFetch as a substitute** — tiers 1 and 2 are bundled files; tier 3 is MCP. There is no WebFetch tier in this hierarchy.
+- **Do NOT make another arbitrary WebFetch as a substitute.** The single official country `llms.txt` request is tier 1, bundled references are tier 2, and MCP is tier 3. If none contains a verified snippet, report that it is unavailable.
 - **Label the output explicitly** as "No verified snippet available" so the developer knows the difference between verified and unavailable.
 
 ---

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/mercadopago/mercadopago-claude-marketplace/security/advisories/new
+    about: Report vulnerabilities, credential exposure, or sensitive data leaks privately.
+  - name: Mercado Pago developer support
+    url: https://www.mercadopago.com.ar/developers/en/support/center
+    about: Get help with Mercado Pago accounts, APIs, and production enablement.

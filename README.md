@@ -27,18 +27,18 @@
 
 ## Overview
 
-A Claude Code plugin that gives you an AI-powered integration assistant for the full Mercado Pago product suite. Ask questions, scaffold projects, review code, and get real-time API guidance — all from your terminal.
+A Claude Code plugin that provides guided integration support for the Mercado Pago product families listed below. Availability still depends on country, account eligibility, commercial enablement, and the selected API.
 
 - **MCP-first, connection on demand** — local scaffolding and security checks work offline; OAuth starts only immediately before an MCP tool is needed
 - **4 orchestration skills**: `mp-integrate`, `mp-webhooks`, `mp-test-setup`, `mp-review`
 - **7 countries** supported: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay
-- **Credential leak prevention** — hook scans every file write for hardcoded tokens
+- **Credential leak prevention** — hook inspects supported Claude tool inputs for hardcoded tokens and blocks secret-file reads in detected Mercado Pago projects
 - **OAuth-based auth** — triggered by MCP-backed operations or manually via `/mp-connect`; no keychain scripts needed
 - **4 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`, `/mp-test-cards`
 
 ## What's new in v4.3.1
 
-A checkout reliability release with no architecture break: one Claude router, four skills, and MCP connection only when a selected live tool requires it.
+A reliability and product-coverage release with no architecture break: one Claude router, four skills, and MCP connection only when a selected live tool requires it.
 
 - **Mandatory generic CTA resolution** for Checkout Pro and Checkout API across common web templates and frameworks.
 - **Separate Checkout API payment screen**, with deterministic checks that reject inline checkout forms and disconnected CTAs.
@@ -47,6 +47,8 @@ A checkout reliability release with no architecture break: one Claude router, fo
 - **Correct Checkout Pro preference route**: `/checkout/preferences`, without an invalid `/v1` prefix.
 - **SDK safety policy**: detect the official SDK automatically, request authorization, and use the current stable release.
 - **Regression tests in CI and pre-commit** for CTA wiring, screen separation, labels, runtime configuration, and endpoint rules.
+- **Deterministic product contracts** for Bricks, Subscriptions, Marketplace, Wallet Connect, SmartApps, Payouts, QR, and Point.
+- **Public-repository hardening** with a public dependency lock, strict CI parity, hook regression tests, security policy, and documented data flow.
 
 ## Installation
 
@@ -80,7 +82,7 @@ For other IDEs (Cursor, VS Code, Windsurf), add `https://mcp.mercadopago.com/mcp
 
 | Skill | What it does |
 |-------|-------------|
-| `mp-integrate` | Wizard that scaffolds a complete integration for any product: Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Money Out, SmartApps |
+| `mp-integrate` | Wizard for Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Payouts (formerly Money Out), and SmartApps, subject to country/account eligibility |
 | `mp-webhooks` | Receiver pattern with HMAC-SHA256 validation; configures and diagnoses webhooks on demand |
 | `mp-test-setup` | Creates test users and loads funds via MCP; bundled test-card guidance remains available offline |
 | `mp-review` | Runs a local security floor and connects only when the official quality or homologation tools are requested |
@@ -156,13 +158,21 @@ The `authenticate` and `complete_authentication` tools only bootstrap OAuth. The
 | Hook | `validate_mp_credentials` | Credential scanner — blocks hardcoded MP tokens from reaching source files |
 | Hook | `check-version` | Runs on every prompt to verify plugin version compatibility |
 | MCP | `mercadopago` | Live Mercado Pago API access via OAuth (`mcp.mercadopago.com`) |
-| CI | `validate.yml` | JSON validation, Python syntax checks, skill integrity |
+| CI | `validate.yml` | Public dependency install, npm audit, hook tests, all deterministic product suites, strict plugin validation, and catalog integrity |
 
-## Requirements
+## Compatibility and requirements
 
-- [Claude Code](https://claude.com/claude-code) CLI
-- Node.js 18+ (for the MCP server)
-- Python 3.8+ (for the credential scanning hook)
+For plugin users:
+
+- [Claude Code](https://claude.com/claude-code); release validation uses 2.1.228 or newer.
+- Python 3.8+ for the credential scanning hook.
+- macOS or Linux. On Windows, use WSL; native Windows is not yet part of the release gate.
+
+The Mercado Pago MCP server is remote and does **not** require a local Node.js server. Repository contributors and smoke-test operators need Node.js 20+ and npm 10+; see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Security and privacy
+
+Read [SECURITY.md](./SECURITY.md) before reporting a vulnerability or credential exposure. [PRIVACY.md](./PRIVACY.md) documents which operations remain local and what an explicitly selected MCP call may transmit.
 
 ## Contributing
 

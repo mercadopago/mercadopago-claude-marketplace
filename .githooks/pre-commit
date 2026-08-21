@@ -1,28 +1,5 @@
 #!/usr/bin/env sh
-set -e
+set -eu
 
 repo_root="$(git rev-parse --show-toplevel)"
-cd "$repo_root"
-
-for script in plugins/mercadopago/scripts/*.mjs; do
-  [ -f "$script" ] || continue
-  node --check "$script"
-done
-node plugins/mercadopago/scripts/test-checkout-tools.mjs
-node plugins/mercadopago/scripts/test-bricks-tools.mjs
-node plugins/mercadopago/scripts/test-point-tools.mjs
-node plugins/mercadopago/scripts/test-qr-tools.mjs
-node plugins/mercadopago/scripts/test-subscriptions-tools.mjs
-node plugins/mercadopago/scripts/test-marketplace-tools.mjs
-node plugins/mercadopago/scripts/test-wallet-connect-tools.mjs
-node plugins/mercadopago/scripts/test-smartapps-tools.mjs
-node plugins/mercadopago/scripts/test-payouts-tools.mjs
-
-claude plugins validate .
-
-if [ -d plugins ]; then
-  for plugin_dir in plugins/*/; do
-    [ -d "$plugin_dir" ] || continue
-    claude plugins validate "$plugin_dir"
-  done
-fi
+exec "$repo_root/scripts/validate_repository.sh"

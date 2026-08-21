@@ -50,16 +50,17 @@ documented when that stage is enabled.
 
 ```bash
 cd tests/smoke
-npm run dry-run -- --source /Users/esbento/Development/MELI/rubistore_codex
+export RUBISTORE_SOURCE=/absolute/path/to/rubistore
+npm run dry-run -- --source "$RUBISTORE_SOURCE"
 
 # Prepare clean copies only; Claude is not invoked.
 npm run smoke:prepare -- \
-  --source /Users/esbento/Development/MELI/rubistore_codex \
+  --source "$RUBISTORE_SOURCE" \
   --profiles ./profiles.local.json
 
 # Invoke the local Claude plugin and run deterministic static validators.
 npm run smoke -- \
-  --source /Users/esbento/Development/MELI/rubistore_codex \
+  --source "$RUBISTORE_SOURCE" \
   --profiles ./profiles.local.json \
   --max-budget-usd 5
 ```

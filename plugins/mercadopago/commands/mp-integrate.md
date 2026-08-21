@@ -1,5 +1,5 @@
 ---
-description: Scaffold a Mercado Pago integration via the mp-integrate wizard. Supports every product (Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Money Out, SmartApps). Also migrates existing Payments API integrations to the Orders API.
+description: Scaffold a Mercado Pago integration via the mp-integrate wizard. Supports Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Payouts, and SmartApps. Also migrates legacy Instore QR/Point integrations to the Orders API.
 argument-hint: "[product=...] [country=...] [mode=...] [client=...] [3ds=yes|no] [recurrent=yes|no] [marketplace=yes|no]  |  webhook  |  test-setup  |  migrate"
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
@@ -36,42 +36,33 @@ Inspect `$ARGUMENTS`:
 
 1. **Pre-flight + readiness — execute in this exact order. Do not call MCP just to inspect connection state.**
 
-   **Step 1.1 — Environment check** (run via `Bash` before any MCP interaction):
+   **Step 1.1 — Stack-aware environment check** (before any MCP interaction):
 
-   ```bash
-   echo "os: $(uname -s 2>/dev/null || echo Windows)" && \
-   echo "git: $(git --version 2>/dev/null || echo NOT_FOUND)" && \
-   echo "git_path: $(command -v git 2>/dev/null || echo UNKNOWN)" && \
-   echo "node: $(node --version 2>/dev/null || echo NOT_FOUND)" && \
-   echo "npm: $(npm --version 2>/dev/null || echo NOT_FOUND)"
-   ```
+   1. Inspect existing manifests and source files with `Glob`, `Read`, and
+      `Grep`. Detect the project stack and its existing package manager before
+      checking executables.
+   2. Check only tools needed by the selected stack/product:
 
-   Display result inline: `✅ git X.Y.Z  ·  ✅ node X.Y.Z  ·  ✅ npm X.Y.Z`
+      | Detected project | Check only when needed |
+      |---|---|
+      | JavaScript/TypeScript or plugin validation scripts | `node --version` (Node 20+) and the package manager selected by the existing lockfile |
+      | Python | `python3 --version`; check pip/uv/poetry only if an SDK dependency must be changed |
+      | PHP | `php --version`; check Composer only if an SDK dependency must be changed |
+      | Java/Kotlin/Android | the existing Gradle/Maven wrapper and required JDK; prefer project wrappers |
+      | Go | `go version` only if the project is Go |
+      | Static HTML with no build step | no package manager prerequisite |
 
-   If any tool is missing or outdated, for **each** failing tool:
-   - Show `❌ {tool} — NOT_FOUND` (or `outdated: X.Y.Z`)
-   - Call `AskUserQuestion`:
-     - header: "Install {tool}"
-     - Question: `"{tool} is required but not found. Should I install it for you?"`
-     - Options: `"Yes, install it"` / `"No, I'll install it myself"`
-   - **If "Yes"**: run the install command via `Bash` (see OS table below), then re-run the check. If it still fails, show the error output and ask again.
-   - **If "No"**: show the install command for the detected OS, output `"Run the command above, then come back and say 'done'."` Block until the user confirms.
-   - **Do NOT offer a "Skip" option** — the wizard cannot scaffold without git, node ≥ 18, and npm.
+   3. Git is optional. Use it for inspection only when the target is already a
+      Git repository; scaffolding must not be blocked because Git is absent.
+   4. If a required tool is missing, explain which selected operation needs it
+      and ask whether the developer wants installation guidance. Show an
+      official installation link or command, but **never install an OS package,
+      run `sudo`, or modify a system-wide runtime automatically**. Continue only
+      after the developer confirms the prerequisite is available or chooses a
+      scaffold path that does not need it.
 
-   **Windows — git unsafe location (H5):** If git is found but `git_path` contains `AppData\Local\Programs\Git`, warn:
-   > ⚠️ **Git is installed in your user folder** (`AppData\Local\Programs\Git`). This causes an "unsafe repository" error when Claude Code tries to clone plugins. To fix it, reinstall Git selecting **"Install for all users"** so it lands in `C:\Program Files\Git`.
-   
-   Then call `AskUserQuestion`: `"What would you like to do?"` → `"Reinstall Git for all users (recommended)"` / `"Continue anyway (may cause errors)"`.
-   If "Reinstall" → show: `winget install --scope machine Git.Git` and block until confirmed.
-
-   OS install commands:
-
-   | Tool | macOS | Windows | Linux (Debian/Ubuntu) | Linux (RHEL/Fedora) |
-   |------|-------|---------|----------------------|---------------------|
-   | git | `brew install git` | `winget install --scope machine Git.Git` | `sudo apt install git` | `sudo yum install git` |
-   | node/npm | `brew install nvm && nvm install 20` | `winget install OpenJS.NodeJS.LTS` | `sudo apt install nodejs npm` | `sudo dnf install nodejs npm` |
-
-   Detect the OS via `Bash` (`uname -s` → `Darwin`=macOS, `Linux`=Linux; for Windows check `$OS` env var).
+   Display only detected/required tools, for example:
+   `✅ node 20.x · ✅ npm 10.x` or `✅ PHP 8.x · ✅ Composer 2.x`.
 
    **Step 1.2 — Journey map** (display immediately after env check, once per session):
 

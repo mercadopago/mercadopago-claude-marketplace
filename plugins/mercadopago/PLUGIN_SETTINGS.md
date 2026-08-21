@@ -18,9 +18,11 @@ enabled: true
 |---------|------|---------|-------------|
 | `enabled` | `boolean` | `true` | Enable/disable the credential leak prevention hook |
 
-### Example: Disable credential scanning
+### Emergency override: disable credential scanning
 
-If you're working on a project that doesn't use Mercado Pago credentials (e.g., documentation), you can disable the hook:
+The hook is already a no-op for secret-file reads in projects that do not show
+Mercado Pago signals. Disable it only to diagnose a confirmed hook false
+positive:
 
 ```markdown
 ---
@@ -34,3 +36,5 @@ enabled: false
 - The file uses YAML frontmatter (between `---` fences)
 - Restart Claude Code after modifying settings
 - `.claude/*.local.md` files are typically in `.gitignore` — they are personal, not shared
+- `enabled: false` disables both credential-pattern scanning and secret-file read protection. Re-enable it immediately after diagnosis.
+- The hook blocks direct Claude `Read` access and common Bash readers for `.env`, `.env.*`, `.envrc`, and `*.env` files in detected Mercado Pago projects. `.env.example`, `.env.sample`, and `.env.template` remain readable.

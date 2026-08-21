@@ -1,6 +1,6 @@
 # mercadopago
 
-Mercado Pago full-product integration toolkit for Claude Code.
+Mercado Pago multi-product integration toolkit for Claude Code. Product availability depends on country, account eligibility, and commercial enablement.
 
 > **Code scaffolding works without MCP authentication** using bundled references and the official per-country `llms.txt`. The plugin requests OAuth only immediately before a selected MCP tool, such as live documentation fallback, credential import, test-user actions, webhook registration, quality evaluation, or homologation.
 
@@ -20,10 +20,12 @@ After installing the plugin, start using it offline or connect to your Mercado P
 - Public client configuration is loaded at runtime without HTML placeholder substitution.
 - Official SDK installation or updates require authorization and use the current stable release.
 - Bundled plugin files use `${CLAUDE_PLUGIN_ROOT}`; the plugin never copies its MCP configuration into the developer's project.
+- Deterministic contracts cover Bricks, Subscriptions, Marketplace, Wallet Connect, SmartApps, Payouts, QR, and Point.
+- Public installation and data-flow boundaries are documented in the repository `SECURITY.md` and `PRIVACY.md`.
 
 ## Architecture (v4)
 
-One agent, four skills, one MCP. The plugin is an **orchestrator**, not a documentation container. All product knowledge lives in the MCP and the public Mercado Pago documentation; the skills translate developer intent into the right MCP queries and assemble the response.
+One agent, four skills, one MCP. The plugin is an **orchestrator**: stable, version-pinned scaffold contracts and safety anchors are bundled and regression-tested, while volatile product documentation and live account data come from official country documentation or MCP on demand.
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -85,15 +87,15 @@ Connection is requested only after the developer selects an operation backed by 
 ## What changed from v3
 
 - 13 product skills → 4 orchestration skills.
-- ~3,800 lines of `references/*.md` removed — the MCP is the single source of truth.
-- Static product matrices (payment status tables, device lists, country availability) deleted — pulled live from MCP.
+- Large duplicated documentation copies were removed; approved references now contain only stable anchors and tested scaffold contracts.
+- Volatile status tables, device lists, and live availability remain in official documentation or MCP.
 - `mp-setup` command renamed to `mp-integrate`, with `webhook` and `test-setup` sub-routes.
 - Agent acts as a router with no embedded product implementation guide.
 - MCP connection is **on demand** — scaffolding and local checks proceed offline; OAuth starts only immediately before a selected MCP tool.
 
 ## Hook: Credential Leak Prevention
 
-Automatically scans code being written for hardcoded Mercado Pago credentials (Access tokens, client secrets, bearer headers, webhook secrets) and blocks the write. Also blocks reading `.env` files (`.env.example` remains readable).
+Inspects supported Claude write/edit/Bash inputs for hardcoded Mercado Pago credentials. In detected Mercado Pago projects it also blocks direct Read and common Bash attempts to expose `.env`, `.env.*`, `.envrc`, and `*.env` files; examples and templates remain readable. This is defense in depth, not a replacement for secret scanning or credential rotation.
 
 ## MCP: Mercado Pago API
 
@@ -105,9 +107,11 @@ See [PLUGIN_SETTINGS.md](./PLUGIN_SETTINGS.md) for per-project configuration opt
 
 ## Resources
 
-Replace `{DOMAIN}` with your country's domain (e.g. `www.mercadopago.com.ar` for Argentina, `www.mercadopago.com.br` for Brazil) and `{LANG}` with `es`, `pt` (Brazil), or `en`. See the full country list in `mp-integrate`.
+The plugin resolves country-specific links during the wizard. General entry points:
 
-- [Mercado Pago Developer Docs](https://{DOMAIN}/developers/{LANG}/docs)
-- [API Reference](https://{DOMAIN}/developers/{LANG}/reference)
-- [SDKs](https://{DOMAIN}/developers/{LANG}/docs/sdks-library/landing)
-- [Credentials Dashboard](https://{DOMAIN}/developers/panel/app)
+- [Mercado Pago Developer Docs](https://www.mercadopago.com.ar/developers/en/docs)
+- [API Reference](https://www.mercadopago.com.ar/developers/en/reference)
+- [SDKs](https://www.mercadopago.com.ar/developers/en/docs/sdks-library/landing)
+- [Developer Dashboard](https://www.mercadopago.com.ar/developers/panel/app)
+- [Repository security policy](../../SECURITY.md)
+- [Privacy and data flow](../../PRIVACY.md)

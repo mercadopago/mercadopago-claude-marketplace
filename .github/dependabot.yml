@@ -7,3 +7,11 @@ updates:
       day: monday
     commit-message:
       prefix: "ci"
+  - package-ecosystem: npm
+    directory: /tests/smoke
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"

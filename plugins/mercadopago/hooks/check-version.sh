@@ -9,7 +9,8 @@
 set -uo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-}"
-[[ -z "$PLUGIN_ROOT" ]] && exit 0
+PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-}"
+[[ -z "$PLUGIN_ROOT" || -z "$PLUGIN_DATA" ]] && exit 0
 
 VERSION_FILE="$PLUGIN_ROOT/.claude-plugin/plugin.json"
 [[ -f "$VERSION_FILE" ]] || exit 0
@@ -17,8 +18,8 @@ VERSION_FILE="$PLUGIN_ROOT/.claude-plugin/plugin.json"
 current=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['version'])" "$VERSION_FILE" 2>/dev/null) || exit 0
 [[ -z "$current" ]] && exit 0
 
-SEEN_DIR="${HOME}/.claude"
-SEEN_FILE="$SEEN_DIR/mp-plugin-seen-version"
+SEEN_DIR="$PLUGIN_DATA"
+SEEN_FILE="$SEEN_DIR/seen-version"
 
 mkdir -p "$SEEN_DIR" 2>/dev/null || exit 0
 seen=$(cat "$SEEN_FILE" 2>/dev/null || echo "")
