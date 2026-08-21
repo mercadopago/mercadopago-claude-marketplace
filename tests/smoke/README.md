@@ -26,6 +26,9 @@ Rubistore working tree is dirty.
   and without plan/pending. They preserve the existing dedicated signup page,
   replace its demo CTA, enforce trusted recurrence configuration, and distinguish
   secure card tokenization from the pending `init_point` redirect.
+- A CubeZone fixture validates Wallet Connect as a dedicated account-linking
+  flow followed by an Orders API payment, with server-only encrypted payer-token
+  storage and no Wallet Brick, public key, or card form.
 - Every scenario runs once per configured IT user.
 - The initial runner scaffolds and statically validates generated code. Browser
   payment execution is intentionally a separate opt-in stage.
@@ -261,3 +264,65 @@ node runtime-marketplace-api.mjs \
   /absolute/path/to/seller-a.env \
   artifacts/marketplace-api
 ```
+
+### SmartApps precondition gate
+
+SmartApps is not self-service. The automated gate smoke uses a disposable
+minimal Android project and verifies that Claude makes zero project mutations
+when the developer has not confirmed an active Mercado Pago SmartApps
+agreement:
+
+```bash
+cd tests/smoke
+npm run smoke:smartapps:gate
+```
+
+After the agreement is confirmed, a full SmartApps scaffold additionally
+requires authenticated Mercado Pago MCP access and the latest private AAR from
+the integration kit. Compilation and payment/hardware tests require a Mercado
+Pago development terminal; the static validator does not claim those layers.
+
+### Wallet Connect precondition gate
+
+Wallet Connect is commercially enabled and is not self-service. This smoke
+verifies that Claude makes zero project mutations, does not connect to MCP, and
+does not create an agreement or order when enablement is absent:
+
+```bash
+cd tests/smoke
+npm run smoke:wallet-connect:gate
+```
+
+The `cubezone-wallet-connect` scenario covers the enabled scaffold statically.
+A live test remains opt-in because it requires a real enabled platform ID, buyer
+approval in Mercado Pago's wallet UI, and an order that can charge the buyer.
+
+### Payouts (legacy Money Out)
+
+The `cubezone-payouts-ar` scenario verifies that Claude creates a privileged,
+server-only Argentina Payouts service. It checks operator authorization,
+trusted durable instructions, audit persistence, idempotency reuse, explicit
+test isolation, the production Ed25519 branch, asynchronous lookup, and the
+absence of Checkout UI or browser-controlled transfer data.
+
+Run the deterministic contract tests before the Claude smoke:
+
+```bash
+node ../../plugins/mercadopago/scripts/test-payouts-tools.mjs
+node runner.mjs --execute --scenario cubezone-payouts-ar --profile seller-a --profiles ./profiles.local.json
+```
+
+The live API smoke is pinned to Seller A in Argentina. It creates exactly one
+test-only batch using Mercado Pago's official test destination, sends
+`X-test-token: true`, caps the amount at 1 ARS by default, and immediately reads
+the created test resource. It cannot move real funds:
+
+```bash
+node runtime-payouts-api.mjs \
+  /absolute/path/to/seller-a.env \
+  artifacts/payouts-api \
+  1
+```
+
+Do not run this script with a Brazil credential: Brazil uses the distinct
+Transaction Intent contract and needs its own official test fixture.

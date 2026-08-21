@@ -7,7 +7,7 @@ metadata:
   version: "4.3.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
-  tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, orders, sdk"
+  tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, payouts, smartapps, orders, sdk"
 ---
 
 # mp-integrate
@@ -29,6 +29,9 @@ Use `${CLAUDE_PLUGIN_ROOT}` for every bundled reference and script. Claude Code 
 | `guides/point.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/point.md` | product = point |
 | `guides/subscriptions.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/subscriptions.md` | product = subscriptions |
 | `guides/marketplace.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/marketplace.md` | product = marketplace |
+| `guides/wallet-connect.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/wallet-connect.md` | product = wallet-connect |
+| `guides/payouts.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/payouts.md` | product = money-out (current name: Payouts) |
+| `guides/smartapps.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/smartapps.md` | product = smartapps |
 | `guides/webhooks.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/webhooks.md` | any product + webhooks |
 | `products.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/products.md` | test cards per country, API reference |
 
@@ -72,7 +75,7 @@ If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `hea
 | `marketplace` | `preferences` or `payments` | Resolve `marketplace-checkout=` first. Checkout Pro and Wallet Brick use Preferences; Checkout API uses Payments API. Marketplace is not a standalone Orders API mode. |
 | `wallet-connect` | `orders` | Always `orders`. Never ask. |
 | `subscriptions` | n/a (uses its own `preapproval` API) | Skip the mode question. |
-| `money-out` | n/a (uses its own `disbursements` API) | Skip the mode question. |
+| `money-out` | n/a (current product name: Payouts; country-specific API contract) | Skip the mode question. |
 | `smartapps` | n/a | Skip the mode question. |
 
 **If `product=checkout-pro` and you are about to render a Mode picker that includes `Orders API`, abort.** The Orders API is not available for Checkout Pro today. Period. Do not "future-proof" by offering it. Do not add a "Recommended" tag to it. Do not include it in any "Other" fallback.
@@ -225,7 +228,105 @@ must not silently fall back to the platform token. Before reporting success:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-marketplace-integration.mjs" . "{marketplace-checkout}"
 ```
 
----
+### LOCK 12 — Wallet Connect requires commercial access and server-only linkage
+
+When `product=wallet-connect`, read
+`references/guides/wallet-connect.md` before any scaffold decision.
+
+1. Confirm that Mercado Pago enabled Wallet Connect commercially for the
+   developer's application. If the developer explicitly says it is not enabled,
+   stop with `BLOCKED: active Wallet Connect agreement required` and do not
+   write files. If enablement is unknown, ask once before writing.
+2. Always use the fixed `orders` mode. Do not ask about mode and do not replace
+   this product with the Wallet Brick or Advanced Payments API.
+3. Create a dedicated account-linking/payment page and scan the entire project
+   for the real final checkout CTA. Preserve and wire it when found; otherwise
+   report the exact new route and invocation that the developer must link.
+4. Account linking, approval-code exchange, payer-token creation, encryption,
+   persistence, and Orders API payment creation all happen on the server. The
+   browser receives only safe linkage state, the approval redirect URI, and
+   final order status/ID.
+5. Derive buyer identity and purchase amount from authenticated server-side
+   state. Never accept external user identity, payer token, amount, or stored
+   credential semantics as authoritative browser input.
+6. Do not load MercadoPago.js, ask for a public key, mount a Wallet Brick, or
+   render card fields. Buyer approval happens in the Mercado Pago wallet UI.
+
+Before reporting success, run:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-wallet-connect-integration.mjs" .
+```
+
+### LOCK 13 — SmartApps requires commercial access, Android, and its private SDK
+
+When `product=smartapps`, read `references/guides/smartapps.md` before any
+scaffold decision.
+
+1. Confirm that the developer has an active SmartApps agreement with the
+   Mercado Pago team. If not explicitly confirmed, stop with
+   `BLOCKED: active SmartApps agreement required` and do not write files.
+2. Query `mcp__plugin_mercadopago_mcp__search_documentation` for the current
+   SmartApps guide even when tier-1 public documentation is available. If MCP
+   authentication is missing, run the normal inline authentication flow and
+   stop until it succeeds.
+3. Require an Android target. Never convert or embed SmartApps into a web,
+   backend, desktop, or iOS application. If the repository has no Android app,
+   explain that a separate Android application/module is required and ask
+   before expanding scope.
+4. Resolve `main` versus `mini` and `own` versus `third-party` before writing.
+   Main apps own the HOME launcher; mini apps do not. Third-party integrations
+   require the SDK OAuth mode.
+5. The SDK is the private AAR delivered in the Mercado Pago integration kit.
+   Never substitute a public Mercado Pago SDK or invent a Maven coordinate.
+   Ask before copying/updating it, verify the latest artifact with the
+   integration team, and use only that latest version.
+6. Payment methods, payments, printer, scanner/camera, and Bluetooth are used
+   through the SmartApps SDK. Do not call payment APIs directly from the
+   terminal or request prohibited direct Android permissions.
+
+Before reporting a successful static scaffold, run:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-smartapps-integration.mjs" . "{main|mini}" "{own|third-party}"
+```
+
+Passing this check is not device certification. Compilation requires the real
+latest AAR; payment and hardware validation require the Mercado Pago development
+terminal and the sandbox-flavor kit.
+
+### LOCK 14 — Money Out is Payouts and its contract is country-specific
+
+When `product=money-out`, read `references/guides/payouts.md` before any scaffold
+decision and present the current product name as **Payouts**.
+
+1. Never scaffold a `disbursements` API, Advanced Payments, Marketplace split,
+   checkout flow, buyer CTA, or card form. The old Money Out URL now redirects
+   to Payouts.
+2. Resolve the contract from the country before writing. Argentina uses the
+   current batch Payouts contract; Brazil uses the current single Transaction
+   Intent contract. For another country, query the current country guide and
+   stop with `BLOCKED: verified Payouts country contract required` if it does
+   not return a verified contract.
+3. Payout creation is server-only and privileged. Require authentication plus
+   explicit operator authorization, load amount and destination from a durable
+   trusted instruction repository, and write a durable audit trail. The caller
+   may provide only an opaque instruction ID.
+4. Test mode must be explicit and must send the official Payouts test header.
+   Production must use Ed25519 signing of the exact serialized body. Never
+   hardcode test mode, a private key, a destination account, or an Access Token.
+5. A successful HTTP response is asynchronous acceptance, not final
+   accreditation. Persist IDs/statuses and reconcile by lookup plus Webhooks.
+6. Do not install an SDK solely for Payouts when the verified country contract
+   uses REST and the detected official SDK does not expose that resource. If an
+   official SDK is used, LOCK 1 still requires authorization and the latest
+   stable version.
+
+Before reporting success, run:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-payouts-integration.mjs" . "{AR|BR}"
+```
 
 ---
 
@@ -248,6 +349,9 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-marketplace-integration.mjs" . "{ma
 | `qr-mode=` | `static` / `dynamic` / `hybrid` (only when `product=qr`) |
 | `subscription-model=` | `with-plan` / `without-plan-authorized` / `without-plan-pending` (only when `product=subscriptions`) |
 | `marketplace-checkout=` | `checkout-pro` / `checkout-api` / `bricks-wallet` (only when `product=marketplace`) |
+| `smartapps-agreement=` | `confirmed` (only when `product=smartapps`; absence is never inferred as confirmation) |
+| `smartapp-kind=` | `main` / `mini` (only when `product=smartapps`) |
+| `smartapp-ownership=` | `own` / `third-party` (only when `product=smartapps`) |
 
 After parsing or inferring `product`, apply LOCK 5 normalization immediately. Use only the normalized internal value for the Product Matrix, guide selection, CTA resolution, and scaffold branches. The presentation-only slug `checkout-api-orders` may appear in the final recommendation metadata, but it must never be used as an internal branch value.
 
@@ -360,6 +464,9 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 | 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `hybrid`. |
 | 5.5 | `subscription-model` | "Subscription" | Only when `product=subscriptions`. Options: `with-plan` / `without-plan-authorized` / `without-plan-pending`. |
 | 5.6 | `marketplace-checkout` | "Marketplace" | Only when `product=marketplace`. Options: `checkout-pro` / `checkout-api` / `bricks-wallet`. |
+| 5.7 | `smartapps-agreement` | "Agreement" | Only when `product=smartapps`. Ask whether the active commercial/integration agreement with Mercado Pago is confirmed. Options: `confirmed` / `not confirmed`. If not confirmed, stop before any write. |
+| 5.8 | `smartapp-kind` | "SmartApp type" | Only when `product=smartapps` and the agreement is confirmed. Options: `main` / `mini`. |
+| 5.9 | `smartapp-ownership` | "Terminal use" | Only when `product=smartapps` and the agreement is confirmed. Options: `own` / `third-party`. |
 | 6 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
 | 7 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
 | 8 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
@@ -454,8 +561,8 @@ Fields to persist (write after each is resolved, do not wait until the end):
 | `subscriptions` | yes | conditional (authorized contracts use MercadoPago.js) | n/a (own `preapproval` API) | implicit | n/a | optional | `subscription-model=` |
 | `marketplace` | yes | conditional | `preferences` for Checkout Pro/Wallet; `payments` for Checkout API | n/a | n/a | implicit | `marketplace-checkout=` |
 | `wallet-connect` | yes | n/a | `orders` | n/a | n/a | n/a | n/a |
-| `money-out` | yes | n/a | n/a (own `disbursements` API) | n/a | n/a | n/a | n/a |
-| `smartapps` | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| `money-out` | conditional (verified REST is valid) | n/a | n/a (Payouts; country-specific contract) | n/a | n/a | n/a | country resolves contract |
+| `smartapps` | n/a (private kit AAR) | Android | n/a | n/a | n/a | n/a | `smartapp-kind=`, `smartapp-ownership=` |
 
 When a product's `mode` cell is fixed (single value or `n/a`), **never ask** the developer about mode — just use the value or skip the question.
 
@@ -485,7 +592,7 @@ Resolve documentation in **tiers**. The official `llms.txt` per country is alway
 |------|--------|------|------|
 | 1 | `https://www.{country_domain}/developers/llms.txt` (WebFetch — official, always current) | none | **Always first** — fetch using resolved country domain. If fails (403, timeout), fall to tier 2. |
 | 2 | `{plugin_base}/skills/mp-integrate/references/products.md` (bundled) | none | **Always** — product guides, API reference, code snippets, country-specific test cards. |
-| 3 | `mcp__plugin_mercadopago_mcp__search_documentation` | MCP OAuth | **Fallback only** — when tiers 1–2 don't cover the product/country combination. |
+| 3 | `mcp__plugin_mercadopago_mcp__search_documentation` | MCP OAuth | **Fallback only**, except SmartApps where it is mandatory — use when tiers 1–2 don't cover the combination, and always for `product=smartapps`. |
 
 **Country domain for tier 1:**
 
@@ -521,7 +628,9 @@ Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mcp__search_docum
 | Test cards / users | Skip — defer to `mp-test-setup` skill |
 | Marketplace splits | `"marketplace split {sdk} application_fee"` |
 | Subscriptions plan/preapproval | `"subscriptions preapproval {sdk}"` |
-| Money out / disbursement | `"disbursement {sdk}"` |
+| Payouts (legacy alias: Money Out) | `"payouts money transfer {country} {sdk}"` |
+| Wallet Connect | `"wallet connect agreements payer token orders {sdk} {country}"` |
+| SmartApps | `"smartapps {main|mini} android payment flow restrictions {country}"` |
 
 Do **not** issue more than 3 queries. If a query returns generic results, refine once and stop.
 
@@ -541,6 +650,30 @@ Then stop. Specifically:
 ---
 
 ## Step 4 — Assemble the bundle
+
+### SmartApps bundle override
+
+When `product=smartapps`, do not render the generic server/web checkout bundle
+below and do not create `.env` credentials. Render a SmartApps-specific bundle
+from `references/guides/smartapps.md` plus the authenticated MCP result with
+these sections: commercial agreement, Android project eligibility, app kind
+(`main|mini`), ownership (`own|third-party`), latest private SDK artifact,
+Manifest/initialization contract, SDK-only payment flow, static validation,
+development-terminal tests, and homologation. Label anything that still
+depends on the private kit or terminal as blocked; never replace it with a
+guessed public SDK or API call. Then continue to Step 4.5.
+
+### Payouts bundle override
+
+When `product=money-out`, label the bundle **Payouts** and render a server-only
+bundle from `references/guides/payouts.md` plus the current country source. Do
+not render the generic client/payment-form section, do not request a public key,
+and do not create a checkout CTA. Include these sections: country contract,
+privileged service boundary, durable trusted instruction repository, operator
+authorization, audit trail, idempotency, explicit test mode, production
+Ed25519 signing, resource lookup, notifications, safe automated test, and
+production release controls. Use raw REST when the verified official SDK does
+not expose Payouts and do not install a payment SDK merely to wrap `fetch`.
 
 Render the result with this exact structure. Code blocks come from the resolved documentation tier (verbatim where possible). Do not invent payloads or endpoints.
 
@@ -708,6 +841,33 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
 
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-marketplace-integration.mjs" . "{marketplace-checkout}"
+   ```
+
+   **When `product=wallet-connect`:** apply LOCK 12 after the dedicated page,
+   checkout CTA wiring, account-linking routes, encrypted payer-token storage,
+   and Orders API routes have been written:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-wallet-connect-integration.mjs" .
+   ```
+
+   **When `product=smartapps`:** apply LOCK 13 after the Android Manifest,
+   application initialization, and SDK payment flow have been written. Run the
+   validator with the resolved app kind and ownership. Do not report the AAR as
+   current or the build as passing unless the real latest kit artifact was
+   supplied and compiled successfully:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-smartapps-integration.mjs" . "{main|mini}" "{own|third-party}"
+   ```
+
+   **When `product=money-out`:** apply LOCK 14 after the privileged service,
+   durable instruction repository, authorization/audit controls, resolved
+   country contract, explicit test mode, production signing, and lookup routes
+   have been written:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-payouts-integration.mjs" . "{AR|BR}"
    ```
 
 2.5. **`checkout-pro` and `checkout-api` — Mandatory checkout CTA discovery** (skip for all other products):
@@ -972,16 +1132,26 @@ Render only the section that matches the chosen product. These are the experient
 - Checkout Pro/Wallet use `marketplace_fee` on `/checkout/preferences`; Checkout API uses `application_fee` on `/v1/payments`. The seller OAuth token in the Authorization header determines the receiving seller; do not invent `collector_id` in the payment payload.
 
 ### wallet-connect
+- **Requires commercial enablement by Mercado Pago.** If it is not explicitly active, stop before changing project files.
 - The user must approve the linkage in MP wallet UI — there is no silent linking.
-- Once linked, payments use the buyer's saved methods — you do not pass card details.
+- Create a dedicated account-linking page and wire the application's real final checkout CTA to it when one exists.
+- The approval code and payer token are server-only. Encrypt the payer token in persistent storage and never expose it to the browser or logs.
+- Once linked, payments use the buyer's saved methods through Orders API — do not pass card details, load MercadoPago.js, or substitute the Wallet Brick.
+- Use a unique idempotency key, trusted purchase data, and matching two-decimal order/payment amounts.
 
 ### money-out
-- Disbursements are settled in the seller's currency — cross-currency requires explicit `currency_id` and pre-approved configuration.
-- Bank account validation is asynchronous; the disbursement may sit in `pending` until validation completes.
+- The current product name is **Payouts**. Never scaffold the obsolete generic `disbursements` contract or substitute Advanced Payments.
+- The API contract is country-specific: resolve it before generating code and never reuse Argentina payloads for Brazil or vice versa.
+- Payouts is a privileged server-side money-movement operation. Require operator authorization, trusted durable instructions, persisted idempotency, and an audit trail; never trust destination or amount from a browser.
+- Test calls require explicit Payouts test mode and the official test header. Production requires Ed25519 signing of the exact serialized body.
+- Accepted, created, and pending are not final accreditation. Reconcile the returned resource by lookup and Webhooks.
 
 ### smartapps
 - **Requires direct contact with the Mercado Pago team** — SmartApps is not self-service. Do not scaffold without confirming the developer has an active agreement with MP.
-- Smart Apps run on Point devices — code limits and APIs differ from server SDKs. Always query MCP for the SmartApp-specific guide.
+- SmartApps run on Point devices — code limits and APIs differ from server SDKs. Always query MCP for the SmartApps-specific guide.
+- Never retrofit a web application as a SmartApp. The target must be Android; create a separate Android app/module only after the developer authorizes that scope.
+- The SDK is a private AAR from the Mercado Pago integration kit. Ask before updating it, use only the latest artifact confirmed by the integration team, and never substitute a public SDK coordinate.
+- A static validator cannot replace compilation with the real AAR, sandbox mock tests on a development terminal, or Mercado Pago homologation.
 
 ---
 

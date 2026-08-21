@@ -17,6 +17,9 @@
     "smoke:subscriptions:api": "node runtime-subscriptions-api.mjs",
     "smoke:marketplace:ui": "node runtime-marketplace-ui.mjs",
     "smoke:marketplace:api": "node runtime-marketplace-api.mjs",
+    "smoke:wallet-connect:gate": "node runtime-wallet-connect-gate.mjs",
+    "smoke:smartapps:gate": "node runtime-smartapps-gate.mjs",
+    "smoke:payouts:api": "node runtime-payouts-api.mjs",
     "inspect:qr": "node inspect-qr-resources.mjs",
     "test:browser": "playwright test"
   },

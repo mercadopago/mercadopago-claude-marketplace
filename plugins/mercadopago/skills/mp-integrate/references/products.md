@@ -326,23 +326,82 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 
 **What it is:** One-click payments using the buyer's saved credentials in their Mercado Pago wallet, without re-entering card details.
 
+**Availability:** Commercially enabled product, not self-service. Confirm that
+Mercado Pago enabled the application before scaffolding or calling its APIs.
+
 **When to use:**
 - Mobile commerce apps where buyers already have MP accounts
 - Reducing checkout friction for returning buyers
 - Subscription-like flows where you want to reuse buyer's saved payment method
 
 **Flow:**
-1. Buyer creates an agreement (authorization) linking their wallet to your app
-2. You receive a payer token representing the buyer's saved method
-3. Use the payer token to create payments without card data
+1. Server creates an agreement and redirects the buyer to the returned approval URI
+2. Buyer explicitly approves linking in the Mercado Pago wallet UI
+3. Server exchanges the one-time approval code for a payer token and stores it encrypted
+4. Server uses that payer token to create an idempotent `online` order through Orders API
 
 **Best practices:**
 - Buyer must explicitly approve the linkage via MP wallet UI — no silent linking possible
-- Once linked, payments use buyer's saved methods — you don't pass card details
-- Implement idempotency to prevent duplicate transactions
-- Handle webhook notifications for agreement status changes
+- The payer token and approval code are server-only; never return, log, or store them in the browser
+- Derive buyer identity, purchase amount, and reconciliation reference from authenticated server state
+- Once linked, payments use buyer's saved methods — do not pass card details or load MercadoPago.js
+- Orders use `type: "online"`, wallet payment method, matching two-decimal amounts, and a unique idempotency key
+- Handle webhook notifications for agreement status changes and order reconciliation
+- Do not substitute Wallet Brick or Advanced Payments for the Orders API contract
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/wallet-connect/landing
+
+---
+
+### Payouts (legacy alias: Money Out)
+
+**What it is:** A privileged, server-only transfer from the integrator's
+Mercado Pago balance to trusted destination accounts. It is not a buyer
+checkout, Marketplace split, Advanced Payment, or public withdrawal form.
+
+**Country boundary:** The current contract is country-specific. Argentina uses
+batch Payouts; Brazil uses a single Transaction Intent. Resolve the site before
+scaffolding and never copy one country's payload into another. For any other
+country, require a verified current country guide before generating code.
+
+**Critical boundaries:**
+- Require operator authorization and load destination, amount, currency, and
+  reconciliation data from durable trusted server state
+- Persist one idempotency key per logical instruction and reconcile accepted
+  resources asynchronously through lookup plus Webhooks
+- Make test mode explicit and isolated from production
+- Sign the exact serialized production body with the registered Ed25519 key
+- Do not add a CTA, public payment page, card fields, MercadoPago.js, or a
+  public key
+
+**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/payouts/overview
+
+---
+
+### SmartApps
+
+**What it is:** A private business-management application distributed to
+Mercado Pago Point Smart terminals through a closed approval process. Main apps
+become the terminal's primary interface; mini apps are launched from the
+terminal marketplace.
+
+**Non-negotiable prerequisites:**
+- Active contact/agreement with the Mercado Pago business and integration team
+- Android target application and Android Studio
+- Private development kit with the current SmartApps AAR
+- Mercado Pago development terminal with the approved test firmware for full testing
+
+**Critical boundaries:**
+- Never scaffold into a web/backend/iOS project as if it were a SmartApp
+- Always query the authenticated MCP for the current product guide
+- Ask before copying/updating the private AAR and use only the latest artifact
+  confirmed by the integration team
+- Payment and terminal capabilities are invoked through the SmartApps SDK, not
+  through direct Android hardware permissions or browser/server SDKs
+- Static validation does not replace compilation with the real AAR, tests on a
+  development terminal, or Mercado Pago homologation
+
+**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/smartapps/overview
 
 ---
 

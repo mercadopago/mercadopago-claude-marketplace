@@ -14,6 +14,9 @@ node plugins/mercadopago/scripts/test-point-tools.mjs
 node plugins/mercadopago/scripts/test-qr-tools.mjs
 node plugins/mercadopago/scripts/test-subscriptions-tools.mjs
 node plugins/mercadopago/scripts/test-marketplace-tools.mjs
+node plugins/mercadopago/scripts/test-wallet-connect-tools.mjs
+node plugins/mercadopago/scripts/test-smartapps-tools.mjs
+node plugins/mercadopago/scripts/test-payouts-tools.mjs
 
 claude plugins validate .
 

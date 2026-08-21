@@ -260,6 +260,16 @@ for (const scenario of scenarios) {
       run(process.execPath, [marketplaceValidator, appRoot, scenario.marketplaceContract], { cwd: appRoot });
     }
 
+    if (scenario.product === 'wallet-connect') {
+      const walletConnectValidator = path.join(pluginRoot, 'scripts/validate-wallet-connect-integration.mjs');
+      run(process.execPath, [walletConnectValidator, appRoot], { cwd: appRoot });
+    }
+
+    if (scenario.product === 'money-out') {
+      const payoutsValidator = path.join(pluginRoot, 'scripts/validate-payouts-integration.mjs');
+      run(process.execPath, [payoutsValidator, appRoot, scenario.country], { cwd: appRoot });
+    }
+
     if (fs.existsSync(path.join(appRoot, '.mp-integrate-progress.md'))) {
       throw new Error(`Claude left .mp-integrate-progress.md after successful scaffold: ${appRoot}`);
     }
