@@ -1,5 +1,5 @@
 # Mercado Pago — Product Reference
-# Version: 4.2.0 | Updated: 2026-06-10
+# Version: 4.3.1 | Updated: 2026-08-21
 # Source: Official Mercado Pago developer documentation
 #
 # This file is tier-2 in the documentation hierarchy:
@@ -65,7 +65,7 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 - Always verify payment status server-side after redirect — never trust `back_url` query params alone
 - `auto_return: "approved"` requires `back_urls.success` set; otherwise silently ignored
 - `currency_id` must match the country (ARS, BRL, MXN, CLP, COP, PEN, UYU)
-- The Orders API does NOT exist for Checkout Pro — always use `/v1/checkout/preferences`
+- The Orders API does NOT exist for Checkout Pro — always use `/checkout/preferences`
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/checkout-pro/landing
 
@@ -134,70 +134,25 @@ Vanilla JS CDN: `<script src="https://sdk.mercadopago.com/js/v2"></script>`
 - You want card tokenization handled by Mercado Pago (no PCI scope)
 - You need to support multiple payment methods (cards + cash + wallet)
 
-**Components:**
+**Variant contracts:**
 
-#### CardPayment Brick
-Card-only form. Collects number, expiry, CVV, name, ID, email. Tokenizes and calls `onSubmit`.
+| Variant | SDK component | Backend behavior |
+|---|---|---|
+| Card Payment | `CardPayment` / `cardPayment` | Tokenizes card; `onSubmit` creates a Payments API payment |
+| Payment | `Payment` / `payment` | Multi-method form; `onSubmit` creates the selected method through Payments API |
+| Wallet | `Wallet` / `wallet` | Mount with a preference created dynamically at `/checkout/preferences` |
+| Status Screen | `StatusScreen` / `statusScreen` | Mount with an existing Payments API `payment.id`; does not create a payment |
 
-```jsx
-import { CardPayment } from '@mercadopago/sdk-react';
-
-<CardPayment
-  initialization={{ amount: 100.00 }}
-  onSubmit={async (formData) => {
-    // formData.token = card token, formData.installments, formData.issuer_id
-    const response = await fetch('/api/process-payment', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-    });
-    return response.json(); // must return a Promise
-  }}
-  onError={(error) => console.error(error)}
-/>
-```
-
-**Critical:** `onSubmit` MUST return a Promise. Returning void keeps the brick in loading state forever.
-
-#### Payment Brick
-Full multi-method form (cards + MP wallet + cash). Superset of CardPayment.
-
-```jsx
-import { Payment } from '@mercadopago/sdk-react';
-
-<Payment
-  initialization={{ amount: 100.00, preferenceId: '<preference_id>' }}
-  onSubmit={async (formData) => { /* same as CardPayment */ }}
-/>
-```
-
-Note: `preferenceId` must be created server-side per buyer session. Never hardcode a placeholder.
-
-#### Wallet Brick
-MP wallet button. Buyer must be logged into Mercado Pago.
-
-```jsx
-import { Wallet } from '@mercadopago/sdk-react';
-<Wallet initialization={{ preferenceId: '<preference_id>' }} />
-```
-
-#### StatusScreen Brick
-Post-payment result display. Shows success, pending, or error state.
-
-```jsx
-import { StatusScreen } from '@mercadopago/sdk-react';
-<StatusScreen initialization={{ paymentId: '<payment_id_from_order>' }} />
-```
-
-**Critical:** Pass `payment_id` from `order.transactions.payments[0].id`, NOT the `order_id`.
-
-**Best practices for all Bricks:**
-- The container `<div id="...">` must exist in the DOM before `bricksBuilder.create()`
-- Call `brickController.unmount()` in React `useEffect` cleanup before re-mounting
-- `back_urls` must be on the same origin as the page mounting the brick
-- Ad-blockers (uBlock, Brave) block `sdk.mercadopago.com` → brick shows `FIELDS_SETUP_FAILED`
-- Debit cards do NOT show installment selector — this is correct, not a bug
-- Always show the total amount above the brick — the brick does not display it prominently
-- Always scaffold loading/success/error states; never leave them as TODOs
+**Critical behavior:**
+- `onSubmit` for Payment/Card Payment must return a Promise and settle only after the server response. Returning void leaves the Brick loading.
+- Wallet preference IDs are generated server-side per checkout session. Never hardcode a placeholder; the preferences path has no version segment.
+- Status Screen receives `paymentId`, not an Orders API order ID.
+- The vanilla mount container must exist before `bricksBuilder.create()`; retain and unmount the returned controller before rebuilding it.
+- React SDK components manage their own controller lifecycle.
+- Ad-blockers can block `sdk.mercadopago.com` and produce `FIELDS_SETUP_FAILED`.
+- Debit cards do not show an installments selector; that is expected behavior.
+- Show the trusted total above Payment/Card Payment and scaffold initializing, processing, success, and actionable error states.
+- Load `MP_PUBLIC_KEY` through the framework's public configuration mechanism or a no-store runtime JSON endpoint; never substitute a placeholder into cached HTML.
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/checkout-bricks/landing
 
@@ -219,17 +174,17 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 | Dynamic | One QR per transaction — most secure and auditable | Short TTL per transaction |
 | Hybrid | Static QR + amount displayed on screen | Per transaction |
 
-**Setup flow (dynamic QR):**
-1. Create a Store via `POST /stores`
-2. Create a POS linked to that store via `POST /pos`
-3. Create a QR order (amount + items) via `PUT /instore/orders/qr/seller/collectors/{user_id}/pos/{external_pos_id}/qrs`
+**Setup flow (all QR modes):**
+1. Create a Store via the Stores API
+2. Create a POS linked to that store via the POS API and retain its `external_id` and static QR response
+3. Create a QR order via `POST /v1/orders` with `type: "qr"`, `config.qr.external_pos_id`, and `config.qr.mode`
 4. Display the QR to the buyer
 5. Receive webhook notification when buyer pays
 
 **Best practices:**
-- Static QR requires Store + POS to be created first — they are not auto-created
-- Dynamic QR has a short TTL — generate one per buyer interaction, not one shared QR
-- Wire webhooks to `orders` topic (Orders API) or `merchant_order` (legacy)
+- Store + POS are prerequisites and are never silently auto-created with an invented address
+- Dynamic and hybrid use `type_response.qr_data`; static uses the QR returned by POS creation
+- Wire new integrations only to the `orders` topic
 - Use `external_pos_id` for reconciliation across multiple registers
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/qr-code/landing
@@ -238,7 +193,7 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 
 ### MP Point
 
-**What it is:** Physical card reader terminals (Point Smart 1, Point Smart 2) controlled via API. Accepts chip, NFC, magnetic stripe, and QR.
+**What it is:** Physical card reader terminals (Point Smart 1, Point Smart 2) controlled through the Orders API. Accepts chip, NFC, magnetic stripe, and QR.
 
 **When to use:**
 - Physical retail with unified POS management
@@ -246,16 +201,24 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 - When you want to create payment intents from your system and push them to a device
 
 **Flow:**
-1. Pair device to a User ID (NOT just the application)
-2. Create a payment intent via API → terminal loads the payment request automatically
-3. Buyer selects method and pays on the device
-4. Receive webhook notification with result
+1. Pair the physical terminal to a User ID (NOT just the application) and enable PDV mode
+2. Create a `type: "point"` order via `POST /v1/orders` with `config.point.terminal_id`
+3. The terminal loads the order and the buyer pays on the device
+4. Receive an `orders` webhook and reconcile the returned order/payment IDs
+
+**Testing without hardware:**
+- Use the standard virtual terminal `NEWLAND_N950__SBX0000001` with app test credentials
+- Create a fresh order per scenario and simulate the result through `POST /v1/orders/{order_id}/events`
+- Exercise `processed`, `failed`, `refunded`, `canceled`, `expired`, and `action_required`
+- The virtual terminal is not valid for official integration-quality measurement or final hardware validation
 
 **Critical gotchas:**
-- Device must be paired to the correct User ID — wrong user pairing silently rejects payment intents
+- New integrations must use Orders API; `/point/integration-api/.../payment-intents` is deprecated
+- Use `type: "point"` and `config.point.terminal_id`; `type: "instore"` and `config.device.id` are invalid for this flow
+- A production device must be paired to the correct User ID — wrong user pairing silently rejects orders
 - After a firmware update the device may take ~2 min to come back online; don't retry aggressively
 - Webhook topic for Orders API is `orders`. The legacy `point_integration_wh` topic belongs to the old API — do not use for new integrations
-- Requires physical terminal purchase + Mercado Pago mobile app for initial setup
+- A physical terminal is still required for final card, PIN, printing, connectivity, and production checks
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/mp-point/landing
 
@@ -270,27 +233,49 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 - Donation platforms (variable amounts)
 - Subscription boxes or recurring services
 
-**Two models:**
-| Model | How | Best for |
+**Three integration contracts:**
+| Contract | How | Buyer experience |
 |-------|-----|---------|
-| With plan | Create a `preapproval_plan` first, then subscriptions reference it | Multiple subscribers to the same tier |
-| Without plan | Create a `preapproval` directly per subscriber | One-off or custom subscriptions |
+| With plan | Provision a reusable `preapproval_plan`; create each `preapproval` with its server-controlled ID, a secure card token, and `authorized` status | Card is tokenized on the merchant page |
+| Without plan, authorized | Create `preapproval` with trusted recurrence terms, a secure card token, and `authorized` status | Card is tokenized on the merchant page |
+| Without plan, pending | Create `preapproval` with trusted recurrence terms and `pending` status, without a token | Redirect buyer to returned `init_point` to select a payment method |
 
-**Key payload (preapproval with plan):**
-```json
+**Minimal payloads:**
+```jsonc
+// With plan
 {
-  "preapproval_plan_id": "<plan_id>",
+  "preapproval_plan_id": "<server-controlled-plan-id>",
   "payer_email": "subscriber@example.com",
-  "card_token_id": "<token>",
-  "back_url": "https://yoursite.com/subscription/confirm"
+  "card_token_id": "<single-use-secure-token>",
+  "external_reference": "subscription-uuid",
+  "back_url": "https://yoursite.com/subscription/confirm",
+  "status": "authorized"
+}
+
+// Without plan, pending
+{
+  "reason": "Monthly membership",
+  "external_reference": "subscription-uuid",
+  "payer_email": "subscriber@example.com",
+  "auto_recurring": {
+    "frequency": 1,
+    "frequency_type": "months",
+    "transaction_amount": 100,
+    "currency_id": "BRL"
+  },
+  "back_url": "https://yoursite.com/subscription/confirm",
+  "status": "pending"
 }
 ```
 
 **Best practices:**
 - A `preapproval` without `preapproval_plan_id` cannot be migrated to a plan later — choose model upfront
+- Never ask a buyer to paste a token and never collect raw card fields. Authorized contracts tokenize with MercadoPago.js CardForm or Card Payment Brick; pending omits the token and redirects through `init_point`.
+- Plan ID, amount, currency, frequency, billing rules, and trial settings are trusted server-side configuration, not browser input.
+- Associated-plan subscriptions do not repeat browser-supplied recurrence terms; the plan owns them.
 - Recurring charges retry automatically on failure; `paused` status is reachable both manually and after N failed attempts
 - `back_url` for plan signup must be HTTPS in production
-- Monitor `subscription_preapproval` and `subscription_authorized_payment` webhook topics
+- Monitor `subscription_preapproval_plan`, `subscription_preapproval`, `subscription_authorized_payment`, and `payments` webhook topics as applicable
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/subscriptions/landing
 
@@ -298,7 +283,7 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 
 ### Marketplace
 
-**What it is:** Split payment platform where a marketplace collects payments and distributes funds to sellers, keeping an `application_fee`.
+**What it is:** Split Payments 1:1 where each connected seller authorizes the marketplace through OAuth and the selected checkout applies the platform commission.
 
 **When to use:**
 - Platforms with multiple sellers (e marketplace, on-demand services, gig economy)
@@ -306,27 +291,34 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 
 **How it works:**
 1. Seller authorizes your platform via OAuth flow → you receive seller's access token
-2. Payment is created using seller's token + `application_fee` for your platform
+2. Resolve the trusted seller/cart and create the selected checkout using the seller OAuth token
 3. Funds split automatically at settlement
 
-**Key payload:**
+**Supported contracts:**
+- Checkout Pro: exactly `/checkout/preferences` + `marketplace_fee`
+- Checkout API/Transparente: `/v1/payments` + `application_fee`
+- Wallet Brick: exactly `/checkout/preferences` + `marketplace_fee`, dynamic `preferenceId`, and `marketplace: true`
+
+**Checkout API key payload:**
 ```json
 {
   "transaction_amount": 100.0,
   "application_fee": 5.0,
-  "collector_id": "<seller_collector_id>",
-  "token": "<card_token>",
-  "installments": 1
+  "token": "<single_use_card_token>",
+  "installments": 1,
+  "external_reference": "<trusted_order_id>"
 }
 ```
 
 **Best practices:**
-- `application_fee` cannot exceed configured limits per country — check before charging
-- OAuth Access Tokens for sellers expire in 6 months — always store `refresh_token` and renew before expiry
-- Both `collector_id` and `application_fee` are required; missing either sends the full amount to the marketplace owner
+- Generate and consume one-time OAuth `state`; require the exact configured redirect URI
+- Encrypt seller access/refresh tokens at rest and rotate both values atomically on refresh
+- Use the seller OAuth access token in the backend Authorization header; never expose it to the browser
+- Derive seller, items, amount, and commission from trusted server-side state
+- Do not add `collector_id` to the payment payload; OAuth `user_id` is stored as the seller connection identity
 - Sellers must explicitly authorize your platform — there is no silent linking
 
-**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/marketplace/landing
+**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/split-payments/split-1-1/overview
 
 ---
 
@@ -334,23 +326,82 @@ import { StatusScreen } from '@mercadopago/sdk-react';
 
 **What it is:** One-click payments using the buyer's saved credentials in their Mercado Pago wallet, without re-entering card details.
 
+**Availability:** Commercially enabled product, not self-service. Confirm that
+Mercado Pago enabled the application before scaffolding or calling its APIs.
+
 **When to use:**
 - Mobile commerce apps where buyers already have MP accounts
 - Reducing checkout friction for returning buyers
 - Subscription-like flows where you want to reuse buyer's saved payment method
 
 **Flow:**
-1. Buyer creates an agreement (authorization) linking their wallet to your app
-2. You receive a payer token representing the buyer's saved method
-3. Use the payer token to create payments without card data
+1. Server creates an agreement and redirects the buyer to the returned approval URI
+2. Buyer explicitly approves linking in the Mercado Pago wallet UI
+3. Server exchanges the one-time approval code for a payer token and stores it encrypted
+4. Server uses that payer token to create an idempotent `online` order through Orders API
 
 **Best practices:**
 - Buyer must explicitly approve the linkage via MP wallet UI — no silent linking possible
-- Once linked, payments use buyer's saved methods — you don't pass card details
-- Implement idempotency to prevent duplicate transactions
-- Handle webhook notifications for agreement status changes
+- The payer token and approval code are server-only; never return, log, or store them in the browser
+- Derive buyer identity, purchase amount, and reconciliation reference from authenticated server state
+- Once linked, payments use buyer's saved methods — do not pass card details or load MercadoPago.js
+- Orders use `type: "online"`, wallet payment method, matching two-decimal amounts, and a unique idempotency key
+- Handle webhook notifications for agreement status changes and order reconciliation
+- Do not substitute Wallet Brick or Advanced Payments for the Orders API contract
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/wallet-connect/landing
+
+---
+
+### Payouts (legacy alias: Money Out)
+
+**What it is:** A privileged, server-only transfer from the integrator's
+Mercado Pago balance to trusted destination accounts. It is not a buyer
+checkout, Marketplace split, Advanced Payment, or public withdrawal form.
+
+**Country boundary:** The current contract is country-specific. Argentina uses
+batch Payouts; Brazil uses a single Transaction Intent. Resolve the site before
+scaffolding and never copy one country's payload into another. For any other
+country, require a verified current country guide before generating code.
+
+**Critical boundaries:**
+- Require operator authorization and load destination, amount, currency, and
+  reconciliation data from durable trusted server state
+- Persist one idempotency key per logical instruction and reconcile accepted
+  resources asynchronously through lookup plus Webhooks
+- Make test mode explicit and isolated from production
+- Sign the exact serialized production body with the registered Ed25519 key
+- Do not add a CTA, public payment page, card fields, MercadoPago.js, or a
+  public key
+
+**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/payouts/overview
+
+---
+
+### SmartApps
+
+**What it is:** A private business-management application distributed to
+Mercado Pago Point Smart terminals through a closed approval process. Main apps
+become the terminal's primary interface; mini apps are launched from the
+terminal marketplace.
+
+**Non-negotiable prerequisites:**
+- Active contact/agreement with the Mercado Pago business and integration team
+- Android target application and Android Studio
+- Private development kit with the current SmartApps AAR
+- Mercado Pago development terminal with the approved test firmware for full testing
+
+**Critical boundaries:**
+- Never scaffold into a web/backend/iOS project as if it were a SmartApp
+- Always query the authenticated MCP for the current product guide
+- Ask before copying/updating the private AAR and use only the latest artifact
+  confirmed by the integration team
+- Payment and terminal capabilities are invoked through the SmartApps SDK, not
+  through direct Android hardware permissions or browser/server SDKs
+- Static validation does not replace compilation with the real AAR, tests on a
+  development terminal, or Mercado Pago homologation
+
+**Docs:** https://www.mercadopago.com.{country}/developers/en/docs/smartapps/overview
 
 ---
 
@@ -465,10 +516,10 @@ Re-fetch when this reference ages:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/v1/preferences` | Create preference |
-| GET | `/v1/preferences/{id}` | Get preference |
-| PUT | `/v1/preferences/{id}` | Update preference |
-| GET | `/v1/preferences/search` | Search preferences |
+| POST | `/checkout/preferences` | Create preference |
+| GET | `/checkout/preferences/{id}` | Get preference |
+| PUT | `/checkout/preferences/{id}` | Update preference |
+| GET | `/checkout/preferences/search` | Search preferences |
 
 **Create preference (Node.js):**
 ```js
@@ -601,25 +652,33 @@ await customerClient.createCard({ customerId: id, body: { token: cardToken } });
 | GET | `/preapproval/{id}` | Get subscription |
 | PUT | `/preapproval/{id}` | Update subscription (pause/cancel) |
 | GET | `/preapproval/search` | Search subscriptions |
-| GET | `/authorized_payment/{id}` | Get invoice |
-| GET | `/authorized_payment/search` | Search invoices |
-| GET | `/preapproval/{id}/payments/search` | List subscription payments |
+| GET | `/authorized_payments/{id}` | Get invoice |
+| GET | `/authorized_payments/search` | Search invoices |
+| GET | `/v1/payments/search` | Search underlying payments (last 12 months) |
 
-**Create plan + subscription:**
+**Create a plan (operator/deployment action) and an authorized subscription:**
 ```js
-// Step 1: Create plan
+// Step 1: provision once; do not expose this as a buyer-facing route
 const plan = await fetch('https://api.mercadopago.com/preapproval_plan', {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    reason: 'Monthly subscription',
-    auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: 100.0, currency_id: 'BRL' }
+    reason: 'Monthly subscription', back_url: 'https://yoursite.com/subscription/confirm',
+    auto_recurring: { frequency: 1, frequency_type: 'months', transaction_amount: 100.0, currency_id: 'BRL' },
   })
-});
-// Step 2: Create subscription for a buyer
+}).then(response => response.json());
+// Step 2: cardToken comes only from secure MercadoPago.js tokenization
 const sub = await fetch('https://api.mercadopago.com/preapproval', {
   method: 'POST',
-  body: JSON.stringify({ preapproval_plan_id: plan.id, payer_email: 'buyer@example.com', card_token_id: token })
+  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    preapproval_plan_id: plan.id,
+    payer_email: 'buyer@example.com',
+    card_token_id: cardToken,
+    external_reference: crypto.randomUUID(),
+    back_url: 'https://yoursite.com/subscription/confirm',
+    status: 'authorized',
+  }),
 });
 ```
 
@@ -629,30 +688,26 @@ const sub = await fetch('https://api.mercadopago.com/preapproval', {
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/stores` | Create store |
-| GET | `/stores/{id}` | Get store |
-| PUT | `/stores/{id}` | Update store |
-| DELETE | `/stores/{id}` | Delete store |
-| GET | `/stores/search` | Search stores |
-| POST | `/pos` | Create POS |
-| GET | `/pos/{id}` | Get POS |
-| PUT | `/pos/{id}` | Update POS |
-| DELETE | `/pos/{id}` | Delete POS |
-| GET | `/pos` | List POS |
-| PUT | `/instore/orders/qr/seller/collectors/{user_id}/pos/{external_pos_id}/qrs` | Create dynamic QR order |
-| DELETE | `/instore/orders/qr/seller/collectors/{user_id}/pos/{external_pos_id}/qrs` | Delete QR order |
-| GET | `/instore/qr/v2/orders/{id}` | Get QR order |
+| POST | `/v1/orders` | Create QR order (`type: "qr"`) |
+| GET | `/v1/orders/{id}` | Retrieve and reconcile QR order |
+| POST | `/v1/orders/{id}/cancel` | Cancel a QR order while it is `created` |
+| POST | `/v1/orders/{id}/refund` | Refund a processed QR order |
 
-**Create QR order (dynamic):**
+**Create QR order:**
 ```js
-await fetch(`https://api.mercadopago.com/instore/orders/qr/seller/collectors/${userId}/pos/${externalPosId}/qrs`, {
-  method: 'PUT',
-  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+await fetch('https://api.mercadopago.com/v1/orders', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'X-Idempotency-Key': randomUUID(),
+  },
   body: JSON.stringify({
+    type: 'qr',
+    total_amount: '100.00',
     external_reference: 'order-uuid',
-    total_amount: 100.0,
-    items: [{ title: 'Product', unit_price: 100.0, quantity: 1, unit_measure: 'unit', total_amount: 100.0 }],
-    notification_url: 'https://yoursite.com/webhooks/mp'
+    config: { qr: { external_pos_id: externalPosId, mode: 'dynamic' } },
+    transactions: { payments: [{ amount: '100.00' }] },
   })
 });
 ```

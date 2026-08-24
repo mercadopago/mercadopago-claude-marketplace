@@ -4,7 +4,7 @@ description: Configure and validate Mercado Pago webhooks. Wraps the MCP webhook
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.0"
+  version: "4.3.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, webhooks, notifications, ipn, hmac, signature"
@@ -16,35 +16,28 @@ This skill is for everything notifications. It is the only place where the HMAC 
 
 ---
 
-## Step 0 — Verify MCP is actually authenticated
+## Step 0 — Connect only for an MCP-backed action
 
-`ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
+Do **not** inspect MCP state when this skill starts. Scaffolding and reviewing the receiver pattern are static operations and require no MCP connection.
 
-Check whether `mcp__plugin_mercadopago_mcp__application_list` is callable AND returns a real payload.
+Connect only immediately before one of these selected operations:
 
-### Soft gate — the receiver scaffold is static
+| Operation | Required MCP tool |
+|---|---|
+| Fetch a language-specific signature example | `search_documentation` |
+| Resolve an unknown or country-specific topic | `search_documentation` |
+| Register or rotate the callback URL | `save_webhook` |
+| Confirm or diagnose webhook delivery | `notifications_history` |
 
-Scaffolding the webhook receiver (Steps 1–2) is **static code** and needs no MCP. The gate is therefore **soft**:
+On-demand authentication procedure:
 
-- **Authenticated** → continue normally.
-- **Loaded, not authenticated** → show the prerequisites checklist below + the OAuth prompt inline, then **continue to Steps 1–2** (the receiver scaffold). Do not block. The MCP is only required at Steps 4–6 (`save_webhook`, `notifications_history`) — re-gate per call there.
-- **Plugin not loaded** → tell the user to run `/mcp`, enable `plugin:mercadopago:mcp`, and retry.
+1. Attempt the intended tool directly if callable. Do not call `application_list` as a connection probe.
+2. If it is unavailable or returns an authentication error, call `mcp__plugin_mercadopago_mcp__authenticate`.
+3. Show the clickable OAuth link in the developer's language and instruct them to Cmd+Click (Mac) or Ctrl+Click (Windows/Linux), without copying the URL into an external browser.
+4. When the developer returns, retry the intended tool directly. Never ask them to paste a callback URL.
+5. If MCP tools are not loaded, explain how to enable `plugin:mercadopago:mcp`. Keep any static scaffold/review work available offline.
 
-OAuth prompt (State B):
-
-> Call `mcp__plugin_mercadopago_mcp__authenticate` and show the URL in **two formats** so it's always accessible:
->
-> **[Conectar ao Mercado Pago]({url})**
->
-> ```
-> {url}
-> ```
->
-> Se o link não for clicável, copie a URL do bloco acima. When you see **Authentication Successful** in the browser, come back and say anything.
->
-> **Retry limit:** maximum 2 `authenticate` attempts per session. After 2 failures, offer: 'Try again' / 'Continue offline' / 'Cancel'. When the user responds, call `application_list` directly — do NOT call `complete_authentication` first. Never ask the user to paste the callback URL.
-
-Prerequisites checklist (State B):
+Show this prerequisites checklist only when the developer selects an MCP-backed action:
 
 ```
 Before configuring webhooks live, you'll need:
@@ -52,7 +45,7 @@ Before configuring webhooks live, you'll need:
 - [ ] An app created in the Developer Dashboard
 - [ ] Test credentials: APP_USR- access token + public key (tab {test_tab})
 - [ ] The webhook signature secret (Dashboard → Webhooks → Signature secret)
-Run /mp-connect to authenticate (only needed for Steps 4–6 below).
+Connection will be requested immediately before the selected MCP operation.
 ```
 
 ---
@@ -121,7 +114,7 @@ export function mpWebhook(req, res) {
 }
 ```
 
-For other languages, query MCP `search_documentation` with:
+For other languages, apply Step 0 immediately before querying MCP `search_documentation` with:
 - `"webhook signature validation {language}"` (e.g., python, java, php, ruby, go, dotnet).
 
 ---
@@ -140,13 +133,13 @@ The notification body contains `type` (the topic) and `data.id`. Common topics:
 | `subscription_preapproval` | Subscription status change | `GET /preapproval/{id}` |
 | `subscription_authorized_payment` | Recurring charge attempt | `GET /authorized_payments/{id}` |
 
-If a topic is not in this table, query MCP for the latest list rather than guessing.
+If a topic is not in this table, apply Step 0 immediately before querying MCP for the latest list rather than guessing.
 
 ---
 
 ## Step 4 — Configure on Mercado Pago (`save_webhook`)
 
-> **Re-gate before this MCP call:** verify `application_list` is callable. If not, run the Step 0 State B OAuth flow first, then proceed.
+> **Connect on demand:** apply Step 0 immediately before `save_webhook`. Do not call `application_list` first.
 
 ```
 mcp__plugin_mercadopago_mcp__save_webhook(
@@ -168,7 +161,7 @@ Confirm the response shows the URL and topics correctly registered.
 2. The webhook fires automatically when the payment status changes
 3. Verify your receiver returned `200` and processed the event idempotently
 
-Use `notifications_history` to confirm delivery:
+Apply Step 0 immediately before using `notifications_history` to confirm delivery:
 ```
 mcp__plugin_mercadopago_mcp__notifications_history()
 ```
@@ -177,7 +170,7 @@ mcp__plugin_mercadopago_mcp__notifications_history()
 
 ## Step 6 — Diagnose missed deliveries
 
-> **Re-gate before this MCP call:** verify `application_list` is callable. If not, run the Step 0 State B OAuth flow first, then proceed.
+> **Connect on demand:** apply Step 0 immediately before `notifications_history`. Do not call `application_list` first.
 
 ```
 mcp__plugin_mercadopago_mcp__notifications_history()

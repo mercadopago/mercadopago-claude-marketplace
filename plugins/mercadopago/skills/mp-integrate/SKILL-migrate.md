@@ -4,7 +4,7 @@ description: Migrates existing Mercado Pago Instore integrations (QR Code and Po
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.0"
+  version: "4.3.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, migration, orders-api, instore, qr, point"
@@ -34,33 +34,31 @@ Migrates existing Mercado Pago **Instore** integrations (QR Code and Point) from
 
 **Out of scope — do NOT migrate:**
 - Checkout Pro, Checkout API / CHAPI, Bricks, Marketplace, Subscriptions → Online products excluded from scope
-- `POST /v1/checkout/preferences` → Checkout Pro (no Orders API)
+- `POST /checkout/preferences` → Checkout Pro (no Orders API)
 - `preapproval` endpoints → Subscriptions (no Orders API)
 - Files with `CardPayment` or `onSubmit` → Bricks uses `/v1/payments` correctly
 
 ---
 
-## Step 0 — MCP gate (soft)
+## Step 0 — MCP connection on demand
 
-All official migration docs are public URLs — WebFetch works without MCP authentication. Proceed fully offline. MCP is not required for this command.
+All official migration docs are public URLs — WebFetch works without MCP authentication. The core migration proceeds fully offline. MCP is required only for the optional webhook-topic update.
 
-**MCP authentication rules (apply whenever `authenticate` is called in this skill):**
+The only MCP-backed action in this skill is updating the webhook topic with `save_webhook`. Do not check connection state unless the developer first chooses that action.
 
-1. **URL presentation — always show in two formats:**
+**MCP authentication rules (apply immediately before `save_webhook`):**
+
+1. **URL presentation — clickable link only:**
    ```
    > Abra este link para conectar ao Mercado Pago:
    > **[Conectar ao Mercado Pago]({url})**
    >
-   > Se o link não for clicável, copie a URL abaixo:
-   > ```
-   > {url}
-   > ```
+   > Use Cmd+Click (Mac) ou Ctrl+Click (Windows/Linux). Não copie e cole a URL em um navegador externo.
    ```
-   The code block is always selectable/copyable regardless of how the IDE renders markdown.
 
 2. **Retry limit — maximum 2 authenticate attempts total per session:**
    - Call `authenticate` → show URL → wait for user to return.
-   - If user returns but `application_list` still fails → call `authenticate` once more → show URL again.
+   - When the user returns, retry `save_webhook` directly. If it still returns an authentication error, call `authenticate` once more and show the URL again.
    - After 2 failed attempts → **stop retrying immediately** and ask via `AskUserQuestion`:
      ```
      header: "Conexão com MCP"
@@ -238,7 +236,7 @@ If WebFetch returns 4xx/5xx → retry once, then inform the developer and do not
 - WebFetch returned 4xx/5xx and could not be retried successfully, OR
 - The fetched page does not cover a specific product or operation (e.g. Refund, webhook topic)
 
-Read `~/.claude/plugins/cache/claude-plugins-official/mercadopago/{version}/skills/mp-integrate/references/guides/migrate-to-orders.md` only in those cases. Never use it as the primary source when the live doc is available — the live doc is always more current.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/migrate-to-orders.md` only in those cases. Claude Code resolves this to the active plugin version. Never search another marketplace or an installation cache. Never use it as the primary source when the live doc is available — the live doc is always more current.
 
 ---
 
@@ -403,10 +401,10 @@ The field `amount` in a Payment Intents API payload is ALWAYS in centavos. Gener
 |--------------------------|------|-------------------|-------------------------------------|
 | `POST /mpmobile/instore/qr` (QR Instore v1) | Static | `"static"` | Required |
 | `PUT /instore/qr/seller/collectors` (QR Instore v2) | Static | `"static"` | Required |
-| `POST /instore/orders/qr/seller/collectors` (QR Dinâmico) | Dynamic — new QR per transaction | `"dynamic"` | **NOT required** |
+| `POST /instore/orders/qr/seller/collectors` (QR Dinâmico) | Dynamic — new QR per transaction | `"dynamic"` | **Required** |
 | `PUT /instore/orders/qr/seller/collectors` (QR Dinâmico) | Hybrid — updates fixed QR on POS | `"hybrid"` | **Required** |
 
-**For QR Dinâmico:** grep the file for the HTTP method used on the `/instore/orders/qr/seller/collectors` endpoint. If the code uses `method: 'PUT'` (or equivalent), set `mode: "hybrid"` and add `transactions.payments` to the diff. If `POST`, set `mode: "dynamic"` and omit `transactions.payments`. **Never default to `"dynamic"` without checking the method** — `"hybrid"` and `"dynamic"` produce different QR behaviors: hybrid keeps a fixed QR per POS; dynamic creates a new QR per transaction.
+**For QR Dinâmico:** grep the file for the HTTP method used on the `/instore/orders/qr/seller/collectors` endpoint. If the code uses `method: 'PUT'` (or equivalent), set `mode: "hybrid"`. If `POST`, set `mode: "dynamic"`. Add the single `transactions.payments` entry in both cases. **Never default to `"dynamic"` without checking the method** — `"hybrid"` and `"dynamic"` produce different QR behaviors: hybrid also links the static POS QR; dynamic creates a new QR per transaction.
 
 Set `config.qr.mode` from this table automatically. Do NOT call `AskUserQuestion` — the endpoint + method are unambiguous evidence. If for any reason the endpoint cannot be matched, default to `"static"` and add a comment in the diff: `// config.qr.mode: review this value — could not be inferred from legacy endpoint`.
 
@@ -616,9 +614,7 @@ If `.env` not found or token missing:
 
 #### Automated action 2 — Update webhook topic
 
-Check if MCP is connected (`application_list` callable):
-
-**MCP connected (State A):** ask via `AskUserQuestion`:
+Ask via `AskUserQuestion` before any MCP call:
 ```
 AskUserQuestion:
   header: "Webhook topic"
@@ -627,17 +623,9 @@ AskUserQuestion:
     - "Sim, atualizar agora"
     - "Não, farei manualmente no Developer Dashboard"
 ```
-If "Sim" → call `mcp__plugin_mercadopago_mcp__save_webhook` with `topic: "orders"` and confirm: *"✅ Webhook topic atualizado para 'orders'."*
+If "Sim" → attempt `mcp__plugin_mercadopago_mcp__save_webhook` directly. If it is unavailable or returns an authentication error, apply Step 0, then retry `save_webhook`. Confirm: *"✅ Webhook topic atualizado para 'orders'."*
 
-**MCP not connected (State B):**
-```
-ℹ️  Para atualizar o topic do webhook automaticamente, conecte o MCP primeiro:
-    → /mp-connect
-
-    Ou atualize manualmente no Developer Dashboard:
-    mercadopago.com.{país}/developers/panel/notifications
-    Altere o topic de "point_integration_wh" para "orders".
-```
+If "Não" → continue without MCP and show the manual Developer Dashboard path.
 
 #### Additional diff items — always include for Point migrations
 

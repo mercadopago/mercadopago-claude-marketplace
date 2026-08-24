@@ -5,111 +5,33 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validate:
-    name: JSON + Python Syntax Validation
+    name: Production gate (Node 20 / Python 3.11)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.11"
 
-      - name: Validate marketplace.json
-        run: python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
+      - name: Install pinned Claude Code validator
+        run: npm install --global @anthropic-ai/claude-code@2.1.228
 
-      - name: Validate plugin.json
-        run: python3 -m json.tool plugins/mercadopago/.claude-plugin/plugin.json > /dev/null
-
-      - name: Validate .mcp.json
-        run: python3 -m json.tool plugins/mercadopago/.mcp.json > /dev/null
-
-      - name: Validate hooks.json
-        run: python3 -m json.tool plugins/mercadopago/hooks/hooks.json > /dev/null
-
-      - name: Validate settings.json
-        run: python3 -m json.tool .claude/settings.json > /dev/null
-
-
-      - name: Python hook syntax check
-        run: python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
-
-      - name: Test hook blocks real token
-        run: |
-          echo '{"dependencies":{"mercadopago":"^2.0.0"}}' > package.json
-          # Build token at runtime to avoid secret-scanning false positives on the literal.
-          # Format: (TEST|APP_USR)-{12+digits}-{6digits}-{32hex}-{digits} — no U prefix.
-          PREFIX="TEST"
-          HASH="abc1234567890123456789012345678a"  # exactly 32 hex chars
-          TOKEN="${PREFIX}-123456789012-123456-${HASH}-987654321"
-          RESULT=$(echo "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"app.js\",\"content\":\"const token = \\\"${TOKEN}\\\"\"}}" \
-            | python3 plugins/mercadopago/hooks/validate_mp_credentials.py; echo $?)
-          if [ "$RESULT" != "2" ]; then
-            echo "ERROR: Hook should have blocked real token (expected exit 2, got $RESULT)"
-            rm -f package.json
-            exit 1
-          fi
-          echo "PASS: Hook correctly blocked real token"
-
-      - name: Test hook allows env var reference
-        run: |
-          echo '{"dependencies":{"mercadopago":"^2.0.0"}}' > package.json
-          EXIT_CODE=$(echo '{"tool_name":"Write","tool_input":{"file_path":"app.js","content":"const token = process.env.MP_ACCESS_TOKEN"}}' \
-            | python3 plugins/mercadopago/hooks/validate_mp_credentials.py; echo $?)
-          if [ "$EXIT_CODE" != "0" ]; then
-            echo "ERROR: Hook should have allowed env var reference (expected exit 0, got $EXIT_CODE)"
-          rm -f package.json
-            exit 1
-          fi
-          echo "PASS: Hook correctly allowed env var reference"
-
-      - name: Verify required files exist
-        run: |
-          # Fixed infrastructure files — must always exist regardless of skill architecture
-          required_files=(
-            ".claude-plugin/marketplace.json"
-            "plugins/mercadopago/.claude-plugin/plugin.json"
-            "plugins/mercadopago/.mcp.json"
-            "plugins/mercadopago/hooks/hooks.json"
-            "plugins/mercadopago/hooks/validate_mp_credentials.py"
-            ".claude/settings.json"
-            "plugins/mercadopago/agents/mp-integration-expert.md"
-            "plugins/mercadopago/commands/mp-review.md"
-            "plugins/mercadopago/PLUGIN_SETTINGS.md"
-            "plugins/mercadopago/README.md"
-            "README.md"
-            "CONTRIBUTING.md"
-          )
-          for f in "${required_files[@]}"; do
-            if [ ! -f "$f" ]; then
-              echo "MISSING: $f"
-              exit 1
-            fi
-            echo "OK: $f"
-          done
-
-          # Structural checks — architecture-agnostic, work for v3 (multi-product skills)
-          # and v4 (consolidated orchestration skills) alike.
-
-          # 1) At least one user-facing command beyond /mp-review must exist
-          #    (v3: /mp-setup; v4: /mp-integrate). /mp-connect is optional.
-          shopt -s nullglob
-          extra_commands=(plugins/mercadopago/commands/mp-{setup,integrate}.md)
-          if [ ${#extra_commands[@]} -eq 0 ]; then
-            echo "MISSING: at least one of mp-setup.md or mp-integrate.md must exist under plugins/mercadopago/commands/"
-            exit 1
-          fi
-          for f in "${extra_commands[@]}"; do echo "OK: $f"; done
-
-          # 2) At least one SKILL.md must exist under plugins/mercadopago/skills/
-          skill_count=$(find plugins/mercadopago/skills -name SKILL.md -type f | wc -l)
-          if [ "$skill_count" -lt 1 ]; then
-            echo "MISSING: no SKILL.md found under plugins/mercadopago/skills/"
-            exit 1
-          fi
-          echo "OK: found $skill_count SKILL.md file(s)"
+      - name: Run repository production gate
+        run: sh scripts/validate_repository.sh

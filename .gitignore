@@ -43,3 +43,4 @@ coverage/
 
 # Internal MELI dev process (not for public repo)
 meli/
+tests/smoke/

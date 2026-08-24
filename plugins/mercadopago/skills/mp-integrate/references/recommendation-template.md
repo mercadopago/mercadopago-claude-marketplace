@@ -148,7 +148,7 @@ Key topics for {product}: `{relevant_topics}`
 ### Section 3 — Server code
 - Snippet must come from `references/guides/{product}.md` or MCP `search_documentation`.
 - Never reconstruct from memory.
-- Always include `X-Idempotency-Key` in headers.
+- Include `X-Idempotency-Key` when the official endpoint documents/supports it. For Subscriptions, the current API reference documents `Authorization` but not that header; use a unique persisted `external_reference` plus application-level duplicate-submit protection and do not claim unsupported idempotency semantics.
 - Always include `external_reference`.
 
 ### Section 4 — Client code
@@ -166,6 +166,9 @@ Key topics for {product}: `{relevant_topics}`
 - Always point to test cards for the resolved country.
 - For products that need test users (checkout-api, bricks, qr, point): mention `/mp-integrate test-setup`.
 - For products that don't need test users (checkout-pro, subscriptions): note that test credentials suffice.
+- For Payouts: explain that tests require the country-specific official test
+  fixture, an explicit test-mode header, and a strict amount ceiling; never
+  suggest a real destination or production balance.
 
 ### Section 8 — Gotchas
 - Only include gotchas relevant to the chosen product + mode + country.
@@ -183,7 +186,7 @@ Key topics for {product}: `{relevant_topics}`
 
 | Variable | How to resolve |
 |---|---|
-| `{Product}` | Human-readable: "Checkout Pro", "Checkout API", "Bricks", "QR Code", "MP Point", "Subscriptions", "Marketplace" |
+| `{Product}` | Human-readable: "Checkout Pro", "Checkout API", "Bricks", "QR Code", "MP Point", "Subscriptions", "Marketplace", "Wallet Connect", "Payouts", "SmartApps" |
 | `{Country}` | Human-readable: "Argentina", "Brazil", etc. |
 | `{mode}` | orders \| payments \| preferences |
 | `{sdk}` | node \| python \| java \| php \| ruby \| dotnet \| go |
@@ -195,4 +198,9 @@ Key topics for {product}: `{relevant_topics}`
 | `{mc_number}` | From `references/products.md` for resolved country |
 | `{document_number}` | From `references/products.md` for resolved country |
 | `{relevant_topics}` | From `references/guides/webhooks.md` topics table |
-| `{product-slug}` | checkout-pro \| checkout-api-orders \| checkout-bricks \| qr-code \| mp-point \| subscriptions \| marketplace |
+| `{product-slug}` | checkout-pro \| checkout-api-orders \| checkout-bricks \| qr-code \| mp-point \| subscriptions \| marketplace \| wallet-connect \| payouts \| smartapps |
+
+`{product-slug}` is presentation metadata only. Before any routing or scaffold branch, normalize `checkout-api-orders` back to the internal product value `checkout-api`; otherwise the mandatory Checkout API CTA flow will be skipped.
+For backwards-compatible routing, normalize the internal value `money-out` to
+the presentation slug `payouts`; do not expose the legacy name as the current
+product name.

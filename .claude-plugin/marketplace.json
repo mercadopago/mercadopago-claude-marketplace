@@ -4,20 +4,20 @@
     "name": "Mercado Pago Developer Experience"
   },
   "metadata": {
-    "version": "4.3.0",
+    "version": "4.3.1",
     "description": "Public marketplace of Claude Code plugins for Mercado Pago payment integration development"
   },
   "plugins": [
     {
       "name": "mercadopago",
       "source": "./plugins/mercadopago",
-      "description": "Mercado Pago integration toolkit for Claude Code. One agent routes to four skills: mp-integrate (full wizard for Checkout Pro, Checkout API, Bricks, QR Code, Point, Subscriptions, Marketplace, Wallet Connect — plus /mp-integrate migrate to upgrade legacy Instore integrations to the Orders API), mp-webhooks (HMAC-validated receiver scaffold + diagnostics), mp-test-setup (test users, credentials, and test cards for AR/BR/MX/CO/CL), and mp-review (quality and security checklist before going live). Scaffolding works without MCP auth; live docs, credential lookup, and test-user creation use the official Mercado Pago MCP server.",
-      "version": "4.3.0",
+      "description": "Mercado Pago integration toolkit for Claude Code. One agent routes to four skills: mp-integrate (wizard for Checkout Pro, Checkout API, Bricks, QR Code, Point, Subscriptions, Marketplace, Wallet Connect, Payouts, and SmartApps — plus migration of legacy Instore integrations to the Orders API), mp-webhooks (HMAC-validated receiver scaffold and diagnostics), mp-test-setup (test users, credentials, and test cards), and mp-review (quality and security checks). Scaffolding works offline where possible; live account and documentation operations use the official Mercado Pago MCP server on demand.",
+      "version": "4.3.1",
       "author": { "name": "Mercado Pago Developer Experience" },
       "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
       "license": "Apache-2.0",
       "category": "development",
-      "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "wallet", "3ds", "fintech", "meli"]
+      "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "payouts", "smartapps", "wallet", "3ds", "fintech", "meli"]
     }
   ]
 }

@@ -1,14 +1,5 @@
 #!/usr/bin/env sh
-set -e
+set -eu
 
 repo_root="$(git rev-parse --show-toplevel)"
-cd "$repo_root"
-
-claude plugins validate .
-
-if [ -d plugins ]; then
-  for plugin_dir in plugins/*/; do
-    [ -d "$plugin_dir" ] || continue
-    claude plugins validate "$plugin_dir"
-  done
-fi
+exec "$repo_root/scripts/validate_repository.sh"

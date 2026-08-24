@@ -1,10 +1,10 @@
 ---
 name: mp-review
-description: Review a Mercado Pago integration against the official quality checklist and a fixed cross-cutting security checklist. Calls quality_checklist (and quality_evaluation when applicable) on the Mercado Pago MCP. Use after the integration is in place, or when /mp-review is invoked.
+description: Review a Mercado Pago integration with a local cross-cutting security checklist and official MCP quality tools on demand. Use after the integration is in place, or when /mp-review is invoked.
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.0"
+  version: "4.3.1"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, review, quality, checklist, security"
@@ -12,30 +12,29 @@ metadata:
 
 # mp-review
 
-This skill audits a Mercado Pago integration. It does not duplicate the official quality criteria — it pulls them live from the MCP and verifies each one against the codebase.
+This skill audits a Mercado Pago integration. The security floor is evaluated locally. Official quality criteria are pulled live only when an MCP-backed scope reaches that step.
 
 ---
 
-## Step 0 — Verify MCP is actually authenticated
+## Step 0 — Connect only for the MCP-backed review step
 
-`ListMcpResourcesTool` is unreliable for this MCP (always returns "No resources found"). The bootstrap tools `authenticate` / `complete_authentication` are always present and prove nothing.
+Do not inspect MCP state when the review starts. Discover the integration and run all requested local checks first.
 
-Check whether `mcp__plugin_mercadopago_mcp__quality_checklist` is callable AND returns a real payload. If not, **call `mcp__plugin_mercadopago_mcp__authenticate` immediately** and show:
+| Review operation | MCP required? | Tool |
+|---|---:|---|
+| Security floor (`scope=security`) | No | — |
+| Code discovery and legacy detection | No | — |
+| Official quality checklist | Yes | `quality_checklist` |
+| Payment-level quality evaluation | Yes | `quality_evaluation` |
+| Get or submit homologation form | Yes | `form_homologation` |
 
-> To continue I need access to your Mercado Pago account. Open this link to connect:
-**[Connect Mercado Pago]({url})**
+Immediately before an MCP-backed operation:
 
-```
-{url}
-```
-
-If the link is not clickable, copy the URL from the code block above.
-
-When you see "Authentication Successful" in the browser, come back and say anything.
-
-**Retry limit:** maximum 2 `authenticate` calls per session. After 2 failures, offer: 'Try again' / 'Continue offline' / 'Cancel'.
-
-When the user returns, call `application_list` directly — do NOT call `complete_authentication` first. Never ask the user to paste the callback URL.
+1. Attempt the intended tool directly if callable. Never call `application_list` merely to test the connection.
+2. If it is unavailable or returns an authentication error, call `mcp__plugin_mercadopago_mcp__authenticate` and show the OAuth link in the developer's language.
+3. Instruct the developer to Cmd+Click (Mac) or Ctrl+Click (Windows/Linux), without copying the URL into an external browser.
+4. When the developer returns, retry the intended tool directly. Never request the callback URL.
+5. After two authentication failures, continue with completed local checks and mark the MCP-backed section as not verified.
 
 ---
 
@@ -45,7 +44,7 @@ Use `Grep`/`Glob` to find:
 
 - Files importing `mercadopago` (any SDK).
 - References to `MP_ACCESS_TOKEN` or hardcoded `APP_USR-` / `TEST-` strings.
-- Endpoint patterns: `/v1/payments`, `/v1/checkout/preferences`, `/v1/orders`, `payment.create`, `preference.create`, `order.create`, `preapproval.create`, `disbursement`.
+- Endpoint patterns: `/v1/payments`, `/checkout/preferences`, `/v1/orders`, `payment.create`, `preference.create`, `order.create`, `preapproval.create`, `disbursement`.
 - Webhook handlers (paths matching `webhook`, `notification`, `ipn`).
 
 Determine:
@@ -57,13 +56,15 @@ Determine:
     - `/instore/orders/qr/seller/collectors` (QR Dinámico)
     - `/point/integration-api/devices/{id}/payment-intents` (Point)
   - **If the integration uses `/v1/payments`** (Online): flag as technical debt if it is a server-side card payment (Checkout API / Marketplace). Do **not** suggest `/mp-integrate migrate` for Online — migration for those products is out of scope for this plugin.
-  - **Exception 1**: Checkout Pro stays on preferences (the Orders API does not exist for Checkout Pro). Do not flag `/v1/checkout/preferences` as legacy.
+  - **Exception 1**: Checkout Pro stays on preferences (the Orders API does not exist for Checkout Pro). Do not flag `/checkout/preferences` as legacy.
   - **Exception 2**: Bricks uses `/v1/payments` correctly (server-side after `CardPayment` tokenization). Do not flag `/v1/payments` calls in files that also contain `CardPayment` or `onSubmit` as legacy.
 - **Products in use**: Checkout Pro/API, Bricks, Subscriptions, Marketplace, etc. — derive from endpoint patterns and request payloads.
 
 ---
 
 ## Step 2 — Run the official quality checklist
+
+Skip this step for `scope=security`. For every other scope that includes official quality criteria, apply Step 0 immediately before the following call.
 
 Call `mcp__plugin_mercadopago_mcp__quality_checklist`. The response defines:
 
@@ -99,6 +100,8 @@ These items are not always part of `quality_checklist` but are mandatory for any
 
 `mcp__plugin_mercadopago_mcp__quality_evaluation` requires a real `payment_id`. Run it when the integration used the Payments API and produced a payment ID.
 
+Only after the developer provides the ID, apply Step 0 immediately before this call.
+
 | Integration uses | Action |
 |------------------|--------|
 | Payments API (`/v1/payments`) | Ask the developer for a recent test `payment_id`, then call `mcp__plugin_mercadopago_mcp__quality_evaluation` with it. |
@@ -120,7 +123,7 @@ After quality_evaluation (or if it was skipped), offer the homologation form to 
 
 > "Before switching to production credentials, complete the official homologation checklist. This certifies your integration and activates it for production."
 
-1. Call `mcp__plugin_mercadopago_mcp__form_homologation` with `action="get_form"`, `product_id` (from detected product), `site_id` (from detected country), `lang`, `is_ca` (true for Checkout API / Bricks).
+1. If the developer accepts the offer, apply Step 0 immediately before calling `mcp__plugin_mercadopago_mcp__form_homologation` with `action="get_form"`, `product_id` (from detected product), `site_id` (from detected country), `lang`, `is_ca` (true for Checkout API / Bricks).
 2. Present each step/question to the developer via `AskUserQuestion`. Collect answers.
 3. When all questions are answered, call with `action="submit"` and the collected `form_values`.
 4. On success: congratulate the developer and confirm the integration is certified.
@@ -156,7 +159,9 @@ The report is the source of truth for the developer's next session: it tells the
 ### PASS
 - {items correctly implemented}
 
-### Quality Standards (from MCP `quality_checklist`)
+### Quality Standards
+
+{If `quality_checklist` ran: render every official item below. If it was not requested, write `Not requested for this scope.` If authentication failed, write `Not verified — MCP connection was unavailable.` Do not fabricate rows or scores.}
 
 #### Required fields
 | # | Field | Description | Status | Evidence |
@@ -175,9 +180,9 @@ The report is the source of truth for the developer's next session: it tells the
 ### Recommendations
 - {actionable, ordered by impact}
 
-**Summary**: X/Y required fields implemented, Z/W best practices adopted, S/9 security checks pass.
+**Summary**: {X/Y required fields implemented and Z/W best practices adopted, if verified; otherwise `Official quality: not requested/not verified`}. {S}/9 security checks pass.
 
-> Want a deeper score? Provide a recent test payment ID (or order ID) and I'll run `quality_evaluation`.
+{Offer `quality_evaluation` only for a compatible Payments API review where the developer requested MCP-backed quality analysis.}
 
 ---
 
@@ -201,11 +206,13 @@ The report is the source of truth for the developer's next session: it tells the
 3. Re-run `/mp-review` after fixes to confirm the report.
 
 ### Resources used
-- MCP: `quality_checklist` ({date/time of call})
-- MCP: `quality_evaluation` (if it was run, with the payment_id/order_id used)
-- Skill: `mp-review` v4.3.0
+- Local: codebase inspection + cross-cutting security floor
+- MCP: `quality_checklist` (include only if called, with date/time)
+- MCP: `quality_evaluation` (include only if called, with the payment_id used)
+- MCP: `form_homologation` (include only if called)
+- Skill: `mp-review` v4.3.1
 
-**Scores**: {X}/{Y} required, {Z}/{W} best practices, {S}/9 security. **Verdict**: {Ready for production | Needs fixes | Blocked}.
+**Scores**: {X/Y required and Z/W best practices if verified; otherwise `official quality: N/A`}, {S}/9 security. **Verdict**: {Ready for production | Needs fixes | Blocked | Partial — MCP checks not verified}.
 ```
 
 ---
@@ -214,4 +221,4 @@ The report is the source of truth for the developer's next session: it tells the
 
 - It does **not** generate or scaffold code. Use `mp-integrate`.
 - It does **not** call APIs that mutate state. `quality_evaluation` is read-only and only suggested.
-- It does **not** rely on offline knowledge of "what should be in a review" — the official checklist is fetched live every time.
+- It does **not** invent official quality criteria offline. The fixed security floor is local; official criteria are fetched only when that MCP-backed scope is requested.

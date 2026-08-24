@@ -6,7 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-version.sh",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/check-version.sh"],
             "timeout": 3
           }
         ]
@@ -18,7 +19,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/validate_mp_credentials.py",
+            "command": "python3",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/validate_mp_credentials.py"],
             "timeout": 10
           }
         ]
