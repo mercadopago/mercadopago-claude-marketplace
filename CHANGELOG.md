@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [4.3.2] - 2026-08-26
+
+### Fixed
+
+- `/mp-integrate` reads routed skills directly from `${CLAUDE_PLUGIN_ROOT}` instead of probing the plugin root through a Bash preflight.
+
 ## [4.3.1] - 2026-08-21
 
 ### Added

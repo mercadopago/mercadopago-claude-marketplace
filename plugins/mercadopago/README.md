@@ -12,6 +12,10 @@ After installing the plugin, start using it offline or connect to your Mercado P
 
 **Other IDEs (Cursor, VS Code, Windsurf, etc.):** add the HTTP server via your IDE's MCP settings panel with URL `https://mcp.mercadopago.com/mcp`, then complete the OAuth flow your IDE prompts. See `/mp-connect` for IDE-specific snippets.
 
+## Version 4.3.2
+
+- `/mp-integrate` reads routed skills directly from `${CLAUDE_PLUGIN_ROOT}`, avoiding a Bash preflight before routing.
+
 ## Version 4.3.1
 
 - Checkout Pro and Checkout API always resolve a concrete checkout CTA.

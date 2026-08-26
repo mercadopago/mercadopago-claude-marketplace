@@ -4,7 +4,7 @@ description: Configure and validate Mercado Pago webhooks. Wraps the MCP webhook
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.1"
+  version: "4.3.2"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, webhooks, notifications, ipn, hmac, signature"

@@ -4,7 +4,7 @@ This repository builds the public Mercado Pago marketplace plugin for Claude
 Code. Runtime instructions, paths, hooks, examples, and validation must target
 Claude Code and must be safe for developers outside Mercado Pago/Mercado Libre.
 
-## Current architecture (v4.3.1)
+## Current architecture (v4.3.2)
 
 - One thin router: `plugins/mercadopago/agents/mp-integration-expert.md`.
 - Four passive skills only: `mp-integrate`, `mp-webhooks`, `mp-test-setup`, and

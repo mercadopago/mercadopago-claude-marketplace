@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 4.3.1](https://img.shields.io/badge/version-4.3.1-green)](./CHANGELOG.md)
+[![Version: 4.3.2](https://img.shields.io/badge/version-4.3.2-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -35,6 +35,10 @@ A Claude Code plugin that provides guided integration support for the Mercado Pa
 - **Credential leak prevention** — hook inspects supported Claude tool inputs for hardcoded tokens and blocks secret-file reads in detected Mercado Pago projects
 - **OAuth-based auth** — triggered by MCP-backed operations or manually via `/mp-connect`; no keychain scripts needed
 - **4 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`, `/mp-test-cards`
+
+## What's new in v4.3.2
+
+- **Active plugin-root routing**: `/mp-integrate` now reads routed skills directly from `${CLAUDE_PLUGIN_ROOT}`, avoiding a Bash preflight before routing.
 
 ## What's new in v4.3.1
 

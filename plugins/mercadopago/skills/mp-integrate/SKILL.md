@@ -4,7 +4,7 @@ description: Wizard that scaffolds a complete Mercado Pago integration from offi
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.1"
+  version: "4.3.2"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, payouts, smartapps, orders, sdk"

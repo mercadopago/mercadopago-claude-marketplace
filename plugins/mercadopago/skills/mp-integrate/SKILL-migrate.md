@@ -4,7 +4,7 @@ description: Migrates existing Mercado Pago Instore integrations (QR Code and Po
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.1"
+  version: "4.3.2"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, migration, orders-api, instore, qr, point"

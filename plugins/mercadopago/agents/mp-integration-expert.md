@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash, WebFetch, AskUserQuestion, Write, Edit
 model: sonnet
 tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace]
 category: development
-version: 4.3.1
+version: 4.3.2
 ---
 
 # Mercado Pago Integration Expert

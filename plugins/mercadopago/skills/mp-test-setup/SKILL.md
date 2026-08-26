@@ -4,7 +4,7 @@ description: Create test users and add funds to them for Mercado Pago testing. W
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.1"
+  version: "4.3.2"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, testing, test-user, sandbox, credentials"
