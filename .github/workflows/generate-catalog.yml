@@ -16,13 +16,13 @@ on:
       - "scripts/generate_catalog.py"
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   catalog:
     name: Generated catalog is current
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
