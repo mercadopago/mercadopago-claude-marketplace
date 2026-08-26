@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://mcp.mercadopago.com/mcp",
       "headers": {
-        "X-Plugin-Version": "4.3.0",
+        "X-Plugin-Version": "4.3.1",
         "X-Invocation-Context": "router"
       }
     }

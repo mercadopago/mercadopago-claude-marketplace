@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 4.1.0](https://img.shields.io/badge/version-4.1.0-green)](./CHANGELOG.md)
+[![Version: 4.3.1](https://img.shields.io/badge/version-4.3.1-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -17,7 +17,7 @@
 
 [![Browse Components](https://img.shields.io/badge/%F0%9F%94%8D_Browse_Components-mercadopago--claude--marketplace.vercel.app-3483fa?style=for-the-badge&logoColor=white)](https://mercadopago-claude-marketplace.vercel.app/)
 
-> **4 skills** · **1 agent** · **3 commands** · **2 hooks** — all browsable in a visual catalog.
+> **4 skills** · **1 agent** · **4 commands** · **2 hooks** — all browsable in a visual catalog.
 >
 > Search, filter, and explore every component with detailed metadata and direct links to source code.
 
@@ -27,23 +27,28 @@
 
 ## Overview
 
-A Claude Code plugin that gives you an AI-powered integration assistant for the full Mercado Pago product suite. Ask questions, scaffold projects, review code, and get real-time API guidance — all from your terminal.
+A Claude Code plugin that provides guided integration support for the Mercado Pago product families listed below. Availability still depends on country, account eligibility, commercial enablement, and the selected API.
 
-- **MCP-first architecture** — one thin router agent delegates to 4 orchestration skills backed by the live Mercado Pago MCP server
+- **MCP-first, connection on demand** — local scaffolding and security checks work offline; OAuth starts only immediately before an MCP tool is needed
 - **4 orchestration skills**: `mp-integrate`, `mp-webhooks`, `mp-test-setup`, `mp-review`
 - **7 countries** supported: Argentina, Brazil, Mexico, Chile, Colombia, Peru, Uruguay
-- **Credential leak prevention** — hook scans every file write for hardcoded tokens
-- **OAuth-based auth** — connect via `/mp-connect`, no keychain scripts needed
-- **3 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`
+- **Credential leak prevention** — hook inspects supported Claude tool inputs for hardcoded tokens and blocks secret-file reads in detected Mercado Pago projects
+- **OAuth-based auth** — triggered by MCP-backed operations or manually via `/mp-connect`; no keychain scripts needed
+- **4 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`, `/mp-test-cards`
 
-## What's new in v4.1.0
+## What's new in v4.3.1
 
-A focused refinement of the v4.0.0 architecture. No breaking changes — same 4 skills, same MCP-first model.
+A reliability and product-coverage release with no architecture break: one Claude router, four skills, and MCP connection only when a selected live tool requires it.
 
-- **Bricks gotchas restored**: six experiential traps that v4.0.0 lost during the consolidation are back in `mp-integrate`'s Gotchas Bank — ad-blockers blocking `sdk.mercadopago.com`, debit cards without installments, `preferenceId` placeholder failures, Status Screen needing `payment_id` (not `order_id`), React `unmount()` in `useEffect` cleanup, and `back_urls` same-origin requirement.
-- **Implementation Report** in `/mp-review`: every review now ends with a structured closure block — Verified / Needs attention / Blockers / Next steps / Scores + Verdict — so developers know if they can ship.
-- **Orders API push reflected in reviews**: `mp-review` now detects legacy `/v1/payments` usage and surfaces a forward-looking migration item in *Needs attention* (not a blocker — existing code works, but the Payments API is being deprecated). Checkout Pro is explicitly exempted since it has no Orders API equivalent.
-- **Architecture-agnostic CI**: `validate.yml` no longer hardcodes skill filenames. Future refactors that keep the basic plugin structure won't break the build.
+- **Mandatory generic CTA resolution** for Checkout Pro and Checkout API across common web templates and frameworks.
+- **Separate Checkout API payment screen**, with deterministic checks that reject inline checkout forms and disconnected CTAs.
+- **Accessible, interactive card fields**, including persistent labels and required CardForm lifecycle controls.
+- **Runtime public-key loading**, avoiding cached HTML placeholders and failing visibly when configuration is missing.
+- **Correct Checkout Pro preference route**: `/checkout/preferences`, without an invalid `/v1` prefix.
+- **SDK safety policy**: detect the official SDK automatically, request authorization, and use the current stable release.
+- **Regression tests in CI and pre-commit** for CTA wiring, screen separation, labels, runtime configuration, and endpoint rules.
+- **Deterministic product contracts** for Bricks, Subscriptions, Marketplace, Wallet Connect, SmartApps, Payouts, QR, and Point.
+- **Public-repository hardening** with a single strict production gate, pinned CI actions, hook regression tests, security policy, and documented data flow.
 
 ## Installation
 
@@ -61,15 +66,15 @@ A focused refinement of the v4.0.0 architecture. No breaking changes — same 4 
 
 If you are developing this repository locally, you must run `bash scripts/install-git-hooks.sh` before making commits. This is required to activate the pre-commit hook. The validation command expects `claude` to be available on the machine.
 
-### 3. Connect your account
+### 3. Connect your account when needed
 
-Inside Claude Code, run:
+Scaffolding, bundled test cards, and local security checks do not require a connection. When an operation needs live account data or an MCP action, the plugin starts OAuth at that point. To connect or verify the status manually, run:
 
 ```
 /mp-connect
 ```
 
-This starts the OAuth flow. No Access Token or keychain setup required — the MCP server handles authentication via OAuth.
+No Access Token or keychain setup is required — the MCP server handles authentication via OAuth.
 
 For other IDEs (Cursor, VS Code, Windsurf), add `https://mcp.mercadopago.com/mcp` via your IDE's MCP settings panel. Run `/mp-connect` for IDE-specific snippets.
 
@@ -77,12 +82,12 @@ For other IDEs (Cursor, VS Code, Windsurf), add `https://mcp.mercadopago.com/mcp
 
 | Skill | What it does |
 |-------|-------------|
-| `mp-integrate` | Wizard that scaffolds a complete integration for any product: Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Money Out, SmartApps |
-| `mp-webhooks` | Receiver pattern with HMAC-SHA256 validation; configures, simulates, and diagnoses webhooks |
-| `mp-test-setup` | Creates test users and loads funds. Clarifies the modern testing model (no `TEST-` prefix — both users use `APP_USR-`) |
-| `mp-review` | Runs the official quality checklist live + a fixed cross-cutting security floor |
+| `mp-integrate` | Wizard for Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Payouts (formerly Money Out), and SmartApps, subject to country/account eligibility |
+| `mp-webhooks` | Receiver pattern with HMAC-SHA256 validation; configures and diagnoses webhooks on demand |
+| `mp-test-setup` | Creates test users and loads funds via MCP; bundled test-card guidance remains available offline |
+| `mp-review` | Runs a local security floor and connects only when the official quality or homologation tools are requested |
 
-All product knowledge (endpoint URLs, request/response schemas, code snippets, payment status tables, country availability) is pulled live from the Mercado Pago MCP server. Nothing is hardcoded in the skills.
+Stable, high-impact integration anchors are bundled for offline scaffolding. Live account data, actions, and documentation fallbacks come from the Mercado Pago MCP server only when needed.
 
 ## Commands
 
@@ -91,13 +96,30 @@ All product knowledge (endpoint URLs, request/response schemas, code snippets, p
 | `/mp-connect` | Verify or trigger the Mercado Pago MCP OAuth flow |
 | `/mp-integrate [product] [options]` | Scaffold a new integration via the wizard. Sub-modes: `webhook`, `test-setup` |
 | `/mp-review [scope]` | Review an integration. Scopes: `security`, `webhooks`, `checkout`, `qr`, `subscriptions`, `marketplace`, `quality`, `full` |
+| `/mp-test-cards [country]` | Return bundled test cards without MCP authentication |
+
+## When MCP connection is required
+
+OAuth is requested only after the developer selects an operation that is about to call one of these tools:
+
+| Operation | MCP tools |
+|---|---|
+| List applications or import credentials | `application_list`, `get_credentials` |
+| Create an application | `create_application` |
+| Fill a gap not covered by official `llms.txt` or bundled references | `search_documentation` |
+| Search or verify a payment/order | `search_payments`, `get_payment`, `get_order` |
+| Create or fund test users | `create_test_user`, `add_money_test_user` |
+| Register or diagnose webhooks | `save_webhook`, `notifications_history` |
+| Run official quality checks or homologation | `quality_checklist`, `quality_evaluation`, `form_homologation` |
+
+The `authenticate` and `complete_authentication` tools only bootstrap OAuth. They are not used as pre-flight checks. The plugin first attempts the selected data/action tool and starts OAuth only if that operation needs authentication.
 
 ## Architecture
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │  mp-integration-expert  (router, ~120 lines)           │
-│  - MCP-gate every interaction                          │
+│  - routes requests; MCP connection happens on demand  │
 │  - country detection                                   │
 │  - mode detection (Orders API vs legacy)               │
 │  - delegates to one of four skills                     │
@@ -120,14 +142,13 @@ All product knowledge (endpoint URLs, request/response schemas, code snippets, p
               │  quality_checklist        │
               │  quality_evaluation       │
               │  save_webhook             │
-              │  simulate_webhook         │
               │  notifications_history…   │
               │  create_test_user         │
               │  add_money_test_user      │
               └───────────────────────────┘
 ```
 
-**The agent is a thin router** (~120 lines) with no embedded product knowledge. **Skills** translate developer intent into MCP queries and assemble the response. **The MCP** is the single source of truth — all endpoints, payloads, code snippets, and quality criteria are pulled live. There is no offline mode.
+**The agent is a router** with no embedded product implementation guide. **Skills** assemble offline-capable scaffolds from curated references and use MCP tools for live documentation gaps, account data, test-user actions, webhook configuration, quality evaluation, and homologation. OAuth is never requested as a generic pre-flight check.
 
 ## Infrastructure
 
@@ -137,13 +158,21 @@ All product knowledge (endpoint URLs, request/response schemas, code snippets, p
 | Hook | `validate_mp_credentials` | Credential scanner — blocks hardcoded MP tokens from reaching source files |
 | Hook | `check-version` | Runs on every prompt to verify plugin version compatibility |
 | MCP | `mercadopago` | Live Mercado Pago API access via OAuth (`mcp.mercadopago.com`) |
-| CI | `validate.yml` | JSON validation, Python syntax checks, skill integrity |
+| CI | `validate.yml` | Hook tests, all deterministic product suites, strict plugin validation, and catalog integrity |
 
-## Requirements
+## Compatibility and requirements
 
-- [Claude Code](https://claude.com/claude-code) CLI
-- Node.js 18+ (for the MCP server)
-- Python 3.8+ (for the credential scanning hook)
+For plugin users:
+
+- [Claude Code](https://claude.com/claude-code); release validation uses 2.1.228 or newer.
+- Python 3.8+ for the credential scanning hook.
+- macOS or Linux. On Windows, use WSL; native Windows is not yet part of the release gate.
+
+The Mercado Pago MCP server is remote and does **not** require a local Node.js server. Repository contributors need Node.js 20+ and npm 10+; see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Security and privacy
+
+Read [SECURITY.md](./SECURITY.md) before reporting a vulnerability or credential exposure. [PRIVACY.md](./PRIVACY.md) documents which operations remain local and what an explicitly selected MCP call may transmit.
 
 ## Contributing
 

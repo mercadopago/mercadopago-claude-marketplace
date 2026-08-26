@@ -16,18 +16,17 @@
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
-      "Bash(git branch *)",
-      "mcp__plugin_mercadopago_mcp__search_documentation",
-      "mcp__plugin_mercadopago_mcp__quality_checklist",
-      "mcp__plugin_mercadopago_mcp__quality_evaluation",
-      "mcp__plugin_mercadopago_mcp__notifications_history",
-      "mcp__plugin_mercadopago_mcp__application_list",
-      "mcp__plugin_mercadopago_mcp__create_test_user",
-      "mcp__plugin_mercadopago_mcp__add_money_test_user"
+      "Bash(git branch *)"
     ],
     "deny": [
       "Read(.env)",
-      "Read(.env.*)",
+      "Read(.env.local)",
+      "Read(.env.development)",
+      "Read(.env.production)",
+      "Read(.env.test)",
+      "Read(.env.staging)",
+      "Read(.envrc)",
+      "Read(*.env)",
       "Bash(rm -rf *)",
       "Bash(rm -r *)",
       "Bash(git push --force *)",
@@ -36,5 +35,5 @@
       "Bash(git clean -f *)"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": false
 }

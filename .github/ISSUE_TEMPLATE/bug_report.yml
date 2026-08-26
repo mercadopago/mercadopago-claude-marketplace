@@ -1,0 +1,63 @@
+name: Bug report
+description: Report reproducible plugin behavior that does not contain sensitive data
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, buyer data, or payment payloads. Report security issues through the private advisory link in SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: Plugin and Claude Code versions
+      placeholder: "Mercado Pago plugin 4.3.1; Claude Code 2.1.228"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "macOS 15 / Linux; installation method; application stack"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem
+      description: Describe the expected and actual behavior using redacted values.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest reproducible sequence and relevant redacted logs.
+    validations:
+      required: true
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      options:
+        - Checkout Pro
+        - Checkout API
+        - Bricks
+        - QR
+        - Point
+        - Subscriptions
+        - Marketplace
+        - Wallet Connect
+        - Payouts
+        - SmartApps
+        - Webhooks / test setup / review
+        - Repository tooling
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I removed credentials, buyer data, and unredacted payment payloads.
+          required: true

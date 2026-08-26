@@ -1,5 +1,5 @@
 ---
-description: Review a Mercado Pago integration against the official quality checklist (live from MCP) and a fixed cross-cutting security checklist.
+description: Review a Mercado Pago integration with a local security checklist and, when requested, the official quality checklist from MCP.
 argument-hint: "[security|webhooks|checkout|qr|subscriptions|marketplace|quality|full]"
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
@@ -8,20 +8,19 @@ allowed-tools: [Read, Grep, Glob, Bash, AskUserQuestion]
 
 # /mp-review
 
-Audit the current project's Mercado Pago integration. Delegates to the `mp-review` skill, which orchestrates the MCP `quality_checklist` (and `quality_evaluation` when applicable) plus a fixed security floor.
+Audit the current project's Mercado Pago integration. Local security checks require no MCP connection. Official quality and homologation operations connect only when their MCP tools are about to be used.
 
 ## Behaviour
 
-0. **State C check:** If neither `mcp__plugin_mercadopago_mcp__application_list` nor `mcp__plugin_mercadopago_mcp__authenticate` is visible in your tool list, the plugin is not loaded. Tell the user: *"The Mercado Pago plugin is not loaded. Run /mcp, find plugin:mercadopago:mcp, enable it, then run /mp-review again."* Stop.
-
-1. Verify the Mercado Pago MCP is **actually authenticated** by checking that `mcp__plugin_mercadopago_mcp__application_list` is callable and returns an app. The bootstrap tools `authenticate` / `complete_authentication` always exist and prove nothing; `ListMcpResourcesTool` returns "No resources found" either way. If the data tools are not available, call `mcp__plugin_mercadopago_mcp__authenticate` to get the authorization URL and show it directly in chat — do not send the user to `/mcp` manually. **There is no offline mode** — the official checklist must come from the MCP.
-2. Hand control to the `mp-review` skill, passing `$ARGUMENTS` (the scope) through.
+0. The MCP configuration is bundled with the plugin. Never copy `.mcp.json` into the project and never scan an installation cache.
+1. Hand control to the `mp-review` skill, passing `$ARGUMENTS` through. Do not check MCP status first.
+2. Connect only immediately before the skill calls an MCP tool. Scope `security` is fully local. Other scopes may run their local portions first and authenticate only when they reach `quality_checklist`, `quality_evaluation`, `form_homologation`, `save_webhook`, or `notifications_history`.
 
 ## Scopes
 
 `$ARGUMENTS` (optional) narrows the review:
 
-- `security` — credentials, HTTPS, HMAC, server-side verification, idempotency.
+- `security` — credentials, HTTPS, HMAC, server-side verification, idempotency; no MCP connection.
 - `webhooks` — defers to `mp-webhooks` for receiver correctness.
 - `checkout` / `qr` / `subscriptions` / `marketplace` — product-scoped check.
 - `quality` — only the official `quality_checklist` items.

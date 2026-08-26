@@ -1,9 +1,8 @@
 {
-  "generated_at": "2026-08-06T16:28:06.439528+00:00",
   "plugin": {
     "name": "mercadopago",
-    "version": "4.3.0",
-    "description": "Mercado Pago integration toolkit for Claude Code. One agent routes to four skills: mp-integrate (full wizard for Checkout Pro, Checkout API, Bricks, QR Code, Point, Subscriptions, Marketplace, Wallet Connect — plus /mp-integrate migrate to upgrade legacy Instore integrations to the Orders API), mp-webhooks (HMAC-validated receiver scaffold + diagnostics), mp-test-setup (test users, credentials, and test cards for AR/BR/MX/CO/CL), and mp-review (quality and security checklist before going live). Scaffolding works without MCP auth; live docs, credential lookup, and test-user creation use the official Mercado Pago MCP server.",
+    "version": "4.3.1",
+    "description": "Mercado Pago integration toolkit for Claude Code. One agent routes to four skills: mp-integrate (wizard for Checkout Pro, Checkout API, Bricks, QR Code, Point, Subscriptions, Marketplace, Wallet Connect, Payouts, and SmartApps — plus migration of legacy Instore integrations to the Orders API), mp-webhooks (HMAC-validated receiver scaffold and diagnostics), mp-test-setup (test users, credentials, and test cards), and mp-review (quality and security checks). Scaffolding works offline where possible; live account and documentation operations use the official Mercado Pago MCP server on demand.",
     "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
     "license": "Apache-2.0",
     "author": "Mercado Pago Developer Experience",
@@ -17,6 +16,8 @@
       "point",
       "subscriptions",
       "marketplace",
+      "payouts",
+      "smartapps",
       "wallet",
       "3ds",
       "fintech",
@@ -34,8 +35,8 @@
     {
       "name": "mp-integration-expert",
       "type": "agent",
-      "description": "Use when implementing, reviewing, or debugging any Mercado Pago payment integration. Routes the request to one of four skills (mp-integrate, mp-webhooks, mp-test-setup, mp-review) and uses the Mercado Pago MCP server for live API data. The MCP must always be connected — there is no offline mode.",
-      "version": "4.3.0",
+      "description": "Use when implementing, reviewing, or debugging any Mercado Pago payment integration. Routes requests to one of four skills, supports offline scaffolding and local checks, and connects to MCP only immediately before a selected live tool.",
+      "version": "4.3.1",
       "tags": [
         "payments",
         "mercadopago",
@@ -55,8 +56,8 @@
     {
       "name": "mp-integrate",
       "type": "skill",
-      "description": "Wizard that scaffolds a complete Mercado Pago integration for any product. Asks the developer the minimum questions needed (country, product, variant, SDK, mode), queries the MCP server for live docs, and produces a ready-to-paste code bundle. Use whenever the developer wants to add or migrate a Mercado Pago payment flow.",
-      "version": "4.3.0",
+      "description": "Wizard that scaffolds a complete Mercado Pago integration from official and bundled sources, using MCP only for selected account actions or documentation gaps. Use whenever the developer wants to add or migrate a Mercado Pago payment flow.",
+      "version": "4.3.1",
       "tags": [
         "mercadopago",
         "integration",
@@ -67,6 +68,8 @@
         "point",
         "subscriptions",
         "marketplace",
+        "payouts",
+        "smartapps",
         "orders",
         "sdk"
       ],
@@ -81,8 +84,8 @@
     {
       "name": "mp-review",
       "type": "skill",
-      "description": "Review a Mercado Pago integration against the official quality checklist and a fixed cross-cutting security checklist. Calls quality_checklist (and quality_evaluation when applicable) on the Mercado Pago MCP. Use after the integration is in place, or when /mp-review is invoked.",
-      "version": "4.3.0",
+      "description": "Review a Mercado Pago integration with a local cross-cutting security checklist and official MCP quality tools on demand. Use after the integration is in place, or when /mp-review is invoked.",
+      "version": "4.3.1",
       "tags": [
         "mercadopago",
         "review",
@@ -98,7 +101,7 @@
       "name": "mp-test-setup",
       "type": "skill",
       "description": "Create test users and add funds to them for Mercado Pago testing. Wraps create_test_user and add_money_test_user from the MCP. Clarifies that credentials come in APP_USR- (Orders API, Checkout Pro, Point, QR) and TEST- (Checkout API, Bricks, Payments API) formats — both are valid and actively issued.",
-      "version": "4.3.0",
+      "version": "4.3.1",
       "tags": [
         "mercadopago",
         "testing",
@@ -114,7 +117,7 @@
       "name": "mp-webhooks",
       "type": "skill",
       "description": "Configure and validate Mercado Pago webhooks. Wraps the MCP webhook tools (save_webhook, notifications_history) and provides the HMAC-SHA256 signature validation pattern that every receiver must implement. Use when adding, debugging, or hardening notification handling.",
-      "version": "4.3.0",
+      "version": "4.3.1",
       "tags": [
         "mercadopago",
         "webhooks",
@@ -141,7 +144,7 @@
     {
       "name": "/mp-integrate",
       "type": "command",
-      "description": "Scaffold a Mercado Pago integration via the mp-integrate wizard. Supports every product (Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Money Out, SmartApps). Also migrates existing Payments API integrations to the Orders API.",
+      "description": "Scaffold a Mercado Pago integration via the mp-integrate wizard. Supports Checkout Pro, Checkout API, Bricks, QR, Point, Subscriptions, Marketplace, Wallet Connect, Payouts, and SmartApps. Also migrates legacy Instore QR/Point integrations to the Orders API.",
       "argument_hint": "[product=...] [country=...] [mode=...] [client=...] [3ds=yes|no] [recurrent=yes|no] [marketplace=yes|no]  |  webhook  |  test-setup  |  migrate",
       "allowed_tools": [
         "Read",
@@ -159,7 +162,7 @@
     {
       "name": "/mp-review",
       "type": "command",
-      "description": "Review a Mercado Pago integration against the official quality checklist (live from MCP) and a fixed cross-cutting security checklist.",
+      "description": "Review a Mercado Pago integration with a local security checklist and, when requested, the official quality checklist from MCP.",
       "argument_hint": "[security|webhooks|checkout|qr|subscriptions|marketplace|quality|full]",
       "allowed_tools": [
         "Read",

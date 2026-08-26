@@ -1,245 +1,112 @@
-# Development Spec — mercadopago-claude-marketplace
+# Claude Code Development Contract — Mercado Pago Plugin
 
-## Architecture: MCP-First Orchestration (v4)
+This repository builds the public Mercado Pago marketplace plugin for Claude
+Code. Runtime instructions, paths, hooks, examples, and validation must target
+Claude Code and must be safe for developers outside Mercado Pago/Mercado Libre.
 
-This project follows an **MCP-first orchestration architecture** where:
+## Current architecture (v4.3.1)
 
-- **Agent** = thin router (`mp-integration-expert`) that detects country, mode, and intent, then delegates.
-- **Skills** = orchestrators that translate developer intent into MCP queries and assemble the response. They contain routing logic, gotchas, and a small fixed security floor — **not** documentation copies.
-- **MCP** = the single source of truth (`plugin:mercadopago:mercadopago`). Every endpoint, payload, snippet, payment status, country/product matrix, quality criterion, and webhook tool lives here. Pulled live, never duplicated.
+- One thin router: `plugins/mercadopago/agents/mp-integration-expert.md`.
+- Four passive skills only: `mp-integrate`, `mp-webhooks`, `mp-test-setup`, and
+  `mp-review`.
+- Commands are the user-facing entry points. Skills contain orchestration and
+  approved scaffold contracts; they are not independent agents.
+- Static scaffolding, bundled references, test cards, and local security checks
+  work without MCP authentication.
+- MCP OAuth is requested only immediately before a selected operation needs an
+  authenticated MCP tool.
 
-### The Golden Rules
+## Claude plugin paths
 
-1. **The MCP must always be connected.** This is non-negotiable. The agent and every skill check `ListMcpResourcesTool` first; if the MCP is not authenticated, they stop and ask the user to run `/mp-connect`. **There is no offline mode**, no WebFetch substitute for an unauthenticated MCP.
-2. **One agent (`mp-integration-expert`).** It is the only directly invocable component. Skills are passive reference documents.
-3. **Four skills only.** `mp-integrate`, `mp-webhooks`, `mp-test-setup`, `mp-review`. Adding a fifth requires rethinking the architecture — most additions belong inside `mp-integrate` as another wizard branch.
-4. **No documentation duplication.** If a piece of information is in the public Mercado Pago docs or returned by an MCP tool, it does not live in this repo.
+- Use `${CLAUDE_PLUGIN_ROOT}` for files shipped with the active plugin version.
+- Use `${CLAUDE_PLUGIN_DATA}` for persistent plugin-owned state.
+- Use `${CLAUDE_PROJECT_DIR}` for the developer's application.
+- Never hardcode or scan `~/.claude/plugins/cache`.
+- Never copy the plugin `.mcp.json` into the developer's project. Claude Code
+  registers the MCP server from the enabled plugin.
 
-## File Format Rules
+## File contracts
 
-### Agent (`agents/*.md`)
+- Agent frontmatter requires `tools`, `model`, `tags`, `category`, and `version`.
+- Skill frontmatter uses `metadata`. Never add top-level `tools` or `model` to a
+  skill.
+- Command frontmatter uses `allowed-tools`, not `tools`.
+- Keep the router under 150 lines and the skill count at four unless the
+  architecture is intentionally redesigned.
 
-```yaml
----
-name: mp-integration-expert
-description: ...
-tools: Read, Grep, Glob, Bash, WebFetch    # REQUIRED for agents
-model: sonnet                                # REQUIRED for agents
-tags: [...]
-category: development
-version: 4.0.0
----
-```
+## Sources and MCP boundary
 
-### Skill (`skills/*/SKILL.md`)
+Use this documentation order:
 
-```yaml
----
-name: mp-integrate
-description: ...
-metadata:                                    # metadata block ONLY
-  version: "4.0.0"
-  author: "Mercado Pago Developer Experience"
-  category: "development"
-  tags: "..."
----
-```
+1. Fetch the official country-specific `developers/llms.txt` at most once per
+   interaction when live product documentation is needed.
+2. Read approved bundled references under
+   `skills/mp-integrate/references/` for stable, version-pinned facts and tested
+   scaffold contracts.
+3. Use MCP `search_documentation` only for a gap in the first two sources, and
+   always for products explicitly marked MCP-required, such as SmartApps.
 
-**NEVER add `tools` or `model` to a SKILL.md.** Adding these fields converts the skill into an independent agent, breaking the single-router architecture. Skills must remain passive reference documents.
+Account data, credential import, application/test-user operations, webhook
+administration, payment/order lookup, and official quality/homologation tools
+always require MCP on demand. Do not authenticate as a generic pre-flight
+check, and never use an unrelated website as a substitute for an MCP operation.
 
-### Command (`commands/*.md`)
+## Credential facts
 
-```yaml
----
-description: ...
-argument-hint: "..."
-allowed-tools: [Read, Write, Edit, Bash]     # allowed-tools, NOT tools
----
-```
+- `APP_USR-` and `TEST-` are both valid credential prefixes. Never infer whether
+  a credential is test or production from the prefix alone; use its Dashboard
+  tab and the selected product/API context.
+- Test users created through `create_test_user` receive `APP_USR-` credentials
+  and still use production API hosts with test-user accounts.
+- There is no sandbox host. Checkout Pro uses `init_point`, never
+  `sandbox_init_point`.
+- Access tokens, client secrets, and webhook secrets stay server-side in local
+  secret storage or environment variables. A public key is client-visible.
 
-## What Goes WHERE
+## Integration invariants
 
-| Content Type | Location | Example |
-|---|---|---|
-| MCP-gate, country detection, mode detection, security floor | `agents/mp-integration-expert.md` | Step 0 — MCP gate; country signal table |
-| Wizard logic + gotchas per product | `skills/mp-integrate/SKILL.md` | "If product=bricks → ask brick variant" |
-| HMAC validation pattern + webhook tool wrappers | `skills/mp-webhooks/SKILL.md` | Reference Node snippet for HMAC-SHA256 |
-| Test user creation + funds + testing-model clarifications | `skills/mp-test-setup/SKILL.md` | "There is no `TEST-` prefix anymore" |
-| Quality checklist orchestration + security floor | `skills/mp-review/SKILL.md` | Cross-cutting security table |
-| Endpoints, request/response payloads, code snippets, status tables, payment methods per country | **MCP server** (fetched at runtime) | `search_documentation`, `quality_checklist` |
-| User-facing commands | `commands/*.md` | `/mp-integrate`, `/mp-review`, `/mp-connect` |
+- Checkout Pro and Checkout API always resolve a concrete entry CTA.
+- Checkout Pro places its Mercado Pago payment button at the resolved CTA.
+- Checkout API creates a separate payment page and links the resolved CTA to it.
+- Every visible checkout field has a persistent associated label.
+- Secure card hosts are never disabled, readonly, inert, or covered by an
+  overlay. Required SDK lifecycle controls remain in the DOM.
+- Public client configuration is loaded at runtime; never substitute an HTML
+  placeholder at response time.
+- Checkout Pro preferences use `/checkout/preferences`, without `/v1`.
+- Installing or updating an SDK requires explicit authorization. After approval,
+  use the official current stable version and update the lockfile.
+- Prerequisites are conditional on the detected product and project stack. Do
+  not require Node/npm for a Java, PHP, Python, Go, or Android-only integration.
+- Never install an OS package or run `sudo` without explicit user authorization.
 
-## What MUST NOT live in this repo
+## Public-repository security
 
-- Endpoint URLs or request/response schemas → MCP.
-- Payment status tables → MCP.
-- Per-country payment methods → MCP.
-- Device model lists for Point → MCP.
-- SDK code samples beyond a single canonical reference (HMAC) → MCP.
-- "How to integrate {product}" step-by-step prose → MCP.
-- Anything described as "always up to date" that is actually static text → MCP.
+- Do not commit credentials, `.env` files, test-user profiles, smoke artifacts,
+  local settings, personal absolute paths, or internal registry URLs.
+- Mutating MCP tools must not be pre-authorized in tracked project settings.
+- Treat hook input as untrusted. Prefer command plus `args` over shell-composed
+  hook commands and handle malformed input safely.
+- Keep SECURITY.md, PRIVACY.md, release notes, supported runtimes, and public
+  contribution instructions accurate.
 
-If you find yourself wanting to add such content, the answer is: **extend the MCP query in the relevant skill instead**.
+## Validation before a commit
 
-## Skill Lifecycle (v4)
-
-1. User invokes `/mp-integrate`, `/mp-review`, or asks the agent a Mercado Pago question.
-2. `mp-integration-expert` runs **Step 0 — MCP gate**. If MCP is not authenticated, it stops.
-3. Agent detects country (from project signals or asks).
-4. Agent detects mode (Orders API vs legacy) from existing code.
-5. Agent delegates to the matching skill: `mp-integrate`, `mp-webhooks`, `mp-test-setup`, or `mp-review`.
-6. The skill itself re-checks the MCP gate (defense in depth), then queries MCP tools to assemble the answer.
-7. The skill returns a deterministic bundle to the agent, which presents it to the user.
-
-## WebFetch Budget (v4)
-
-WebFetch is used for the official `llms.txt` per country (Tier 1 of the documentation hierarchy). This file is public, always current, and a few KB — the developer always has internet.
-
-Documentation hierarchy:
-- **Tier 1**: WebFetch `{country_domain}/developers/llms.txt` — official, always current. Fallback to tier 2 if fails.
-- **Tier 2**: bundled `references/products.md`
-- **Tier 3**: MCP `search_documentation` (auth required)
-
-Limits:
-- **Maximum 1 WebFetch per interaction** — used for the official `llms.txt`. Do not use for anything else.
-- Never use WebFetch as a substitute for missing MCP authentication.
-- Never fetch the same page twice.
-
-## Adding new functionality
-
-The default answer is **extend `mp-integrate`**, not "create a new skill".
-
-- New product to support → add a row in the Product Matrix in `mp-integrate/SKILL.md`, add a Gotchas section, ensure MCP `search_documentation` returns useful results for it.
-- New testing scenario → extend `mp-test-setup`.
-- New webhook tool from MCP → wrap it in `mp-webhooks`.
-- New review dimension → extend `mp-review`'s security floor or add a new query against `quality_checklist`.
-
-If you genuinely need a fifth skill, document why the existing four cannot cover it.
-
-## v4.1 Changes — DX Improvements (June 2026)
-
-Derived from a real integration test session (101 min, 13 findings). Root cause: the plugin assumed the developer arrived with a ready environment. The changes below close that gap without altering the MCP-first architecture.
-
-**Golden Rule update:** The MCP gate is now _selective_, not universal. Gate placement depends on whether the flow actually requires authenticated MCP calls.
-
-### Mudança 1 — Guided onboarding before integration
-
-**Files:** `skills/mp-integrate/SKILL.md` (Step 1.b), `skills/mp-test-setup/SKILL.md` (before Step 1)
-
-Before the integration wizard begins collecting product/country/mode, ask via `AskUserQuestion`:
-- Do you already have a Mercado Pago developer account?
-- Do you already have your test credentials (APP_USR- access token + public key)?
-- Is your environment set up (SDK installed, etc.)?
-
-If any answer is no, route to the appropriate setup step before continuing. Do not silently proceed.
-
-### Mudança 2 — Surgical MCP gate
-
-**Files:** `skills/mp-integrate/SKILL.md` (Step 0), `commands/mp-integrate.md` (Execution rule 1), `skills/mp-webhooks/SKILL.md` (Step 0)
-
-**Gate placement rules — memorize these:**
-
-| Skill / Command | Gate required? | Reason |
-|---|---|---|
-| `mp-review` | **YES — keep** | All checks require authenticated MCP calls |
-| `mp-test-setup` | **YES — keep** | Creates test users via API; cannot work offline |
-| `mp-integrate` (scaffold-only path) | **SOFTEN** | Code scaffolding does not need MCP; gate only before first `search_documentation` call |
-| `mp-webhooks` (scaffold receiver) | **SOFTEN** | Receiver scaffold is static; gate only before `simulate_webhook` or tool calls |
-| `commands/mp-integrate.md` | **SOFTEN** | Mirror the skill: gate only when MCP data is actually needed |
-
-"Soften" means: proceed with scaffold steps and show the OAuth prompt inline (State B) when the first MCP call is reached, rather than blocking at the very start.
-
-### Mudança 3 — Prerequisites checklist
-
-**Files:** `commands/mp-integrate.md` (add before routing table), `skills/mp-integrate/SKILL.md` (Step 0 or Step 1.a)
-
-Add a visible prerequisites block before any wizard step:
-
-```
-Before we start, you'll need:
-- [ ] A Mercado Pago developer account (mercadopago.com.{country}/developers)
-- [ ] An app created in the Developer Dashboard
-- [ ] Test credentials: APP_USR- access token + public key (tab "Prueba" / "Teste")
-- [ ] @mercadopago/sdk-react installed (if React project)
-```
-
-### Mudança 4 — Static anchor files (`llms.txt` + `references/products.md`)
-
-**Files to CREATE:**
-- `plugins/mercadopago/llms.txt` — editorial rules readable before auth (no frontmatter, plain text)
-- `plugins/mercadopago/skills/mp-integrate/references/products.md` — SDK components per product, test card data per country
-
-**File to UPDATE:** `skills/mp-test-setup/SKILL.md` Step 4
-
-Change Step 4 from:
-> "do NOT invent card numbers. Query MCP `search_documentation` with 'test cards {country}'"
-
-To:
-> "Read `skills/mp-integrate/references/products.md` first for bundled test card data. Only fall back to MCP `search_documentation` if the country is not listed in the file."
-
-**What goes in `references/products.md`:**
-- `@mercadopago/sdk-react` component map: `CardPayment` (not `CardForm` — CardForm does not exist), `Payment`, `StatusScreen`, `Wallet`
-- Test card numbers per country (AR, BR, MX, CO, CL) — static, curated, version-pinned
-- Any fact that (a) changes rarely and (b) where a hallucination has high DX impact
-
-**What does NOT go in `references/products.md`:** endpoint URLs, payment status tables, per-country payment methods — those stay in MCP.
-
-**`llms.txt` purpose:** Provides the model with editorial anchors (SDK component names, prefix rules, no-`sandbox_init_point`) that it can read before OAuth completes. Think of it as a pre-auth guard rail.
-
-> **Validation checklist update:** Remove the check `test -z "$(find plugins/mercadopago/skills -name 'references' -type d)"` — `references/` is now intentional in `mp-integrate`. Update to: `find plugins/mercadopago/skills -name 'references' -type d | grep -v mp-integrate && echo "ERROR: unexpected references dirs" || echo "OK"`.
-
-### Mudança 5 — MCP auto-config on install (already resolved)
-
-**Status: `.mcp.json` already exists at `plugins/mercadopago/.mcp.json`.**
-
-The root cause of the test session was a manual install that did not copy `.mcp.json` to the project. No code change needed. Action required:
-
-**Document the manual install path** in `commands/mp-connect.md` or a README:
-> If you installed the plugin manually (not via `claude plugin install`), copy `plugins/mercadopago/.mcp.json` to your project root and restart Claude Code. The file configures the MCP server at `https://mcp.mercadopago.com/mcp` automatically.
-
----
-
-## Validation Checklist
-
-Before pushing changes:
+Run the repository gate:
 
 ```bash
-# JSON validation
-python3 -m json.tool .claude/settings.json
-python3 -m json.tool .claude-plugin/marketplace.json
-python3 -m json.tool plugins/mercadopago/.claude-plugin/plugin.json
-
-# Hook compilation
-python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
-
-# Skill count (currently 4 — must stay at 4 unless architecture changes)
-find plugins/mercadopago/skills -name "SKILL.md" | wc -l
-
-# Agent weight (should be < 150 lines — it's a router)
-wc -l plugins/mercadopago/agents/mp-integration-expert.md
-
-# CRITICAL: No skill should have 'tools:' in frontmatter
-grep -rl "^tools:" plugins/mercadopago/skills/*/SKILL.md && echo "ERROR: skills must not have tools field" || echo "OK"
-
-# Every skill mentions the MCP gate
-# mp-integrate uses a soft gate (authenticate inline) — both patterns are valid
-for f in plugins/mercadopago/skills/*/SKILL.md; do
-  grep -q "ListMcpResourcesTool\|MCP is connected\|mp-connect\|authenticate" "$f" || echo "MISSING MCP GATE: $f"
-done
-
-# All skills have valid YAML frontmatter
-for f in plugins/mercadopago/skills/*/SKILL.md; do head -1 "$f"; done
-
-# No unexpected reference dirs (references/ is allowed only in mp-integrate)
-find plugins/mercadopago/skills -name 'references' -type d 2>/dev/null | grep -v mp-integrate && echo "ERROR: unexpected references dirs" || echo "OK"
+sh .githooks/pre-commit
 ```
 
-## pre-commit
+It must syntax-check every plugin script, run all deterministic product suites,
+and validate both marketplace and plugin manifests. CI must run the same gate
+with Node 20 and strict Claude plugin validation. Also verify:
 
-This repo uses a git hook in `.githooks/pre-commit` to run `claude plugins validate .` and then validate each first-level plugin directory under `plugins/*/` before each commit.
+- exactly four `SKILL.md` files;
+- no skill contains top-level `tools:`;
+- the router remains below 150 lines;
+- no unexpected `references/` directory exists outside `mp-integrate`;
+- `python3 scripts/generate_catalog.py` produces no uncommitted diff.
 
-Mandatory setup:
-
-```bash
-bash scripts/install-git-hooks.sh
-```
+Do not synchronize an installed plugin cache, commit, push, tag, or publish a
+release unless the developer explicitly requests that specific action.

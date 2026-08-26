@@ -7,3 +7,5 @@ updates:
       day: monday
     commit-message:
       prefix: "ci"
+    cooldown:
+      default-days: 7

@@ -10,7 +10,7 @@ Uses only Python stdlib — no external dependencies.
 import json
 import os
 import re
-from datetime import datetime, timezone
+import argparse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -202,8 +202,10 @@ def collect_hooks() -> list:
             for hook in entry.get("hooks", []):
                 hook_type = hook.get("type", "")
                 command = hook.get("command", "")
+                args = hook.get("args", [])
                 # Derive a friendly name from the command
-                name = Path(command.split("/")[-1]).stem if "/" in command else command
+                executable = args[0] if args else command
+                name = Path(executable.split("/")[-1]).stem if "/" in executable else executable
 
                 components.append({
                     "name": name,
@@ -236,7 +238,7 @@ def load_plugin_meta() -> dict:
     }
 
 
-def main():
+def build_catalog() -> dict:
     skills = collect_skills()
     agents = collect_agents()
     commands = collect_commands()
@@ -245,7 +247,6 @@ def main():
     all_components = agents + skills + commands + hooks
 
     catalog = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
         "plugin": load_plugin_meta(),
         "stats": {
             "total": len(all_components),
@@ -257,17 +258,38 @@ def main():
         "components": all_components,
     }
 
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(
-        json.dumps(catalog, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    return catalog
 
-    print(f"Generated {OUTPUT} with {len(all_components)} components:")
-    print(f"  Skills:     {len(skills)}")
-    print(f"  Agents:     {len(agents)}")
-    print(f"  Commands:   {len(commands)}")
-    print(f"  Hooks:      {len(hooks)}")
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail when docs/components.json differs without writing it",
+    )
+    args = parser.parse_args()
+
+    catalog = build_catalog()
+    rendered = json.dumps(catalog, indent=2, ensure_ascii=False) + "\n"
+
+    if args.check:
+        current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.is_file() else ""
+        if current != rendered:
+            print(f"ERROR: {OUTPUT} is stale. Run: python3 scripts/generate_catalog.py")
+            raise SystemExit(1)
+        print(f"Catalog is current: {OUTPUT}")
+        return
+
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT.write_text(rendered, encoding="utf-8")
+
+    stats = catalog["stats"]
+    print(f"Generated {OUTPUT} with {stats['total']} components:")
+    print(f"  Skills:     {stats['skills']}")
+    print(f"  Agents:     {stats['agents']}")
+    print(f"  Commands:   {stats['commands']}")
+    print(f"  Hooks:      {stats['hooks']}")
 
 
 if __name__ == "__main__":
