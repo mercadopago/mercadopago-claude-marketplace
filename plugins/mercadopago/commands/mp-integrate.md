@@ -23,16 +23,14 @@ Inspect `$ARGUMENTS`:
 
 ## Execution rules
 
-0. **Use the active Claude plugin root** — run this check via `Bash` as the first action:
-   ```bash
-   if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || [ ! -f "${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/SKILL.md" ]; then
-     echo "PLUGIN_NOT_FOUND"
-     exit 1
-   fi
-   printf 'CLAUDE_PLUGIN_ROOT=%s\n' "$CLAUDE_PLUGIN_ROOT"
-   ```
-
-   Use `${CLAUDE_PLUGIN_ROOT}` for every bundled skill, reference, and script. Never scan a cache, load another marketplace copy, or copy the plugin's `.mcp.json` into the developer's project. If the check fails, instruct the developer to run `/reload-plugins` and retry.
+0. **Use the active Claude plugin root directly** — do not launch a `Bash`
+   preflight to inspect `CLAUDE_PLUGIN_ROOT`. Read the routed skill file with the
+   `Read` tool using its `${CLAUDE_PLUGIN_ROOT}/skills/...` path; Claude Code
+   resolves the exact placeholder to the active plugin version before the tool
+   call. Never scan a cache, load another marketplace copy, or copy the plugin's
+   `.mcp.json` into the developer's project. If `Read` reports that the routed
+   file does not exist, instruct the developer to run `/reload-plugins` and
+   retry.
 
 1. **Pre-flight + readiness — execute in this exact order. Do not call MCP just to inspect connection state.**
 

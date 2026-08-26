@@ -129,6 +129,10 @@ try {
       || /cp\s+[\s\S]{0,200}\.mcp\.json/.test(integrateCommand)) {
     throw new Error('mp-integrate must use the active Claude plugin root and never copy MCP configuration');
   }
+  if (integrateCommand.includes('${CLAUDE_PLUGIN_ROOT:-}')
+      || integrateCommand.includes('PLUGIN_NOT_FOUND')) {
+    throw new Error('mp-integrate must not probe CLAUDE_PLUGIN_ROOT from a Bash tool call');
+  }
   const integrateSkill = fs.readFileSync(path.join(pluginRoot, 'skills/mp-integrate/SKILL.md'), 'utf8');
   if (!integrateSkill.includes('${CLAUDE_PLUGIN_ROOT}/scripts/validate-checkout-screen.mjs')
       || integrateSkill.includes('$MP_PLUGIN_ROOT/scripts/')) {
