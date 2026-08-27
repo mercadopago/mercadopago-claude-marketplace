@@ -13,6 +13,7 @@ python3 -m json.tool plugins/mercadopago/.mcp.json >/dev/null
 python3 -m json.tool plugins/mercadopago/hooks/hooks.json >/dev/null
 python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
 python3 -m unittest plugins/mercadopago/hooks/test_validate_mp_credentials.py
+bash plugins/mercadopago/hooks/test-resolve-python.sh
 
 for script in plugins/mercadopago/scripts/*.mjs; do
   [ -f "$script" ] || continue

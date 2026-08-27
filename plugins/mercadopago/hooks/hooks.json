@@ -19,8 +19,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/validate_mp_credentials.py"],
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run-credential-check.sh"],
             "timeout": 10
           }
         ]

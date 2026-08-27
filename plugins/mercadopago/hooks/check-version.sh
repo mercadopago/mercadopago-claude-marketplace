@@ -15,7 +15,7 @@ PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-}"
 VERSION_FILE="$PLUGIN_ROOT/.claude-plugin/plugin.json"
 [[ -f "$VERSION_FILE" ]] || exit 0
 
-current=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['version'])" "$VERSION_FILE" 2>/dev/null) || exit 0
+current=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$VERSION_FILE" | head -1 | sed -E 's/.*"([^"]+)"$/\1/') || exit 0
 [[ -z "$current" ]] && exit 0
 
 SEEN_DIR="$PLUGIN_DATA"
