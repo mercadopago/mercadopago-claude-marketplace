@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Marketplace guide: document that `GET /users/{user_id}/stores/search` and `GET /pos` return `403 PA_UNAUTHORIZED_RESULT_FROM_POLICIES` for seller tokens issued by an online-payments application, and describe the second Point-type application pattern for marketplaces that need connected sellers' stores and POS.
+
 ### Changed
 
 - The Commerce Agents plugin now discovers Python 3.11+ agent backends and
