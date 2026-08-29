@@ -1,5 +1,5 @@
 # Guide: Marketplace — Split Payments 1:1
-# Updated: 2026-08-21 | Sources: official Mercado Pago Split Payments and OAuth docs
+# Updated: 2026-08-28 | Sources: official Mercado Pago Split Payments and OAuth docs
 
 ## Choose the checkout contract first
 
@@ -49,6 +49,33 @@ the standalone Checkout API Orders contract onto Marketplace.
 7. Never create a fake seller record or silently fall back to the marketplace's
    own `MP_ACCESS_TOKEN`. Every split request must use the connected seller's
    decrypted OAuth access token in `Authorization: Bearer ...`.
+
+## Seller stores and POS require a Point-type application
+
+A seller OAuth token issued by an application registered for online payments
+(Checkout Pro, Checkout API, Bricks) can read the seller's payments through
+`/v1/payments/search`, but `GET /users/{user_id}/stores/search` and `GET /pos`
+return `403 PA_UNAUTHORIZED_RESULT_FROM_POLICIES` for that token. Access to
+connected sellers' stores and POS is granted by the application type in the
+Developer Dashboard ("Pagos presenciales" / Point), not by an OAuth scope, so
+re-authorizing the seller with the same application does not fix it.
+
+When the marketplace needs stores or POS of connected sellers (for example, to
+map each Point terminal to a different branch or invoicing point):
+
+1. Do not reclassify an application that already has sellers connected for
+   online payments. Create a second application registered as Point, with its
+   own `MP_APP_ID`, `MP_CLIENT_SECRET`, and redirect URI.
+2. Persist which application issued each seller connection. Keep the online
+   application as the default and offer the Point application only to sellers
+   that need store/POS access; those sellers must complete a new OAuth
+   authorization with the Point application.
+3. Resolve the credentials for token exchange and refresh from the application
+   stored on the connection, never from a single global pair.
+
+A Point application token still returns the seller's payments through
+`/v1/payments/search`; verify this against a real seller account before
+migrating anyone.
 
 ## Trusted commerce contract
 
