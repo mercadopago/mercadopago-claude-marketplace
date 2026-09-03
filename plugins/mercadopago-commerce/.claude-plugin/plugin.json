@@ -1,0 +1,10 @@
+{
+  "name": "mercadopago-commerce",
+  "displayName": "Mercado Pago for Commerce Agents",
+  "description": "Wires Mercado Pago Checkout Pro into an Anthropic commerce-agents deployment. Implements the blueprint's checkout_handoff so a shopping agent hands its cart to a real Mercado Pago hosted checkout, with prices rebuilt server-side from the catalog and the payment confirmed by lookup rather than by redirect. Requires the mercadopago plugin for its bundled Checkout Pro reference and MCP server.",
+  "version": "0.1.0",
+  "author": { "name": "Mercado Pago Developer Experience" },
+  "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
+  "license": "Apache-2.0",
+  "keywords": ["mercadopago", "commerce-agents", "agentic-commerce", "checkout-pro", "shopping-agent", "claude-for-commerce", "payments"]
+}
