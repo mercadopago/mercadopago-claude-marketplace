@@ -58,8 +58,8 @@ check, and never use an unrelated website as a substitute for an MCP operation.
   tab and the selected product/API context.
 - Test users created through `create_test_user` receive `APP_USR-` credentials
   and still use production API hosts with test-user accounts.
-- There is no sandbox host. Checkout Pro uses `init_point`, never
-  `sandbox_init_point`.
+- There is no sandbox host. Checkout Pro via Preferences uses `init_point`,
+  never `sandbox_init_point`; Checkout Pro via Orders uses `checkout_url`.
 - Access tokens, client secrets, and webhook secrets stay server-side in local
   secret storage or environment variables. A public key is client-visible.
 
@@ -73,7 +73,9 @@ check, and never use an unrelated website as a substitute for an MCP operation.
   overlay. Required SDK lifecycle controls remain in the DOM.
 - Public client configuration is loaded at runtime; never substitute an HTML
   placeholder at response time.
-- Checkout Pro preferences use `/checkout/preferences`, without `/v1`.
+- Checkout Pro via Preferences uses `/checkout/preferences`, without `/v1`.
+  Checkout Pro via Orders uses `POST /v1/orders`; do not call Checkout API's
+  `/process` endpoint from that hosted flow.
 - Installing or updating an SDK requires explicit authorization. After approval,
   use the official current stable version and update the lockfile.
 - Prerequisites are conditional on the detected product and project stack. Do

@@ -9,10 +9,18 @@ cd "$repo_root"
 python3 -m json.tool .claude/settings.json >/dev/null
 python3 -m json.tool .claude-plugin/marketplace.json >/dev/null
 python3 -m json.tool plugins/mercadopago/.claude-plugin/plugin.json >/dev/null
+python3 -m json.tool plugins/mercadopago-commerce/.claude-plugin/plugin.json >/dev/null
 python3 -m json.tool plugins/mercadopago/.mcp.json >/dev/null
 python3 -m json.tool plugins/mercadopago/hooks/hooks.json >/dev/null
 python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
 python3 -m unittest plugins/mercadopago/hooks/test_validate_mp_credentials.py
+python3 -m py_compile \
+  plugins/mercadopago-commerce/templates/mp_checkout.py \
+  plugins/mercadopago-commerce/templates/mp_retail.py \
+  plugins/mercadopago-commerce/templates/mp_confirm.py
+python3 -m unittest discover \
+  -s plugins/mercadopago-commerce/tests \
+  -p 'test_*.py'
 
 for script in plugins/mercadopago/scripts/*.mjs; do
   [ -f "$script" ] || continue
@@ -31,6 +39,7 @@ node plugins/mercadopago/scripts/test-payouts-tools.mjs
 
 claude plugins validate . --strict
 claude plugins validate plugins/mercadopago --strict
+claude plugins validate plugins/mercadopago-commerce --strict
 
 skill_count="$(find plugins/mercadopago/skills -name SKILL.md -type f | wc -l | tr -d ' ')"
 [ "$skill_count" = "4" ] || {

@@ -1,43 +1,88 @@
 # Mercado Pago for Commerce Agents
 
-Turns an [Anthropic commerce-agents](https://github.com/anthropics/commerce-agents) shopping agent into one that takes real money through Mercado Pago Checkout Pro.
+Adds a Mercado Pago hosted payment handoff to Anthropic's
+[commerce-agents](https://github.com/anthropics/commerce-agents) blueprint.
+This preview uses **Checkout Pro via Orders API**, the flow that creates an
+online Order and returns a `checkout_url`.
 
-## Why this exists
+The plugin is a scaffold, not a payment tool exposed to Claude. It installs a
+server-side adapter into the retail demo; the shopper still reviews and
+completes the payment on Mercado Pago.
 
-Anthropic's blueprint deliberately stops short of payment — *"leaves payment to you, whether that is your existing checkout or an agentic payments provider"* — and exposes one optional method for the host to fill:
+## How it fits
 
-```python
-async def checkout_handoff(self, session, cart) -> list[CheckoutHandoff]
+```text
+Claude builds a cart
+  -> the retailer backend reloads products and prices from its catalog
+  -> POST /v1/orders (type=online, processing_mode=manual)
+  -> Mercado Pago returns id + checkout_url
+  -> commerce-agents renders that URL after the model call
+  -> webhook + GET /v1/orders/{id} confirm the final state
 ```
 
-The executor attaches the returned URL to the checkout card **after** the model's call, so the URL never reaches the model. A Checkout Pro `init_point` is exactly that URL, which makes the whole integration a single method.
+Claude never receives the Access Token, idempotency key, raw Mercado Pago
+response or `checkout_url`. The commerce-agents executor attaches the handoff
+URL to the checkout card after the model call.
 
-## Requires
+## Demo
 
-The **`mercadopago`** plugin from this same marketplace. This plugin ships no MCP server of its own: it reuses that one, so there is a single authentication for both. It also reads that plugin's bundled Checkout Pro guide instead of carrying its own copy.
+Run this command inside a commerce-agents checkout:
 
-## Use
-
-```
+```text
 /mp-commerce site=MLC
 ```
 
-Run it inside a commerce-agents clone. It writes the Mercado Pago backend, swaps the example's backend construction, and leaves credentials to you.
-
-Then:
+The first version intentionally targets the `retail` example only. After the
+skill writes the scaffold:
 
 ```bash
-python scripts/run_demo.py retail        # API :8000 + storefront :3000
-python scripts/mp_confirm.py             # confirm the payment server-side
+cp mp.env.example .env
+# Fill only test credentials and the test buyer in .env.
+python scripts/run_demo.py retail
 ```
 
-## What it guarantees
+The backend logs the safe Order id. Use it to inspect the Order server-side:
 
-- Prices are rebuilt from the catalog server-side. The cart is written by a language model that reads product descriptions, so its prices are attacker-reachable; they are discarded.
-- The currency comes from configuration, never from the cart, which the blueprint defaults to `USD`.
-- Payment is confirmed by looking it up with `external_reference`, never by trusting redirect parameters.
-- The access token stays in the environment. It is never logged, never in source, and never visible to the model.
+```bash
+python scripts/mp_confirm.py ORDTST01...
+```
+
+`created/created` means that the hosted checkout exists; it does **not** mean
+that payment succeeded. Fulfillment is allowed only after an authenticated
+Order webhook and a server-side lookup report `processed/accredited`, with the
+expected Order id, external reference, amount and currency.
+
+## Security boundaries
+
+- Prices and quantities are validated and repriced from the trusted catalog.
+- Currency and amount formatting come from server-owned configuration.
+- A stable idempotency UUID is derived from the exact logical request. An
+  identical retry in the same shopping session reuses it; changed input gets a
+  different UUID. Production stores should replace this stateless demo rule
+  with their durable purchase-attempt id.
+- The `checkout_url` is treated as an opaque HTTPS value returned by Mercado
+  Pago; the integration checks its Mercado Pago host but never constructs or
+  rewrites it.
+- The response is projected to the few fields the integration needs. In
+  particular, `client_token` is discarded.
+- Browser redirects are never proof of payment.
+
+## Companion capabilities
+
+This plugin has no MCP server and does not require one to write the local
+scaffold. The separate `mercadopago` plugin is optional and can help create test
+users, add signed webhooks and run a final integration review.
+
+Official references:
+
+- [Create a Checkout Pro Order](https://www.mercadopago.com.co/developers/en/docs/checkout-pro-orders/create-order)
+- [Redirect with `checkout_url`](https://www.mercadopago.com.co/developers/en/docs/checkout-pro-orders/web-integration/redirect-buyer-to-checkout)
+- [Order notifications](https://www.mercadopago.com.co/developers/en/docs/checkout-pro-orders/payment-notifications)
 
 ## Status
 
-`0.1.0` — first working integration. Webhooks, split payments across sellers, and the merchant agent are not covered yet.
+`0.2.0` — preview scaffold for Checkout Pro via Orders API. It includes an
+offline-tested create/redirect/state-lookup adapter. A real test-user payment,
+durable attempt store, retry policy and webhook receiver remain explicit
+integration steps; multi-seller split payments and the merchant agent are out
+of scope.

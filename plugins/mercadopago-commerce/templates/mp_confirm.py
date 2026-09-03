@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Confirm a Checkout Pro payment server-side.
+"""Inspect a Checkout Pro Order without trusting browser return parameters.
 
-The redirect back from Mercado Pago carries query parameters an attacker controls,
-so nothing here trusts them. The only thing that decides whether an order was paid
-is this lookup, keyed on the external_reference we generated when the preference
-was created.
+Pass the Order id printed by the demo backend after it creates the handoff:
 
-    python scripts/mp_confirm.py                 # uses the last checkout of the session
-    python scripts/mp_confirm.py <external_ref>  # or an explicit reference
+    python scripts/mp_confirm.py ORDTST01...
+
+For production fulfillment, consume an authenticated Order webhook, run the
+same server-side GET and compare reference, amount and currency with the
+merchant order. This diagnostic only inspects the Mercado Pago state.
 """
 
 from __future__ import annotations
@@ -23,44 +23,41 @@ sys.path.insert(0, str(REPO_ROOT / "examples"))
 
 load_dotenv(REPO_ROOT / ".env", override=False)
 
-from retail.api.mp_checkout import MPConfig, find_payment  # noqa: E402
-from retail.api.mp_retail import LAST_REFERENCE_FILE  # noqa: E402
+from retail.api.mp_checkout import MPConfig, MPConfigError, get_checkout_order  # noqa: E402
 
 
-def resolve_reference(argv: list[str]) -> str:
-    if len(argv) > 1:
-        return argv[1].strip()
-    if LAST_REFERENCE_FILE.exists():
-        return LAST_REFERENCE_FILE.read_text(encoding="utf-8").strip()
-    raise SystemExit(
-        "No external_reference given and no checkout recorded yet.\n"
-        "Run a checkout in the storefront first, or pass the reference as an argument."
-    )
+def resolve_order_id(argv: list[str]) -> str:
+    if len(argv) != 2 or not argv[1].strip():
+        raise SystemExit("Usage: python scripts/mp_confirm.py <order_id>")
+    return argv[1].strip()
 
 
 async def main() -> int:
-    reference = resolve_reference(sys.argv)
-    cfg = MPConfig.from_env()
-
-    print(f"Looking up external_reference={reference} ...")
-    payment = await find_payment(cfg, reference)
-
-    if payment is None:
-        print("No payment found yet for that reference.")
-        print("The buyer may not have finished paying — try again in a few seconds.")
+    order_id = resolve_order_id(sys.argv)
+    try:
+        cfg = MPConfig.from_env()
+        print(f"Looking up order_id={order_id} ...")
+        order = await get_checkout_order(cfg, order_id)
+    except MPConfigError as error:
+        print(f"Lookup failed: {error}")
         return 1
 
-    status = payment.get("status")
     print("")
-    print(f"  status         {status}")
-    print(f"  status_detail  {payment.get('status_detail')}")
-    print(f"  payment_id     {payment.get('id')}")
-    print(f"  amount         {payment.get('transaction_amount')} {payment.get('currency_id')}")
-    print(f"  payment_method {payment.get('payment_method_id')}")
-    print(f"  installments   {payment.get('installments')}")
+    print(f"  status             {order.status}")
+    print(f"  status_detail      {order.status_detail}")
+    print(f"  external_reference {order.external_reference}")
+    print(f"  total_amount        {order.total_amount} {order.currency or ''}".rstrip())
+    print(f"  total_paid_amount   {order.total_paid_amount} {order.currency or ''}".rstrip())
+    print(f"  last_updated_date   {order.last_updated_date}")
     print("")
-    print("APPROVED — confirmed server-side." if status == "approved" else f"NOT approved: {status}")
-    return 0 if status == "approved" else 2
+
+    if order.payment_accredited:
+        print("ACCREDITED — state confirmed server-side.")
+        print("Before fulfillment, also match reference, amount and currency.")
+        return 0
+
+    print("NOT ACCREDITED — do not fulfill this order.")
+    return 2
 
 
 if __name__ == "__main__":

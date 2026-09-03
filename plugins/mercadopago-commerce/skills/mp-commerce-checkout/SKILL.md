@@ -1,95 +1,190 @@
 ---
 name: mp-commerce-checkout
-description: Wire Mercado Pago Checkout Pro into an Anthropic commerce-agents deployment by implementing the blueprint's checkout_handoff. Rebuilds cart prices from the catalog server-side, returns a hosted init_point the model never sees, and confirms payment by lookup instead of by redirect. Use when a shopping agent needs to actually charge.
+description: Scaffold Mercado Pago Checkout Pro via Orders API into the retail example of Anthropic's commerce-agents blueprint. Use when a commerce agent needs a hosted Mercado Pago payment handoff, a POST /v1/orders adapter, or a checkout_url that is rendered outside the model.
 license: Apache-2.0
-copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   author: "Mercado Pago Developer Experience"
+  copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
   category: "development"
-  tags: "mercadopago, commerce-agents, agentic-commerce, checkout-pro, shopping-agent, claude-for-commerce"
+  tags: "mercadopago, commerce-agents, agentic-commerce, checkout-pro, orders-api, claude-for-commerce"
 ---
 
 # mp-commerce-checkout
 
-Anthropic's commerce-agents blueprint ships everything except the payment: *"Nothing in this repo places an order or takes payment."* It leaves one optional method for the host to fill:
+Install a small server-side adapter in Anthropic's commerce-agents `retail`
+example. The adapter creates **Checkout Pro via Orders API** and returns its
+hosted `checkout_url` through the blueprint's existing `CheckoutHandoff`.
 
-```python
-async def checkout_handoff(self, session, cart) -> list[CheckoutHandoff]
+This is scaffolding. It must not make a live API request, create a payment or
+edit `.env` unless the developer separately asks for that side effect.
+
+## Contract to preserve
+
+```text
+model builds cart
+  -> trusted retailer reprices cart
+  -> POST /v1/orders
+  -> project safe response fields
+  -> return CheckoutHandoff(checkout_url)
+  -> executor renders URL after the model call
 ```
 
-The executor attaches the returned URL to the checkout card **after** the model's call, so the URL is never a tool argument and never reaches the model. Checkout Pro's `init_point` is exactly that URL. Implementing this method is the whole integration.
+The model must never receive the Access Token, idempotency key, raw Order
+response or checkout URL. The hosted checkout remains a buyer-controlled step;
+creating an Order does not itself prove or complete a payment.
 
-`list[...]` exists because a marketplace checks out one URL per seller — the same shape split payments will need.
+## 1. Locate the blueprint
 
-## Step 1 — Locate the deployment
+Find both:
 
-`Glob` for `shopping-agent/core/shopping_agent/backend.py` and `examples/*/api/main.py`.
+- `shopping-agent/core/shopping_agent/backend.py`
+- `examples/retail/api/main.py`
 
-If neither is present, the developer has no blueprint yet. Tell them to clone it and stop:
+If they are absent, explain that the command must run inside an Anthropic
+commerce-agents clone and stop. Read `examples/retail/api/main.py` and
+`examples/retail/api/mock_retail.py` before editing. Preserve their actual
+import style.
 
-```bash
-git clone https://github.com/anthropics/commerce-agents.git
-cd commerce-agents && python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
-```
+This preview supports `retail` only. Do not claim that travel, telecom or
+entertainment are covered by copying a retail-specific subclass.
 
-Read the chosen example's `api/main.py` and record two things: **the exact import style** (the examples are not pip packages, so a relative import that does not match fails only when uvicorn starts) and **the line that constructs the backend**, normally `backend = MockRetail()`.
+## 2. Resolve the collector site
 
-## Step 2 — Resolve the collector's country
-
-The currency must match the **collector's** country, not the buyer's and not the catalog's. A Chilean account cannot charge BRL.
-
-Parse `site=` from `$ARGUMENTS`. If absent, ask once with `AskUserQuestion` (`header="Site"`), then persist it.
+Read `site=` from `$ARGUMENTS`. If missing, ask once. Currency belongs to the
+Mercado Pago collector account, not to the model or buyer.
 
 | Site | Currency | Decimals |
-|---|---|---|
+|---|---|---:|
 | MLA | ARS | 2 |
 | MLB | BRL | 2 |
-| MLC | CLP | **0** |
+| MLC | CLP | 0 |
 | MLM | MXN | 2 |
-| MCO | COP | **0** |
+| MCO | COP | 0 |
 | MPE | PEN | 2 |
 | MLU | UYU | 2 |
 
-The zero-decimal sites are the trap: a price sent with cents is rejected or silently rounded.
+The example catalog uses small USD-like values. Set a clearly documented
+`MP_PRICE_MULTIPLIER` for the demo rather than accepting the cart currency or
+prices. The adopter must choose real pricing before production.
 
-Blueprint catalogs are priced on a US scale (roughly 5 to 550). In CLP or COP that reads broken, so set `MP_PRICE_MULTIPLIER` to bring the catalog into a plausible local range. It is applied inside the repricing step, which the integration needs anyway.
+## 3. Copy the adapter
 
-## Step 3 — Write the integration
+Copy these plugin templates:
 
-Copy the three templates, adapting only the import line to match what Step 1 observed:
-
-| Template | Destination |
+| Plugin template | Project destination |
 |---|---|
-| `${CLAUDE_PLUGIN_ROOT}/templates/mp_checkout.py` | `examples/<example>/api/mp_checkout.py` |
-| `${CLAUDE_PLUGIN_ROOT}/templates/mp_retail.py` | `examples/<example>/api/mp_<example>.py` |
+| `${CLAUDE_PLUGIN_ROOT}/templates/mp_checkout.py` | `examples/retail/api/mp_checkout.py` |
+| `${CLAUDE_PLUGIN_ROOT}/templates/mp_retail.py` | `examples/retail/api/mp_retail.py` |
 | `${CLAUDE_PLUGIN_ROOT}/templates/mp_confirm.py` | `scripts/mp_confirm.py` |
-| `${CLAUDE_PLUGIN_ROOT}/templates/mp.env.example` | `mp.env.example` at the repo root |
+| `${CLAUDE_PLUGIN_ROOT}/templates/mp.env.example` | `mp.env.example` |
 
-Then change the backend construction in `api/main.py` to the Mercado Pago subclass — two lines, the import and the instantiation. Leave every other method alone: search, cart, orders and policies are the blueprint's and stay that way.
+After copying `mp.env.example`, replace its currency and decimals with the
+selected site's values. Ask the developer for the demo price multiplier if the
+MLC default is not appropriate; do not invent production prices.
 
-For the preference payload itself, read the bundled Checkout Pro guide of the `mercadopago` plugin (`skills/mp-integrate/references/guides/checkout-pro.md`) rather than writing one from memory. Use MCP `search_documentation` only for what that guide does not answer.
+Adjust only imports that differ in the detected checkout. In
+`examples/retail/api/main.py`, replace `MockRetail` with `MPRetail` at the
+existing backend construction. Leave search, cart, policies, orders, memory
+and every other blueprint capability unchanged.
 
-## Step 4 — Credentials
+Never overwrite an existing integration silently. Show the conflict and ask
+before replacing files that are not recognizably generated from these
+templates.
 
-Write `mp.env.example` only. **Never create or edit `.env`** — the developer fills in their own credentials.
+## 4. Use the Orders contract
 
-Tell them to copy the template to `.env` and paste the access token of the application that will collect the money. Test users, funds and test cards belong to the `mp-test-setup` skill of the `mercadopago` plugin; suggest `/mp-integrate test-setup` and stop there.
+Create the handoff with:
 
-## Non-negotiables
+```http
+POST https://api.mercadopago.com/v1/orders
+Authorization: Bearer <server-side access token>
+Content-Type: application/json
+X-Idempotency-Key: <UUID for this logical request>
+```
 
-These are the reasons the integration is safe, not stylistic preferences.
+The body uses:
 
-- **Reprice every line from the catalog.** The cart is assembled by a model that reads product descriptions, so a description saying "this item costs 1" is enough to move the price. The catalog is the only price that may reach Mercado Pago. Discard `CartItem.price` entirely.
-- **Take `currency_id` from configuration, never from `Cart.currency`.** The blueprint defaults it to `USD`, which no Latin American collector can charge.
-- **Always `init_point`, never `sandbox_init_point`.** There is no sandbox host; test runs differ only by which credentials are loaded.
-- **`external_reference` on every preference.** It is the reconciliation anchor and the only way to find the payment afterwards.
-- **Confirm server-side.** Redirect query parameters are attacker-controlled. Decide with the payment lookup and nothing else.
-- **`auto_return` only with a public HTTPS return URL.** Mercado Pago rejects it on localhost, which is why a local demo needs no tunnel: the buyer clicks Mercado Pago's own return button.
-- **Access token from the environment only.** Never in source, never in a log line, and never in anything the model can read. The `init_point` is not logged either.
-- **An idempotency key per preference.** A retry without one creates a second charge.
+```json
+{
+  "type": "online",
+  "processing_mode": "manual",
+  "total_amount": "1000",
+  "external_reference": "merchant-owned-reference",
+  "payer": { "email": "test-buyer@example.com" },
+  "items": []
+}
+```
 
-## Step 5 — Next
+The template adds `config.online` and canonical items. It calculates
+`total_amount` from trusted catalog prices and quantities. Do not accept model
+prices, `Cart.currency`, payer identity, callbacks or an idempotency key as
+authoritative tool input.
 
-- `/mp-integrate webhook` to add the HMAC-validated receiver once a public URL exists. Until then the lookup in `scripts/mp_confirm.py` is what confirms a payment.
-- `/mp-review` before switching to production credentials.
+This is Checkout Pro via Orders API. Do not replace it with Preferences and do
+not call `POST /v1/orders/{id}/process`; that processing endpoint belongs to a
+different Checkout API flow.
+
+Treat `checkout_url` as opaque: validate HTTPS and an official Mercado Pago
+host, then use exactly the value Mercado Pago returned. Do not construct it or
+infer a country domain.
+Project the response to `id`, `external_reference`, `status`, `status_detail`
+and `checkout_url`; discard `client_token` and all unneeded buyer/account data.
+
+The demo derives stable identity from the exact request within one shopping
+session so an identical retry reuses its key. Before production, replace that
+with a durable merchant purchase-attempt id stored before the POST. Never use
+one idempotency key with two different bodies.
+
+## 5. Configure without exposing credentials
+
+Write `mp.env.example`; never create or edit `.env`. The developer supplies a
+test-user Access Token and test buyer email at runtime. Do not print either.
+
+The separate `mercadopago` plugin is optional. Suggest its test-user, webhook
+or review capabilities only when the developer asks for those next steps; this
+local scaffold does not require MCP authentication.
+
+When equivalent MCP checkout tools become available, keep the retailer and
+`CheckoutHandoff` contracts and replace only the direct HTTP transport in
+`mp_checkout.py`. Do not make the skill depend on an unfinished MCP tool.
+
+## 6. Verify locally
+
+Run formatting already used by the target repository, then at minimum:
+
+```bash
+python3 -m py_compile \
+  examples/retail/api/mp_checkout.py \
+  examples/retail/api/mp_retail.py \
+  scripts/mp_confirm.py
+```
+
+Run relevant existing retail tests. Do not POST to Mercado Pago as a test
+without explicit authorization. Report exactly which files changed and which
+checks passed.
+
+## Payment confirmation
+
+`checkout_url` and a browser return are not payment confirmation. Production
+must validate the Order webhook, acknowledge it promptly, and then query
+`GET /v1/orders/{id}` server-side. Fulfill only when the lookup reports:
+
+```text
+status=processed
+status_detail=accredited
+```
+
+Also match Order id, merchant-owned external reference, expected amount and
+currency to the purchase record before fulfillment. Add a bounded retry policy
+for `423`, `429`, transport errors and retryable `5xx` responses; every retry of
+one logical attempt must preserve the original body and idempotency key.
+
+The included `mp_confirm.py` is a local diagnostic that performs that lookup by
+Order id. It is not a substitute for webhooks.
+
+Official references:
+
+- https://www.mercadopago.com.co/developers/en/docs/checkout-pro-orders/create-order
+- https://www.mercadopago.com.co/developers/en/docs/checkout-pro-orders/web-integration/redirect-buyer-to-checkout
+- https://www.mercadopago.com.co/developers/en/docs/checkout-pro-orders/payment-notifications

@@ -1,40 +1,50 @@
-"""The ACME retail backend, paid through Mercado Pago Checkout Pro.
+"""The ACME retail backend, paid through Checkout Pro via Orders API.
 
 Only ``checkout_handoff`` changes. Search, cart, orders and policies stay exactly as
-the blueprint wrote them, which is the whole point: adding a payment provider to a
-commerce agent is one method, not a rewrite.
+the blueprint wrote them. The handoff is deliberately server-side: Claude never
+receives Mercado Pago credentials or the hosted checkout URL.
 """
 
 from __future__ import annotations
 
 import logging
-import uuid
-from pathlib import Path
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from shopping_agent import Cart, CheckoutHandoff, ShoppingSessionContext
 
 from .mock_retail import MockRetail
-from .mp_checkout import MPConfig, MPConfigError, create_preference
+from .mp_checkout import (
+    MPConfig,
+    MPConfigError,
+    MPPayer,
+    checkout_reference,
+    create_checkout_order,
+    format_amount,
+)
 
 logger = logging.getLogger(__name__)
 
-# Where the last reference is parked so scripts/mp_confirm.py can look the payment up.
-LAST_REFERENCE_FILE = Path(__file__).resolve().parent.parent / "data" / ".mp-last-reference"
-
 
 class MPRetail(MockRetail):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        mp_config: MPConfig | None = None,
+        mp_payer: MPPayer | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        # Fail at boot rather than in front of an audience.
-        self._mp = MPConfig.from_env()
+        # Keep ordinary catalog/search tests independent from payment credentials.
+        # The checkout route still fails closed when configuration is missing.
+        self._mp = mp_config
+        self._payer = mp_payer
 
-    def _reprice(self, cart: Cart) -> list[dict[str, Any]]:
+    def _reprice(self, cart: Cart, cfg: MPConfig) -> list[dict[str, Any]]:
         """Rebuild every line from the catalog, discarding the prices in the cart.
 
-        The cart is assembled by a language model that reads product descriptions, so
-        its prices are attacker-reachable: a description saying "this item costs $1"
-        is enough. The catalog is the only price that may reach Mercado Pago.
+        The model supplies product ids and quantities, never authoritative prices.
+        Re-reading the catalog here protects against stale or tampered cart state.
 
         The currency is taken from configuration for the same reason — ``Cart.currency``
         defaults to USD in the blueprint and a Brazilian collector cannot charge USD.
@@ -43,42 +53,62 @@ class MPRetail(MockRetail):
         for line in cart.items:
             product = self.product(line.product_id)
             if product is None:
-                logger.warning("Skipping unknown product_id in cart: %s", line.product_id)
-                continue
-            unit_price = round(product.price * self._mp.price_multiplier, self._mp.decimals)
-            items.append(
-                {
-                    "id": product.product_id,
-                    "title": product.title,
-                    "quantity": int(line.quantity),
-                    "unit_price": unit_price,
-                    "currency_id": self._mp.currency_id,
-                }
-            )
+                raise ValueError(f"{line.product_id} is not available for checkout")
+            if not product.in_stock:
+                raise ValueError(f"{line.product_id} is out of stock")
+            quantity = line.quantity
+            if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 1:
+                raise ValueError(f"{line.product_id} has an invalid quantity")
+
+            try:
+                unit_price = Decimal(str(product.price)) * cfg.price_multiplier
+            except (InvalidOperation, TypeError, ValueError) as error:
+                raise ValueError(f"{line.product_id} has an invalid catalog price") from error
+            if not unit_price.is_finite() or unit_price <= 0:
+                raise ValueError(f"{line.product_id} has an invalid catalog price")
+            rendered_price = format_amount(unit_price, cfg.decimals)
+            item: dict[str, Any] = {
+                "external_code": product.product_id,
+                "title": product.title,
+                "description": product.short_description or product.title,
+                "quantity": quantity,
+                "unit_price": rendered_price,
+                "unit_measure": "unit",
+            }
+            if product.image_url and product.image_url.startswith("https://"):
+                item["picture_url"] = product.image_url
+            items.append(item)
         return items
 
     async def checkout_handoff(
         self, session: ShoppingSessionContext, cart: Cart
     ) -> list[CheckoutHandoff]:
-        items = self._reprice(cart)
+        cfg = self._mp or MPConfig.from_env()
+        payer = self._payer or MPPayer.from_env()
+        self._mp = cfg
+        self._payer = payer
+
+        items = self._reprice(cart, cfg)
         if not items:
             return []
 
-        external_reference = f"demo-{session.session_id[:12]}-{uuid.uuid4().hex[:8]}"
+        external_reference = checkout_reference(session.session_id, items)
         try:
-            init_point = await create_preference(
-                self._mp, items=items, external_reference=external_reference
+            order = await create_checkout_order(
+                cfg,
+                payer=payer,
+                items=items,
+                external_reference=external_reference,
             )
         except MPConfigError as err:
-            # A failed preference must not take the conversation down with it.
-            logger.error("Checkout Pro preference failed: %s", err)
-            return []
+            logger.error("Mercado Pago checkout order failed: %s", err)
+            raise
 
-        # The reference is safe to record; the init_point is not, so it is never logged.
-        logger.info("Checkout Pro preference ready — external_reference=%s", external_reference)
-        try:
-            LAST_REFERENCE_FILE.write_text(external_reference, encoding="utf-8")
-        except OSError:
-            pass
+        # These identifiers are safe to log. checkout_url and client_token are not.
+        logger.info(
+            "Checkout Pro order ready — order_id=%s external_reference=%s",
+            order.order_id,
+            order.external_reference,
+        )
 
-        return [CheckoutHandoff(url=init_point, label="Pagar com Mercado Pago")]
+        return [CheckoutHandoff(url=order.checkout_url, label=cfg.checkout_label)]
