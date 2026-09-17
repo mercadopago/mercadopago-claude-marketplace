@@ -22,8 +22,8 @@
     {
       "name": "mercadopago-commerce",
       "source": "./plugins/mercadopago-commerce",
-      "description": "Scaffolds Checkout Pro via Orders API in Anthropic's commerce-agents retail example. Reprices the cart server-side, creates an online Order, hands the returned checkout_url to the executor outside the model, and verifies payment state by Order lookup.",
-      "version": "0.2.0",
+      "description": "Wires the versioned Mercado Pago Checkout Pro adapter into Anthropic's commerce-agents retail example. The seller backend owns durable checkout attempts while the library reprices from the trusted catalog and returns the hosted handoff outside the model.",
+      "version": "0.3.0",
       "author": { "name": "Mercado Pago Developer Experience" },
       "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
       "license": "Apache-2.0",

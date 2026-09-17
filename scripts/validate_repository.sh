@@ -14,10 +14,7 @@ python3 -m json.tool plugins/mercadopago/.mcp.json >/dev/null
 python3 -m json.tool plugins/mercadopago/hooks/hooks.json >/dev/null
 python3 -m py_compile plugins/mercadopago/hooks/validate_mp_credentials.py
 python3 -m unittest plugins/mercadopago/hooks/test_validate_mp_credentials.py
-python3 -m py_compile \
-  plugins/mercadopago-commerce/templates/mp_checkout.py \
-  plugins/mercadopago-commerce/templates/mp_retail.py \
-  plugins/mercadopago-commerce/templates/mp_confirm.py
+python3 -m py_compile plugins/mercadopago-commerce/templates/mp_retail.py
 python3 -m unittest discover \
   -s plugins/mercadopago-commerce/tests \
   -p 'test_*.py'
