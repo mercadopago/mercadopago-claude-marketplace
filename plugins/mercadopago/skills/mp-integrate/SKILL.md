@@ -4,7 +4,7 @@ description: Wizard that scaffolds a complete Mercado Pago integration from offi
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.2"
+  version: "4.4.0"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, payouts, smartapps, orders, sdk"
@@ -128,6 +128,16 @@ For a developer without hardware, support the official standard virtual terminal
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-point-server.mjs" "{server_file}"
 ```
+
+**Never run a Point order test as part of scaffolding or completion.** Do not
+start the application, call `POST /api/point/orders`, call `POST /v1/orders`,
+or use `curl`/a browser to exercise the creation route. Each of those actions
+creates a remote order that can remain pending until its selected
+`expiration_time`, interfering with later Point tests. The validator above is
+static and is the only required Point verification at this stage. Only run a
+live Point test after the developer explicitly requests that separate action;
+before it creates an order, state that it will create one and obtain explicit
+confirmation.
 
 ### LOCK 8 — QR uses Orders API with an existing Store and POS
 
@@ -347,6 +357,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-payouts-integration.mjs" . "{AR|BR}
 | `marketplace=` | `yes` / `no` (split payments) |
 | `brick=` | `payment` / `card-payment` / `wallet` / `status-screen` (only when `product=bricks`) |
 | `qr-mode=` | `static` / `dynamic` / `hybrid` (only when `product=qr`) |
+| `point-order-expiration=` | `PT30S` / `PT5M` / `PT10M` (only when `product=point`; this value is never accepted without showing the required picker) |
 | `subscription-model=` | `with-plan` / `without-plan-authorized` / `without-plan-pending` (only when `product=subscriptions`) |
 | `marketplace-checkout=` | `checkout-pro` / `checkout-api` / `bricks-wallet` (only when `product=marketplace`) |
 | `smartapps-agreement=` | `confirmed` (only when `product=smartapps`; absence is never inferred as confirmation) |
@@ -369,6 +380,7 @@ For every dimension, attempt these resolution sources **in order**:
 | `client` | — | — | Inspect `package.json` deps: `react`/`next`→react, `react-native`/`expo`→react-native, `*.xcodeproj`→ios, Android `build.gradle`→android, `pubspec.yaml`→flutter. Single match → resolved. | `AskUserQuestion` (only if product has client component AND ambiguous) |
 | `lang` | — | — | Derive from country (BR→pt, others→es). | Almost never asked — defaulted from country |
 | `mode` | — | Read from progress file | `Grep` for `/v1/orders`/`order.create`→orders; `/v1/payments`/`payment.create`→payments; `/checkout/preferences`/`preference.create`→preferences. Product Matrix may pin to single value (e.g. checkout-pro → always preferences). | `AskUserQuestion` (only when matrix allows >1 AND grep didn't disambiguate) |
+| `point-order-expiration` | — | **Never reuse a persisted value.** | **Never infer from flags or repository.** | **Required `AskUserQuestion` whenever `product=point`, even if a previous run or `$ARGUMENTS` supplied a value.** |
 
 **Concrete order of operations for the wizard (INFER FIRST, ASK LAST):**
 
@@ -393,6 +405,7 @@ For every dimension, attempt these resolution sources **in order**:
 5. If the product needs a client, run `Glob`/`Grep` on manifest deps. If a single client matches, **client resolved**. Skip the client question.
 6. Default `lang` from country. Skip the lang question.
 7. Now — and only now — call `AskUserQuestion` for whatever is still missing, one tool call at a time, in the order defined in Step 1.b. After each answer, **persist it** to `.mp-integrate-progress.md`.
+8. **Point order expiration is an exception to the normal resolved-value rule:** whenever the selected product is `point`, always show its required picker in Step 1.b. Do this even when `.mp-integrate-progress.md` or `$ARGUMENTS` contains `point-order-expiration`; the developer must make the choice in the current integration run.
 
 **Known MCP limitation — country resolution:** The Mercado Pago MCP does not currently expose a tool that returns the developer's `site_id` (neither `application_list` nor `quality_checklist` nor `notifications_history` carry the country in their response). The OAuth access token would let us call `GET https://api.mercadopago.com/users/me` directly, but the token is held by the MCP server and is not exposed to the plugin client. Until MP ships a new MCP tool (e.g. `current_user_info` or a generic `proxy_request`), country resolution is **just**: read `.mp-integrate-progress.md` if it has a country, otherwise ask via `AskUserQuestion` and persist. **Do not** waste tokens grepping the repo for country signals (locales, URLs, `currency_id`, `site_id`, app-name heuristics) — they don't pay off, and asking the developer once is cheaper and more reliable.
 
@@ -459,6 +472,7 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 |-------|-----------|--------|-----------------|
 | 1 | `product` | "Product" | The 4 most likely products as buttons + "Other" auto-fallback. Pick the 4 from this priority: `checkout-pro`, `bricks`, `checkout-api`, `subscriptions` (most common). The remaining ones (`qr`, `point`, `marketplace`, `wallet-connect`, `money-out`, `smartapps`) are reachable via "Other". |
 | 2 | `mode` | "Mode" | **Cross-reference LOCK 2 first.** Skip entirely when LOCK 2 says "Skip the mode question". When asked, only show modes that LOCK 2 explicitly allows for the chosen product. Never include "Orders API" as an option for `checkout-pro`. |
+| 2.5 | `point-order-expiration` | "Order expiration" | **Only when `product=point`; mandatory every run, never skip.** Question: "How long should a Point order remain active before it expires?" Options: `30 seconds` → `PT30S`; `5 minutes` → `PT5M`; `10 minutes` → `PT10M`. Persist the selected ISO 8601 duration for the current run, but never use persistence to skip this picker on a later Point integration. |
 | 3 | `client` | "Client" | Only if the product has a client component AND repo signals were ambiguous. Show the 3 most likely + Other. |
 | 4 | `brick` | "Brick" | Only when `product=bricks`. Options: `payment` / `card-payment` / `wallet` / `status-screen`. |
 | 5 | `qr-mode` | "QR mode" | Only when `product=qr`. Options: `static` / `dynamic` / `hybrid`. |
@@ -651,6 +665,15 @@ Then stop. Specifically:
 
 ## Step 4 — Assemble the bundle
 
+### Point expiration substitution (mandatory)
+
+When `product=point`, the required Step 1.b picker has produced
+`point-order-expiration`. Before rendering or scaffolding the Point server
+snippet, replace its `{POINT_ORDER_EXPIRATION}` marker with the selected value:
+`PT30S`, `PT5M`, or `PT10M`. The resulting application code must contain that
+literal in `expiration_time`; never leave the marker, use a fixed default, or
+ask the developer to edit it afterward.
+
 ### SmartApps bundle override
 
 When `product=smartapps`, do not render the generic server/web checkout bundle
@@ -811,6 +834,11 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-point-server.mjs" "{server_file}"
    ```
+
+   Do not start the app or exercise `/api/point/orders` as a smoke test.
+   This completion path must not create a Point order. See LOCK 7: a live test
+   is permitted only after a separate explicit developer request and
+   confirmation.
 
    **When `product=qr`:** run the QR server acceptance check immediately after writing the server integration. After wiring the client in the application's real charge CTA, run the client acceptance check as well. Fix every failure before continuing or reporting success:
 

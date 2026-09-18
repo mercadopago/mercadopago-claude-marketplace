@@ -33,6 +33,7 @@ requirePattern(/config\s*:\s*\{[\s\S]*?point\s*:\s*\{[\s\S]*?terminal_id\s*:/, '
 requirePattern(/['"]X-Idempotency-Key['"]\s*:/i, 'must send X-Idempotency-Key');
 requirePattern(/external_reference\s*:/, 'must send an external_reference');
 requirePattern(/\.toFixed\(2\)|amount\s*:\s*['"]\d+\.\d{2}['"]/, 'payment amount must be formatted with exactly two decimals');
+requirePattern(/expiration_time\s*:\s*['"]PT(?:30S|5M|10M)['"]/, 'expiration_time must be a resolved ISO 8601 duration (PT30S, PT5M, or PT10M)');
 requirePattern(/MP_POINT_TERMINAL_ID/, 'production terminal must be configurable through MP_POINT_TERMINAL_ID');
 requirePattern(/MP_POINT_TEST_MODE/, 'virtual terminal must be guarded by explicit MP_POINT_TEST_MODE');
 requirePattern(/NEWLAND_N950__SBX0000001/, 'hardware-free test mode must support the standard virtual terminal');
@@ -43,6 +44,7 @@ forbidPattern(/payment-intents?/, 'Payment Intents is forbidden in a new Point s
 forbidPattern(/type\s*:\s*['"](?:instore|online)['"]/, 'Point order must not use type: "instore" or "online"');
 forbidPattern(/config\s*:\s*\{[\s\S]*?device\s*:\s*\{/, 'config.device is obsolete; use config.point.terminal_id');
 forbidPattern(/default_installments\s*:/, 'config.payment_method.default_installments is not supported by the generic Point scaffold');
+forbidPattern(/\{POINT_ORDER_EXPIRATION\}/, 'expiration_time marker was not substituted with the developer\'s selected duration');
 
 const unsafeFallbacks = [
   /MP_POINT_TERMINAL_ID[^\n;]*\|\|[^\n;]*NEWLAND_N950__SBX0000001/,

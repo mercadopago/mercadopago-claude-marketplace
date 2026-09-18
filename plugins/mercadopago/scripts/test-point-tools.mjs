@@ -37,7 +37,8 @@ const validSource = `
     body: JSON.stringify({
       type: 'point', external_reference: randomUUID(),
       transactions: { payments: [{ amount }] },
-      config: { point: { terminal_id: terminalId } }
+      config: { point: { terminal_id: terminalId } },
+      expiration_time: 'PT5M'
     })
   });
   fetch(\`https://api.mercadopago.com/v1/orders/\${orderId}\`);
@@ -67,6 +68,18 @@ try {
     "process.env.MP_POINT_TERMINAL_ID || 'NEWLAND_N950__SBX0000001'",
   ), 1, 'virtual terminal fallback must be conditional');
   validate(
+    'unresolved-expiration-marker',
+    validSource.replace("expiration_time: 'PT5M'", "expiration_time: '{POINT_ORDER_EXPIRATION}'"),
+    1,
+    'expiration_time must be a resolved ISO 8601 duration',
+  );
+  validate(
+    'unsupported-expiration-duration',
+    validSource.replace("expiration_time: 'PT5M'", "expiration_time: 'PT1M'"),
+    1,
+    'expiration_time must be a resolved ISO 8601 duration',
+  );
+  validate(
     'unsupported-point-installments',
     validSource.replace(
       'config: { point: { terminal_id: terminalId } }',
@@ -86,10 +99,37 @@ try {
 
   const pointGuide = path.join(pluginRoot, 'skills/mp-integrate/references/guides/point.md');
   const guide = fs.readFileSync(pointGuide, 'utf8');
+  if (!guide.includes("expiration_time: '{POINT_ORDER_EXPIRATION}'")) {
+    throw new Error('canonical-point-guide: must expose the Point expiration marker for wizard substitution');
+  }
+  const integrationSkill = fs.readFileSync(path.join(pluginRoot, 'skills/mp-integrate/SKILL.md'), 'utf8');
+  for (const requiredText of [
+    'How long should a Point order remain active before it expires?',
+    '`30 seconds` → `PT30S`',
+    '`5 minutes` → `PT5M`',
+    '`10 minutes` → `PT10M`',
+    'mandatory every run, never skip',
+  ]) {
+    if (!integrationSkill.includes(requiredText)) {
+      throw new Error(`mp-integrate Point expiration picker is incomplete: missing ${requiredText}`);
+    }
+  }
+  const normalizedIntegrationSkill = integrationSkill.replace(/\s+/g, ' ');
+  for (const requiredText of [
+    'Never run a Point order test as part of scaffolding or completion.',
+    'Do not start the app or exercise `/api/point/orders` as a smoke test.',
+  ]) {
+    if (!normalizedIntegrationSkill.includes(requiredText)) {
+      throw new Error(`mp-integrate Point no-live-test guard is incomplete: missing ${requiredText}`);
+    }
+  }
+  if (!guide.includes('manual test explicitly requested by the developer')) {
+    throw new Error('canonical-point-guide: must prohibit automatic Point order creation during scaffolding');
+  }
   const guideServer = guide.match(/### server\.js[\s\S]*?```js\n([\s\S]*?)```/)?.[1];
   if (!guideServer) throw new Error('canonical-point-guide: server.js block not found');
   const guideServerFile = path.join(temporaryDirectory, 'canonical-point-guide.mjs');
-  fs.writeFileSync(guideServerFile, guideServer);
+  fs.writeFileSync(guideServerFile, guideServer.replace('{POINT_ORDER_EXPIRATION}', 'PT5M'));
   const guideResult = spawnSync(process.execPath, [serverValidator, guideServerFile], { encoding: 'utf8' });
   if (guideResult.status !== 0) {
     throw new Error(`canonical-point-guide: failed validation\n${guideResult.stdout}${guideResult.stderr}`);
