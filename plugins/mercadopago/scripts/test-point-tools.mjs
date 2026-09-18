@@ -37,7 +37,8 @@ const validSource = `
     body: JSON.stringify({
       type: 'point', external_reference: randomUUID(),
       transactions: { payments: [{ amount }] },
-      config: { point: { terminal_id: terminalId } }
+      config: { point: { terminal_id: terminalId } },
+      expiration_time: 'PT5M'
     })
   });
   fetch(\`https://api.mercadopago.com/v1/orders/\${orderId}\`);
@@ -66,6 +67,18 @@ try {
     "process.env.MP_POINT_TERMINAL_ID || (testMode ? VIRTUAL_POINT_TERMINAL : '')",
     "process.env.MP_POINT_TERMINAL_ID || 'NEWLAND_N950__SBX0000001'",
   ), 1, 'virtual terminal fallback must be conditional');
+  validate(
+    'unresolved-expiration-marker',
+    validSource.replace("expiration_time: 'PT5M'", "expiration_time: '{POINT_ORDER_EXPIRATION}'"),
+    1,
+    'expiration_time must be a resolved ISO 8601 duration',
+  );
+  validate(
+    'unsupported-expiration-duration',
+    validSource.replace("expiration_time: 'PT5M'", "expiration_time: 'PT1M'"),
+    1,
+    'expiration_time must be a resolved ISO 8601 duration',
+  );
   validate(
     'unsupported-point-installments',
     validSource.replace(
@@ -116,7 +129,7 @@ try {
   const guideServer = guide.match(/### server\.js[\s\S]*?```js\n([\s\S]*?)```/)?.[1];
   if (!guideServer) throw new Error('canonical-point-guide: server.js block not found');
   const guideServerFile = path.join(temporaryDirectory, 'canonical-point-guide.mjs');
-  fs.writeFileSync(guideServerFile, guideServer);
+  fs.writeFileSync(guideServerFile, guideServer.replace('{POINT_ORDER_EXPIRATION}', 'PT5M'));
   const guideResult = spawnSync(process.execPath, [serverValidator, guideServerFile], { encoding: 'utf8' });
   if (guideResult.status !== 0) {
     throw new Error(`canonical-point-guide: failed validation\n${guideResult.stdout}${guideResult.stderr}`);
