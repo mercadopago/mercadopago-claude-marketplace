@@ -81,7 +81,9 @@ app.post('/api/point/orders', async (req, res) => {
     body: JSON.stringify({
       type: 'point',
       external_reference: `point-${randomUUID()}`,
-      expiration_time: 'PT10M',
+      // The mp-integrate Point wizard replaces this marker with the required
+      // current-run choice: PT30S, PT5M, or PT10M.
+      expiration_time: '{POINT_ORDER_EXPIRATION}',
       transactions: {
         payments: [{ amount: amountString }],
       },
@@ -136,8 +138,13 @@ PORT=3000
 
 ## Test the integration without a device
 
-Use app test credentials and create a fresh order for every scenario. After
-creation, simulate its status with:
+Run this only as a **manual test explicitly requested by the developer**. Do
+not create an order automatically while scaffolding or validating the
+integration: an order stays pending until its configured `expiration_time` and
+can interfere with subsequent Point tests. Before creating one, tell the
+developer that the action will create a remote test order and obtain explicit
+confirmation. Use app test credentials and create a fresh order for every
+scenario. After creation, simulate its status with:
 
 ```text
 POST /v1/orders/{order_id}/events

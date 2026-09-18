@@ -86,6 +86,33 @@ try {
 
   const pointGuide = path.join(pluginRoot, 'skills/mp-integrate/references/guides/point.md');
   const guide = fs.readFileSync(pointGuide, 'utf8');
+  if (!guide.includes("expiration_time: '{POINT_ORDER_EXPIRATION}'")) {
+    throw new Error('canonical-point-guide: must expose the Point expiration marker for wizard substitution');
+  }
+  const integrationSkill = fs.readFileSync(path.join(pluginRoot, 'skills/mp-integrate/SKILL.md'), 'utf8');
+  for (const requiredText of [
+    'How long should a Point order remain active before it expires?',
+    '`30 seconds` → `PT30S`',
+    '`5 minutes` → `PT5M`',
+    '`10 minutes` → `PT10M`',
+    'mandatory every run, never skip',
+  ]) {
+    if (!integrationSkill.includes(requiredText)) {
+      throw new Error(`mp-integrate Point expiration picker is incomplete: missing ${requiredText}`);
+    }
+  }
+  const normalizedIntegrationSkill = integrationSkill.replace(/\s+/g, ' ');
+  for (const requiredText of [
+    'Never run a Point order test as part of scaffolding or completion.',
+    'Do not start the app or exercise `/api/point/orders` as a smoke test.',
+  ]) {
+    if (!normalizedIntegrationSkill.includes(requiredText)) {
+      throw new Error(`mp-integrate Point no-live-test guard is incomplete: missing ${requiredText}`);
+    }
+  }
+  if (!guide.includes('manual test explicitly requested by the developer')) {
+    throw new Error('canonical-point-guide: must prohibit automatic Point order creation during scaffolding');
+  }
   const guideServer = guide.match(/### server\.js[\s\S]*?```js\n([\s\S]*?)```/)?.[1];
   if (!guideServer) throw new Error('canonical-point-guide: server.js block not found');
   const guideServerFile = path.join(temporaryDirectory, 'canonical-point-guide.mjs');

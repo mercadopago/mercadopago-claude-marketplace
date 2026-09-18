@@ -12,6 +12,13 @@ All notable changes to this project are documented in this file.
 - Commerce checkout confirmation now queries the Order by id and treats only
   `processed/accredited` as paid.
 
+## [4.4.0] - 2026-09-11
+
+### Changed
+
+- Point integrations now require the developer to choose a 30-second, 5-minute, or 10-minute order expiration for each run; the generated `expiration_time` uses that choice.
+- Point scaffolding no longer creates remote test orders automatically. Live order tests require a separate explicit request and confirmation.
+
 ## [4.3.2] - 2026-08-26
 
 ### Fixed

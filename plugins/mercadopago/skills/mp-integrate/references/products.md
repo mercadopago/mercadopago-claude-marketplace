@@ -1,5 +1,5 @@
 # Mercado Pago — Product Reference
-# Version: 4.3.2 | Updated: 2026-08-26
+# Version: 4.4.0 | Updated: 2026-09-11
 # Source: Official Mercado Pago developer documentation
 #
 # This file is tier-2 in the documentation hierarchy:
