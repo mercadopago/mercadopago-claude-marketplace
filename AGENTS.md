@@ -34,7 +34,9 @@ This repository builds the official Mercado Pago plugin marketplace for Claude C
 - Every visible checkout field has a persistent associated label.
 - Secure card hosts remain interactive and are never disabled, readonly, inert, or covered by an overlay.
 - Public client configuration is loaded at runtime without HTML placeholder substitution.
-- Use `/checkout/preferences` for Checkout Pro preferences; never prefix that route with `/v1`.
+- Checkout Pro via Preferences uses `/checkout/preferences` and returns
+  `init_point`. Checkout Pro via Orders uses `POST /v1/orders` and returns
+  `checkout_url`. Do not mix either contract with Checkout API processing.
 - Never install or update an SDK without authorization. Once authorized, use the official current stable release and update the lockfile.
 
 ## MCP boundary

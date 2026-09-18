@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+
+### Changed
+
+- The Commerce Agents preview now scaffolds Checkout Pro via Orders API and
+  hands its `checkout_url` to Anthropic's executor instead of creating a legacy
+  preference.
+- Commerce checkout confirmation now queries the Order by id and treats only
+  `processed/accredited` as paid.
+
 ## [4.3.2] - 2026-08-26
 
 ### Fixed

@@ -18,6 +18,17 @@
       "license": "Apache-2.0",
       "category": "development",
       "keywords": ["mercadopago", "payments", "checkout", "webhooks", "ipn", "qr", "point", "subscriptions", "marketplace", "payouts", "smartapps", "wallet", "3ds", "fintech", "meli"]
+    },
+    {
+      "name": "mercadopago-commerce",
+      "source": "./plugins/mercadopago-commerce",
+      "description": "Wires the versioned Mercado Pago Checkout Pro adapter into Anthropic's commerce-agents retail example. The seller backend owns durable checkout attempts while the library reprices from the trusted catalog and returns the hosted handoff outside the model.",
+      "version": "0.3.0",
+      "author": { "name": "Mercado Pago Developer Experience" },
+      "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
+      "license": "Apache-2.0",
+      "category": "development",
+      "keywords": ["mercadopago", "commerce-agents", "agentic-commerce", "checkout-pro", "shopping-agent", "claude-for-commerce", "payments"]
     }
   ]
 }
