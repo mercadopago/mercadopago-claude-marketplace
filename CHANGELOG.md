@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- The Commerce Agents plugin now discovers Python 3.11+ agent backends and
+  generates composition-based Checkout Pro adapters instead of requiring the
+  Anthropic `retail` example and its fixed paths.
+- Non-Python projects now receive an explicit, documentation-only Orders API
+  handoff rather than unsupported generated integration code.
 - The Commerce Agents preview now scaffolds Checkout Pro via Orders API and
   hands its `checkout_url` to Anthropic's executor instead of creating a legacy
   preference.
