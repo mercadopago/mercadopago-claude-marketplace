@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a bug or unexpected behavior.
+
+labels:
+  - bug
+
+title: "[BUG]"
+
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for taking the time to report the error. Please complete the template below to the best of your ability and add a brief title to your report. Caution! Don't include any sensitive information in your report, such as credentials, buyer data, or payment payloads.
+
+  - id: what-happened
+    type: textarea
+    attributes:
+      label: What happened?
+      description: Tell us, what did you expect to happen? And what actually happened?
+      placeholder: I was trying to... and then...
+    validations:
+      required: true
+
+  - id: steps-to-reproduce-it
+    type: textarea
+    attributes:
+      label: Steps to reproduce it
+      description: Provide a step by step list of how to reproduce the bug.
+      placeholder: |
+        1. Execute...
+        2. Then execute again...
+        3. Finally, observe the Bug in...
+    validations:
+      required: true
+
+  - id: relevant-material
+    type: textarea
+    attributes:
+      label: Relevant material
+      description: Attach any logs, screenshots, or other files that may help us better understand the issue.
+      placeholder: ...

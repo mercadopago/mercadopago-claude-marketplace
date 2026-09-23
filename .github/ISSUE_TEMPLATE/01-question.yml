@@ -1,0 +1,38 @@
+name: Ask a question
+description: Ask a question about the project or its usage.
+
+labels:
+  - question
+  - help wanted
+
+title: "[QUESTION]"
+
+body:
+  - type: markdown
+    attributes:
+      value: If your question is about a topic outside the Claude Code plugin (e.g., how the API works, how to create an account, etc.), please checkout [Mercado Pago's support center](https://www.mercadopago.com/developers/en/support/center). Caution! Don't include any sensitive information in your question, such as credentials, buyer data, or payment payloads.
+
+  - id: question
+    type: textarea
+    attributes:
+      label: Question
+      description: Tell us, what is your question about the project or its usage?
+      placeholder: I would like to know how to...
+    validations:
+      required: true
+
+  - id: topics
+    type: dropdown
+    attributes:
+      label: What topics match with your question?
+      description: Select the topics that match with your question.
+      options:
+        - Agents
+        - Commands
+        - Hooks
+        - MCPs
+        - Skills
+        - Other
+      multiple: true
+    validations:
+      required: true

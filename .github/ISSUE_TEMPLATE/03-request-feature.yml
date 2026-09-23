@@ -1,0 +1,44 @@
+name: Request a feature
+description: Request a new feature or improvement to the project.
+
+labels:
+  - enhancement
+
+title: "[RFC]"
+
+body:
+  - type: markdown
+    attributes:
+      value: Please complete the template below to the best of your ability and add a brief title to your request. Caution! Don't include any sensitive information in your request, such as credentials, buyer data, or payment payloads.
+
+  - id: feature-description
+    type: textarea
+    attributes:
+      label: Feature description
+      description: Tell us, what feature you would like to see in the project and why it would be beneficial.
+      placeholder: I would like to see a feature that allows...
+    validations:
+      required: true
+
+  - id: affected-areas
+    type: dropdown
+    attributes:
+      label: What areas of the project would be affected by this feature?
+      description: Select the areas that would be affected by the requested feature.
+      options:
+        - Agents
+        - Commands
+        - Hooks
+        - MCPs
+        - Skills
+        - Other
+      multiple: true
+    validations:
+      required: true
+
+  - id: relevant-material
+    type: textarea
+    attributes:
+      label: Relevant material
+      description: Attach any logs, screenshots, or other files that may help us better understand the request.
+      placeholder: ...
