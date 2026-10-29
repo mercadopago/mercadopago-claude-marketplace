@@ -102,7 +102,7 @@ try {
 
   const qrGuide = path.join(pluginRoot, 'skills/mp-integrate/references/guides/qr.md');
   const guide = fs.readFileSync(qrGuide, 'utf8');
-  const guideServer = guide.match(/## Canonical Node\.js \+ Express server[\s\S]*?```js\n([\s\S]*?)```/)?.[1];
+  const guideServer = guide.match(/## Canonical Node\.js \+ Express server[\s\S]*?```js\r?\n([\s\S]*?)```/)?.[1];
   if (!guideServer) throw new Error('canonical-qr-guide: server block not found');
   validate('canonical-qr-guide', guideServer, 0);
 } finally {

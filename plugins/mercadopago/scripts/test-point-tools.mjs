@@ -86,7 +86,7 @@ try {
 
   const pointGuide = path.join(pluginRoot, 'skills/mp-integrate/references/guides/point.md');
   const guide = fs.readFileSync(pointGuide, 'utf8');
-  const guideServer = guide.match(/### server\.js[\s\S]*?```js\n([\s\S]*?)```/)?.[1];
+  const guideServer = guide.match(/### server\.js[\s\S]*?```js\r?\n([\s\S]*?)```/)?.[1];
   if (!guideServer) throw new Error('canonical-point-guide: server.js block not found');
   const guideServerFile = path.join(temporaryDirectory, 'canonical-point-guide.mjs');
   fs.writeFileSync(guideServerFile, guideServer);

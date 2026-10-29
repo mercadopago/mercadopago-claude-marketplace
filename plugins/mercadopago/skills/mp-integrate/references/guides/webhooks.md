@@ -32,22 +32,37 @@ app.post('/webhooks/mp', async (req, res) => {
   // Step 1: Validate signature FIRST
   const signature = req.headers['x-signature'] ?? '';
   const requestId = req.headers['x-request-id'] ?? '';
-  const parts = Object.fromEntries(
-    signature.split(',').map(p => p.split('=').map(s => s.trim()))
-  );
-  const { ts, v1 } = parts;
-  const dataId = req.body?.data?.id;
+  const dataId = String(req.query?.['data.id'] ?? req.query?.id ?? req.body?.data?.id ?? '');
 
-  if (!ts || !v1 || !dataId || !requestId) {
-    return res.status(400).end();
+  let ts = '';
+  let v1 = '';
+  for (const part of String(signature).split(',')) {
+    const eq = part.indexOf('=');
+    if (eq === -1) continue;
+    const k = part.slice(0, eq).trim();
+    const v = part.slice(eq + 1).trim();
+    if (k === 'ts') ts = v;
+    else if (k === 'v1') v1 = v;
   }
 
-  const canonical = `id:${dataId};request-id:${requestId};ts:${ts};`;
-  const expected = crypto.createHmac('sha256', SECRET).update(canonical).digest('hex');
-  const valid = expected.length === v1.length &&
-                crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
+  if (!SECRET || !ts || !/^[0-9a-fA-F]{64}$/.test(v1)) {
+    return res.status(401).end();
+  }
 
+  let canonical = '';
+  if (dataId) canonical += `id:${dataId};`;
+  if (requestId) canonical += `request-id:${requestId};`;
+  if (ts) canonical += `ts:${ts};`;
+
+  const expected = crypto.createHmac('sha256', SECRET).update(canonical).digest('hex');
+  const valid = crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(v1, 'hex'));
   if (!valid) return res.status(401).end();
+
+  const tsNum = Number(ts);
+  const tsMs = tsNum < 1e11 ? tsNum * 1000 : tsNum;
+  if (!Number.isFinite(tsNum) || Math.abs(Date.now() - tsMs) > 300_000) {
+    return res.status(401).end();
+  }
 
   // Step 2: Respond 200 IMMEDIATELY
   res.status(200).end();
@@ -136,8 +151,9 @@ ngrok http 3002
 |---|---|
 | Respond `200` before processing | MP retries on non-200 up to 24h |
 | Validate `x-signature` first | Never process unsigned notifications |
-| Use `timingSafeEqual` | Prevents timing attacks |
-| Dedup on `data.id + type` | Same notification can arrive multiple times |
+| Compare hex bytes with `timingSafeEqual` | Prevents timing attacks and avoids UTF-8 multibyte `RangeError` |
+| Normalize `ts` (`tsNum < 1e11 ? tsNum * 1000 : tsNum`) | Payments API sends 10-digit seconds; Orders API sends 13-digit milliseconds |
+| Dedup retries by `x-request-id` and state transitions by `(data.id, status)` | Keying on `data.id + type` alone drops subsequent status changes |
 
 ---
 
@@ -147,5 +163,5 @@ ngrok http 3002
 - [ ] `MP_WEBHOOK_SECRET` in `.env`
 - [ ] `x-signature` validated with HMAC-SHA256
 - [ ] Responds `200` before processing
-- [ ] Idempotent handler (dedup on `data.id + type`)
+- [ ] Idempotent handler (dedup retries on `x-request-id`, transitions on `data.id + status`)
 - [ ] Tested by triggering a real test payment and confirming delivery via `notifications_history`

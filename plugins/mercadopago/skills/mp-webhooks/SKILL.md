@@ -70,12 +70,13 @@ Mercado Pago signs every notification with the secret returned in the dashboard 
 
 Every receiver MUST:
 
-1. Read `x-signature` and `x-request-id` from the request headers.
+1. Read `x-signature` and `x-request-id` from the request headers, and read `data.id` from the query string first (`req.query["data.id"] ?? req.body?.data?.id`), preserving its original casing.
 2. Parse `ts` and `v1` out of `x-signature`.
-3. Build the canonical string with `data.id` (from the JSON body) and `x-request-id` and `ts`.
-4. Compute `HMAC-SHA256(canonical, secret)` and compare in constant time with `v1`.
-5. **Respond `200` immediately** if the signature is valid — process the event asynchronously afterwards. Mercado Pago retries on non-200 responses with exponential backoff for up to ~24 hours.
-6. Be **idempotent**: the same notification id may arrive more than once. Use `data.id` + topic as the dedup key.
+3. Build the canonical string from the present fields (`id`, `request-id`, `ts`), omitting any field that is absent on the request.
+4. Validate that `v1` is 64 hex characters, compute `HMAC-SHA256(canonical, secret)`, and compare raw hex bytes with `crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(v1, "hex"))`.
+5. Check timestamp drift after HMAC verification, normalizing `ts` for both 10-digit seconds (Payments API) and 13-digit milliseconds (Orders API): `const tsMs = tsNum < 1e11 ? tsNum * 1000 : tsNum`.
+6. **Respond `200` immediately** if the signature is valid — process the event asynchronously afterwards. Mercado Pago retries on non-200 responses with exponential backoff for up to ~24 hours.
+7. Be **idempotent**: deduplicate delivery retries by `x-request-id` and apply state transitions idempotently by `(data.id, status)` after fetching the resource from the API.
 
 ### Canonical string
 
@@ -89,28 +90,108 @@ id:<data.id>;request-id:<x-request-id>;ts:<ts>;
 import crypto from "node:crypto";
 
 const SECRET = process.env.MP_WEBHOOK_SECRET;
+const HEX_64_RE = /^[0-9a-fA-F]{64}$/;
 
 export function mpWebhook(req, res) {
   const signature = req.header("x-signature") ?? "";
   const requestId = req.header("x-request-id") ?? "";
-  const parts = Object.fromEntries(
-    signature.split(",").map((p) => p.split("=").map((s) => s.trim()))
-  );
-  const ts = parts.ts;
-  const v1 = parts.v1;
-  const dataId = req.body?.data?.id;
-  if (!ts || !v1 || !dataId || !requestId) return res.status(400).end();
+  const dataId = String(req.query?.["data.id"] ?? req.query?.id ?? req.body?.data?.id ?? "");
 
-  const canonical = `id:${dataId};request-id:${requestId};ts:${ts};`;
+  let ts = "";
+  let v1 = "";
+  for (const part of String(signature).split(",")) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const k = part.slice(0, eq).trim();
+    const v = part.slice(eq + 1).trim();
+    if (k === "ts") ts = v;
+    else if (k === "v1") v1 = v;
+  }
+
+  if (!SECRET || !ts || !HEX_64_RE.test(v1)) return res.status(401).end();
+
+  let canonical = "";
+  if (dataId) canonical += `id:${dataId};`;
+  if (requestId) canonical += `request-id:${requestId};`;
+  if (ts) canonical += `ts:${ts};`;
+
   const expected = crypto.createHmac("sha256", SECRET).update(canonical).digest("hex");
-
-  const ok = expected.length === v1.length &&
-             crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
+  const ok = crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(v1, "hex"));
   if (!ok) return res.status(401).end();
+
+  const tsNum = Number(ts);
+  const tsMs = tsNum < 1e11 ? tsNum * 1000 : tsNum;
+  if (!Number.isFinite(tsNum) || Math.abs(Date.now() - tsMs) > 300_000) {
+    return res.status(401).end();
+  }
 
   res.status(200).end();
   // process asynchronously after responding 200
   queueMicrotask(() => handleEvent(req.body));
+}
+```
+
+### Reference snippet (WebCrypto — Cloudflare Workers, Vercel Edge, Deno, Bun)
+
+```ts
+const encoder = new TextEncoder();
+
+function hexToBytes(hex: string): Uint8Array | null {
+  if (!/^[0-9a-fA-F]{64}$/.test(hex)) return null;
+  const bytes = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+export async function verifyMercadoPagoWebhook(params: {
+  xSignature: string | null;
+  xRequestId?: string | null;
+  dataId?: string | null;
+  secret: string;
+  toleranceSeconds?: number;
+}): Promise<boolean> {
+  const { xSignature, xRequestId, dataId, secret, toleranceSeconds = 300 } = params;
+  if (!xSignature || !secret) return false;
+
+  let ts = "";
+  let v1 = "";
+  for (const part of xSignature.split(",")) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const k = part.slice(0, eq).trim();
+    const v = part.slice(eq + 1).trim();
+    if (k === "ts") ts = v;
+    else if (k === "v1") v1 = v;
+  }
+
+  const sigBytes = hexToBytes(v1);
+  if (!ts || !sigBytes) return false;
+
+  let canonical = "";
+  if (dataId) canonical += `id:${dataId};`;
+  if (xRequestId) canonical += `request-id:${xRequestId};`;
+  if (ts) canonical += `ts:${ts};`;
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+  const valid = await crypto.subtle.verify("HMAC", key, sigBytes, encoder.encode(canonical));
+  if (!valid) return false;
+
+  if (toleranceSeconds > 0) {
+    const tsNum = Number(ts);
+    const tsMs = tsNum < 1e11 ? tsNum * 1000 : tsNum;
+    if (!Number.isFinite(tsNum) || Math.abs(Date.now() - tsMs) > toleranceSeconds * 1000) {
+      return false;
+    }
+  }
+  return true;
 }
 ```
 
@@ -184,7 +265,7 @@ Returns delivery metrics and a breakdown of failures (timeouts, non-200 response
 
 - Respond `200` **before** processing. A long synchronous handler causes retries that flood the receiver and can mask the real failure.
 - Mercado Pago retries on non-200 with exponential backoff up to ~24h — a transient bug becomes a flood of duplicates.
-- Make handlers idempotent. Use `data.id` + `type` as the dedup key.
+- Make handlers idempotent. Deduplicate delivery retries by `x-request-id` and state transitions by `(data.id, status)` after fetching the resource.
 - Never trust the JSON body alone — always validate the signature first.
 - IPN (the legacy `?id=&topic=` GET-style notification) is deprecated. New integrations use only the modern signed webhook described here.
 

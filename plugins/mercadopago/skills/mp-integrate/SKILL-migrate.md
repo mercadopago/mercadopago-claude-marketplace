@@ -160,18 +160,28 @@ app.post('/webhooks', (req, res) => {
   // HMAC-SHA256 signature validation (canonical pattern from mp-webhooks)
   const signature = req.header('x-signature') ?? '';
   const requestId = req.header('x-request-id') ?? '';
-  const parts = Object.fromEntries(
-    signature.split(',').map((p) => p.split('=').map((s) => s.trim()))
-  );
-  const ts = parts.ts;
-  const v1 = parts.v1;
-  const dataId = req.body?.data?.id;
-  if (!ts || !v1 || !dataId || !requestId) return res.status(400).end();
-  const canonical = `id:${dataId};request-id:${requestId};ts:${ts};`;
+  const dataId = String(req.query?.['data.id'] ?? req.query?.id ?? req.body?.data?.id ?? '');
+  let ts = '';
+  let v1 = '';
+  for (const part of String(signature).split(',')) {
+    const eq = part.indexOf('=');
+    if (eq === -1) continue;
+    const k = part.slice(0, eq).trim();
+    const v = part.slice(eq + 1).trim();
+    if (k === 'ts') ts = v;
+    else if (k === 'v1') v1 = v;
+  }
+  if (!ts || !/^[0-9a-fA-F]{64}$/.test(v1)) return res.status(401).end();
+  let canonical = '';
+  if (dataId) canonical += `id:${dataId};`;
+  if (requestId) canonical += `request-id:${requestId};`;
+  if (ts) canonical += `ts:${ts};`;
   const expected = crypto.createHmac('sha256', process.env.MP_WEBHOOK_SECRET).update(canonical).digest('hex');
-  const valid = expected.length === v1.length &&
-                crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
+  const valid = crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(v1, 'hex'));
   if (!valid) return res.status(401).end();
+  const tsNum = Number(ts);
+  const tsMs = tsNum < 1e11 ? tsNum * 1000 : tsNum;
+  if (!Number.isFinite(tsNum) || Math.abs(Date.now() - tsMs) > 300_000) return res.status(401).end();
 
   const { type, data } = req.body;
 

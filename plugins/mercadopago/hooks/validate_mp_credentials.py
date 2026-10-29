@@ -7,7 +7,7 @@ Mercado Pago Plugin — credential leak prevention hook.
 
 The hook always scans supported write/edit/Bash inputs for Mercado Pago secret
 patterns. In projects that show Mercado Pago signals, it also blocks direct
-Read and common Bash attempts to expose secret environment files.
+Read and Bash attempts to expose secret environment files.
 
 Exit codes:
   0 — allow
@@ -28,7 +28,7 @@ PATTERNS = {
         re.IGNORECASE,
     ),
     "Client Secret": re.compile(
-        r"""['\"](?:client_secret|mp_client_secret)['\"]\s*[:=]\s*['\"][A-Za-z0-9_+/=-]{24,}['\"]""",
+        r"""['"](?:client_secret|mp_client_secret)['"]\s*[:=]\s*['"][A-Za-z0-9_+/=-]{24,}['"]""",
         re.IGNORECASE,
     ),
     "Bearer Token": re.compile(
@@ -36,7 +36,7 @@ PATTERNS = {
         re.IGNORECASE,
     ),
     "Webhook Secret": re.compile(
-        r"""['\"]?(?:x-signature|webhook.?secret|mp_webhook_secret)['\"]?\s*[:=]\s*['\"][A-Za-z0-9_+/=-]{20,}['\"]""",
+        r"""['"]?(?:x-signature|webhook.?secret|mp_webhook_secret)['"]?\s*[:=]\s*['"][A-Za-z0-9_+/=-]{20,}['"]""",
         re.IGNORECASE,
     ),
 }
@@ -62,19 +62,23 @@ PROJECT_SIGNAL_FILES = MANIFEST_FILES + (
     "README.md",
 )
 
-SHELL_READERS = {
-    ".",
-    "awk",
-    "cat",
-    "cut",
-    "grep",
-    "head",
-    "less",
-    "more",
-    "sed",
-    "source",
-    "tail",
+# Commands that touch an env file path without reading its contents.
+SAFE_METADATA_COMMANDS = {
+    "chmod",
+    "chown",
+    "ls",
+    "mv",
+    "rm",
+    "stat",
+    "test",
+    "touch",
+    "[",
+    "[[",
 }
+
+INLINE_ENV_PATH_RE = re.compile(
+    r"""(?:^|[\s'"=:(/\\@<])(\.env(?:\.[A-Za-z0-9_-]+)?|[A-Za-z0-9_.-]+\.env)(?=$|[\s'"):,;>&|])"""
+)
 
 CODE_SUFFIXES = {
     "cjs",
@@ -205,27 +209,77 @@ def is_env_file(path: str) -> bool:
     return False
 
 
-def bash_reads_secret_file(command: str) -> bool:
-    """Detect common shell reads of env files without executing the command."""
-    try:
-        tokens = shlex.split(command, posix=True)
-    except ValueError:
-        tokens = command.split()
+def _segment_is_safe_env_op(segment: str) -> bool:
+    """Allow safe non-reading operations such as `cp .env.example .env`, `git check-ignore .env`, or `>> .env`."""
+    stripped = segment.strip()
+    if not stripped:
+        return True
 
-    normalized = [token.strip(";|&()<> ") for token in tokens]
-    has_reader = any(os.path.basename(token) in SHELL_READERS for token in normalized)
-    has_secret_file = any(is_env_file(token) for token in normalized)
-    redirected_secret = bool(
-        re.search(r"<\s*[^\s;&|]*(?:\.env(?:\.[^\s;&|]+)?|[^/\s;&|]+\.env)\b", command)
-    )
+    # Allow output redirection writing into .env (e.g., `echo FOO=bar >> .env`) if no input redirection `<`
+    without_out_redir = re.sub(r">{1,2}\s*[^\s;&|]+", "", stripped)
+    if "<" not in stripped and not any(is_env_file(m.group(1)) for m in INLINE_ENV_PATH_RE.finditer(without_out_redir)):
+        try:
+            rem_tokens = [t.strip(";|&()<> ") for t in shlex.split(without_out_redir, posix=True)]
+        except ValueError:
+            rem_tokens = [t.strip(";|&()<> ") for t in without_out_redir.split()]
+        if not any(is_env_file(t.lstrip("@")) for t in rem_tokens):
+            return True
+
+    try:
+        tokens = [t.strip(";|&()<> ") for t in shlex.split(stripped, posix=True) if t.strip(";|&()<> ")]
+    except ValueError:
+        tokens = [t.strip(";|&()<> ") for t in stripped.split() if t.strip(";|&()<> ")]
+    if not tokens:
+        return True
+
+    cmd = os.path.basename(tokens[0])
+    # Allow `cp .env.example .env` (where source is NOT a secret env file and destination is last arg)
+    if cmd == "cp" and len(tokens) >= 3:
+        sources = tokens[1:-1]
+        if all(not is_env_file(s) for s in sources):
+            return True
+
+    # Allow `git check-ignore .env` / `git rm --cached .env` / `git status .env`
+    if cmd == "git" and len(tokens) >= 2 and tokens[1] in ("check-ignore", "rm", "status"):
+        return True
+
+    if cmd in SAFE_METADATA_COMMANDS and "<" not in stripped:
+        return True
+
+    return False
+
+
+def bash_reads_secret_file(command: str) -> bool:
+    """Detect shell or inline-interpreter reads of secret env files without executing the command."""
     exposes_mp_env = bool(
         re.search(
-            r"\b(?:printenv|env)\b[^\n]*(?:MP_ACCESS_TOKEN|MP_CLIENT_SECRET|MP_WEBHOOK_SECRET)",
+            r"\b(?:printenv|env|export|set|echo|printf)\b[^\n]*(?:MP_ACCESS_TOKEN|MP_CLIENT_SECRET|MP_WEBHOOK_SECRET)",
             command,
             re.IGNORECASE,
         )
     )
-    return (has_reader and has_secret_file) or redirected_secret or exposes_mp_env
+    if exposes_mp_env:
+        return True
+
+    redirected_secret = bool(
+        re.search(r"<\s*[^\s;&|]*(?:\.env(?:\.[^\s;&|]+)?|[^/\s;&|]+\.env)\b", command)
+    )
+    if redirected_secret:
+        return True
+
+    segments = [seg for seg in re.split(r"(?:&&|\|\||[;|\n])", command) if seg.strip()]
+    for seg in segments:
+        try:
+            tokens = [t.strip(";|&()<> ") for t in shlex.split(seg, posix=True)]
+        except ValueError:
+            tokens = [t.strip(";|&()<> ") for t in seg.split()]
+
+        has_token_env = any(is_env_file(t.lstrip("@")) for t in tokens)
+        has_inline_env = any(is_env_file(m.group(1)) for m in INLINE_ENV_PATH_RE.finditer(seg))
+        if (has_token_env or has_inline_env) and not _segment_is_safe_env_op(seg):
+            return True
+
+    return False
 
 
 def is_within_project(path: str) -> bool:
