@@ -18,6 +18,16 @@ enabled: true
 |---------|------|---------|-------------|
 | `enabled` | `boolean` | `true` | Enable/disable the credential leak prevention hook |
 
+### Variables de entorno opcionales
+
+| Variable | Uso | Valor por defecto |
+|---|---|---|
+| `MP_SMARTAPPS_FEEDBACK_EMAIL` | Destinatario del feedback del asesor de SmartApps cuando un problema queda sin resolver (ver `skills/mp-integrate/references/guides/smartapps-feedback.md`). | Vacío: el feedback queda pendiente en `.mp-smartapps-feedback.md` del proyecto |
+
+Defínela en tu `.env` local (cargado en el entorno) o en la configuración `env`
+de Claude Code. El asesor lee solo el valor de la variable, nunca el archivo
+`.env`, y no envía nada sin tu confirmación explícita.
+
 ### Emergency override: disable credential scanning
 
 The hook is already a no-op for secret-file reads in projects that do not show

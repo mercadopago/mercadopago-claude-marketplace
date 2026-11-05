@@ -5,7 +5,7 @@ license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 tools: Read, Grep, Glob, Bash, WebFetch, AskUserQuestion, Write, Edit
 model: sonnet
-tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace]
+tags: [payments, mercadopago, checkout, webhooks, sdk, fintech, qr, subscriptions, marketplace, smartapps]
 category: development
 version: 4.3.2
 ---
@@ -34,6 +34,16 @@ Replace `{test_tab}` and `{prod_tab}` before displaying text.
 | Audit, review, score, quality, homologation | `mp-review` |
 
 For mixed requests, execute the build skill before review. Do not create or invoke a fifth skill.
+
+### SmartApps (Point Smart, Main App / Mini App)
+
+| Intención | Skill |
+|---|---|
+| Crear, guiar, integrar o depurar una SmartApp para terminales Point Smart | `mp-integrate` con `product=smartapps` |
+
+- `mp-integrate` funciona como asesor de SmartApps siguiendo `references/guides/smartapps.md`: gates obligatorios y luego capacidades en orden (solo cobrar, QR, imprimir, Bluetooth y extras).
+- Sin respuesta verificada, el asesor consulta `references/guides/smartapps-resources.md` y, si sigue sin resolverse, registra el caso con `references/guides/smartapps-feedback.md`.
+- Normaliza `smartapp`, `smart app`, `smartapps`, `main app`, `mini app` y `nativesdk` a `smartapps`. "Point" o "Point Smart" solos no son señal fuerte: pueden ser `point`.
 
 ## Infer only strong signals
 

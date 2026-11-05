@@ -8,7 +8,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, WebFetch]
 
 # /mp-integrate
 
-This command runs the Mercado Pago integration wizard. **Do not re-read this file in a loop, and do not delegate to the `mp-integration-expert` agent independently — that bypasses the wizard and produces invented defaults.** Read the SKILL.md once per invocation — **never skip the read even if you think you have it in context from a previous run**. Always read fresh. Follow it step by step, and stop when the bundle is rendered or the user cancels.
+This command runs the Mercado Pago integration wizard. **Do not re-read this file in a loop, and do not delegate to the `mp-integration-expert` agent independently — that bypasses the wizard and produces invented defaults.** Read the SKILL.md once per invocation — **never skip the read even if you think you have it in context from a previous run**. Always read fresh. Follow it step by step. Stop after the bundle only when the developer requested a proposal/code display or declines writing; when implementation is authorized, write and validate the requested result before closing. Stop if the user cancels.
 
 ## Routing
 
@@ -21,6 +21,10 @@ Inspect `$ARGUMENTS`:
 | `migrate` | `*mercadopago*/skills/mp-integrate/SKILL-migrate.md` |
 | anything else (or empty) | `*mercadopago*/skills/mp-integrate/SKILL.md` |
 
+## Idioma y contexto
+
+Usa el idioma de la conversación para todas las preguntas, opciones, diagnósticos y conclusiones; español por defecto. Los ejemplos ingleses de este comando son plantillas que deben localizarse, no literales obligatorios. Conserva identificadores técnicos. Reutiliza las decisiones y autorizaciones vigentes del mismo proyecto y alcance; pregunta solo por datos nuevos, faltantes o contradictorios.
+
 ## Execution rules
 
 0. **Use the active Claude plugin root directly** — do not launch a `Bash`
@@ -32,7 +36,11 @@ Inspect `$ARGUMENTS`:
    file does not exist, instruct the developer to run `/reload-plugins` and
    retry.
 
-1. **Pre-flight + readiness — execute in this exact order. Do not call MCP just to inspect connection state.**
+0.1. **Resolver producto antes de la preparación web.** Si el producto no se puede resolver del mensaje, argumentos o contexto vigente, pregunta únicamente ese dato mediante `AskUserQuestion`, con opciones localizadas y pertinentes al caso; incluye SmartApps cuando se trate de Android/Point y no elijas Checkout Pro o Node por defecto. No solicites credenciales ni compruebes herramientas de un stack antes de conocer el producto. Cuando ya esté resuelto, no repitas la pregunta.
+
+0.2. **Ruta Android de SmartApps antes de la preparación web.** Si el mensaje, los argumentos o el contexto vigente resuelven `product=smartapps`, lee `mp-integrate/SKILL.md`, aplica LOCK 13 y sigue `references/guides/smartapps.md` hasta su cierre. No ejecutes los pasos web 1.1–1.4 ni su viaje de credenciales/API, no asumas Node y no descargues un SDK backend. Detecta herramientas únicamente cuando la operación Android elegida las necesite. Si SmartApps se resuelve más tarde en el selector de producto, cambia a esa ruta en ese momento. La falta de fuentes del AAR, terminal o acceso MCP no bloquea todo el asesor; informa qué etapa concreta queda pendiente.
+
+1. **Pre-flight + readiness — execute in this exact order for non-SmartApps products. Do not call MCP just to inspect connection state.**
 
    **Step 1.1 — Stack-aware environment check** (before any MCP interaction):
 
@@ -153,7 +161,7 @@ Inspect `$ARGUMENTS`:
    - Options: `"Yes, I understand — continue"` / `"Switch to test credentials"`
    - Only if confirmed: save `credential_type=production`, continue. Otherwise go back.
 
-   **SDK dependency authorization:** Auto-detect the correct SDK from the project stack; never ask the developer to choose the SDK. Determine the registry's current stable release (`latest`, excluding pre-releases) and compare it with the installed version. Before any install or update, show the package, current version (or “not installed”), proposed stable version, and files expected to change, then ask authorization. If authorized, install/update to that stable release, adapt incompatible integration code, update the lockfile, and run the relevant tests. If declined, do not mutate dependencies and do not report the integration as ready while the required current SDK is missing or outdated.
+   **SDK dependency authorization (web/backend; SmartApps uses LOCK 13 and its versioned kit):** Auto-detect the correct SDK from the project stack; never ask the developer to choose the SDK. Determine the registry's current stable release (`latest`, excluding pre-releases) and compare it with the installed version. Before any install or update, show the package, current version (or “not installed”), proposed stable version, and files expected to change, then ask authorization. If authorized, install/update to that stable release, adapt incompatible integration code, update the lockfile, and run the relevant tests. If declined, do not mutate dependencies and do not report the integration as ready while the required current SDK is missing or outdated.
 
 2. **Read the SKILL.md ONCE from `${CLAUDE_PLUGIN_ROOT}`.** Use the routing table to pick the right file:
 
