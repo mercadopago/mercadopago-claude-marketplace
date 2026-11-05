@@ -4,7 +4,7 @@ description: Wizard that scaffolds a complete Mercado Pago integration from offi
 license: Apache-2.0
 copyright: "Copyright (c) 2026 Mercado Pago (MercadoLibre S.R.L.)"
 metadata:
-  version: "4.3.2"
+  version: "4.3.3"
   author: "Mercado Pago Developer Experience"
   category: "development"
   tags: "mercadopago, integration, wizard, checkout, bricks, qr, point, subscriptions, marketplace, payouts, smartapps, orders, sdk"
@@ -13,6 +13,10 @@ metadata:
 # mp-integrate
 
 This skill is the single entry point for building a Mercado Pago integration. It collects the minimum context from the developer and assembles a ready-to-paste bundle using curated reference files and, as fallback, the MCP server.
+
+## Idioma de la interacción
+
+Resuelve el idioma de la conversación antes de presentar preguntas. En una conversación en español, escribe en español encabezados, opciones, estados, diagnósticos y conclusiones. Traduce los textos de ejemplo de este archivo; nunca los uses como literales obligatorios en inglés. El idioma de documentación (`lang`, derivado del país) es independiente del idioma de la respuesta. Conserva nombres de API, rutas, claves y errores originales citados sin traducirlos. Reutiliza decisiones y autorizaciones vigentes para el mismo proyecto y alcance; pregunta solo por datos nuevos, faltantes o contradictorios.
 
 ## Reference files — read BEFORE generating any code
 
@@ -41,7 +45,13 @@ Use `${CLAUDE_PLUGIN_ROOT}` for every bundled reference and script. Claude Code 
 
 ---
 
-⚠️ **IMPORTANT — when invoked via `/mp-integrate` command:** The command file already ran the environment check and readiness flow. **Start directly at Step 1.a** (auto-detect SDK/client/mode). Do not probe MCP state. Credentials are imported only if the developer explicitly selected that MCP-backed option.
+## Ruta nativa de SmartApps
+
+En cuanto `product=smartapps` quede resuelto por el mensaje, argumentos o contexto vigente, lee `guides/smartapps.md` y aplica LOCK 13. Esa guía es el flujo completo del asesor Android: contexto y capacidades, fuentes verificadas, bundle visible, autorización de escritura, implementación y comprobaciones por etapa. Tras ese recorrido, entrega el resultado y termina; **no continúes por el wizard web de los pasos 1–5**. No elijas Node por ausencia de manifiesto, no consultes un registro npm/Maven como sustituto del AAR, no crees servidor web ni archivos `.env`, ni solicites credenciales de pagos API para reemplazar al SDK.
+
+Consulta MCP solo cuando una decisión necesite documentación vigente, datos de cuenta o información que falte en las fuentes verificadas. Su ausencia no bloquea asesoría ni código sustentado en el contrato incluido. Para información por país, usa el site resuelto y selecciona la sección correspondiente de la respuesta; registra herramienta MCP, site, idioma, fecha y fuente. Sin evidencia de una capacidad, aclara ese punto y continúa con el resto verificable, sin declarar la capacidad implementada.
+
+⚠️ **IMPORTANT — when invoked via `/mp-integrate` command for a non-SmartApps product:** The command file already ran the environment check and readiness flow. **Start directly at Step 1.a** (auto-detect SDK/client/mode). SmartApps follows its native route above. Do not probe MCP state. Credentials are imported only if the developer explicitly selected that MCP-backed option.
 
 ---
 
@@ -54,6 +64,8 @@ These rules override any "what makes sense" judgement during the wizard. Past wi
 ### LOCK 1 — SDK is never a wizard question
 
 The SDK / language is **NEVER** asked via `AskUserQuestion`. Period.
+
+**SmartApps exception:** follow the native route and LOCK 13 instead of the registry/default-Node rules below. Detect Android Java/Kotlin from the project; a new Android module requires scope authorization. The confirmed official SmartApps contract for this iteration is 7.0.0; never select a higher prerelease automatically.
 
 - Resolve it silently in Step 1.a by globbing the repo for a manifest (`package.json`, `pyproject.toml`, etc.).
 - If a single manifest is found → record the SDK and **skip the question entirely**.
@@ -84,7 +96,7 @@ If you find yourself about to call `AskUserQuestion` with `header="SDK"` or `hea
 
 ### LOCK 3 — Always use `init_point`, never `sandbox_init_point`
 
-Mercado Pago removed the sandbox environment. There is no staging URL. Every integration — including test-user flows — runs against the production API.
+For web/API checkout integrations, there is no separate `sandbox_init_point` redirect or staging base URL; test-user flows use the production API host. **This rule does not apply to the Point development environment: SmartApps tests use SmartPOS Sandbox on the development terminal, as described in LOCK 13.**
 
 **Never generate code that references `sandbox_init_point`.** Always use `init_point` from the preference response. The difference between a test run and a production run is only which credentials are loaded (`APP_USR-` from a test user vs. a real account) — not the URL.
 
@@ -269,10 +281,11 @@ capabilities in order: solo cobrar, QR, imprimir, Bluetooth y extras).
 1. Confirm that the developer has an active SmartApps agreement with the
    Mercado Pago team. If not explicitly confirmed, stop with
    `BLOCKED: active SmartApps agreement required` and do not write files.
-2. Query `mcp__plugin_mercadopago_mcp__search_documentation` for the current
-   SmartApps guide even when tier-1 public documentation is available. If MCP
-   authentication is missing, run the normal inline authentication flow and
-   stop until it succeeds.
+2. Use the bundled verified 7.0.0 contract and official versioned sources.
+   Query `mcp__plugin_mercadopago_mcp__search_documentation` only for current
+   country options or an unresolved documentation need. If that selected
+   operation requires authentication, request it for that operation; continue
+   independent offline work. Do not authenticate as a pre-flight requirement.
 3. Require an Android target. Never convert or embed SmartApps into a web,
    backend, desktop, or iOS application. If the repository has no Android app,
    explain that a separate Android application/module is required and ask
@@ -282,10 +295,12 @@ capabilities in order: solo cobrar, QR, imprimir, Bluetooth y extras).
    require the SDK OAuth mode.
 5. El SDK es el AAR `nativesdk` publicado en las Releases de
    `https://github.com/mercadopago/point-smartapp-demo-android`
-   (`Third-Apps-integration-kit.zip`; referencia en `app/libs`). Nunca lo
-   sustituyas por un SDK backend/web de Mercado Pago ni inventes una coordenada
-   Maven. Pregunta antes de copiarlo/actualizarlo, confirma la última release y
-   ejecuta el análisis de versión de la guía cuando supere la línea base.
+   (`Third-Apps-integration-kit-7.0.0.zip`, Release/tag `7.0.0`). Usa el código
+   y artefactos de ese tag, no lo encontrado en la rama por defecto ni una
+   prerelease más alta. Nunca lo sustituyas por un SDK backend/web ni inventes
+   una coordenada Maven. Antes de copiarlo/actualizarlo muestra el cambio y
+   solicita autorización. La inspección del AAR es opcional; no requiere ni
+   exige las fuentes del proveedor para asesorar o generar código.
 6. Payment methods, payments, printer, scanner/camera, and Bluetooth are used
    through the SmartApps SDK. Do not call payment APIs directly from the
    terminal or request prohibited direct Android permissions.
@@ -296,9 +311,12 @@ Before reporting a successful static scaffold, run:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-smartapps-integration.mjs" . "{main|mini}" "{own|third-party}"
 ```
 
-Passing this check is not device certification. Compilation requires the real
-latest AAR; payment and hardware validation require the Mercado Pago development
-terminal with SmartPOS Sandbox and the development kit.
+El resultado de este control es únicamente estático: `review_required` conserva
+pendientes sin bloquear toda la asesoría. Compilar requiere el AAR real 7.0.0 y
+sus dependencias; generar una APK exige ejecutar y comprobar el build. Los pagos
+y el hardware requieren la terminal de desarrollo y SmartPOS Sandbox. La falta
+de un recurso deja pendiente solo la etapa que lo necesita; no equivale a un
+fallo del código ni permite declarar una prueba exitosa.
 
 ### LOCK 14 — Money Out is Payouts and its contract is country-specific
 
@@ -404,15 +422,15 @@ For every dimension, attempt these resolution sources **in order**:
 
 ### Step 1.a.iii — Confirm everything that was auto-resolved (mandatory)
 
-After auto-resolving, render a single confirmation block listing every value that was inferred (not just country — also SDK, client, and any other dimension that came from the repo). Then, **before any wizard question**, ask the developer with one `AskUserQuestion`:
+After auto-resolving **new inferred values**, render a single confirmation block listing those new inferences (country, SDK, client, or another repository-derived dimension). Do not include previously confirmed decisions as new questions. If every relevant value was already confirmed for the same project/scope, skip this confirmation. Otherwise, **before any wizard question**, ask the developer with one `AskUserQuestion`:
 
-- `header="Confirm setup"`
-- Question: `"I auto-detected the following from your repo. Is everything correct?"`
-- Options:
-  - `"Yes, continue"` — proceed to Step 1.b with the auto-resolved values.
-  - `"No, let me correct"` — drop the user-selectable auto-resolved values back into the wizard queue. Do not add SDK/language to that queue: re-run repository detection for them and explain the selected official SDK without presenting an SDK picker.
+- Encabezado en el idioma de conversación: `"Confirmar configuración"` en español.
+- Pregunta: `"Detecté esta configuración en tu proyecto. ¿Es correcta?"`
+- Opciones localizadas:
+  - `"Sí, continuar"` — proceed to Step 1.b with the auto-resolved values.
+  - `"No, corregir"` — drop the user-selectable auto-resolved values back into the wizard queue. Do not add SDK/language to that queue: re-run repository detection for them and explain the selected official SDK without presenting an SDK picker.
 
-Skip this confirmation **only** when there was nothing to auto-resolve (clean repo, no manifest, no locale, no existing MP URLs). In that case the wizard goes straight to asking.
+Skip this confirmation when there are no new inferences to confirm: either nothing was auto-resolved or the values were already explicitly accepted for this project/scope. Ask only about genuinely unresolved dimensions.
 
 Example block to render:
 
@@ -427,7 +445,7 @@ Country will be asked next (not auto-detected).
 Confirm the above to continue, or correct.
 ```
 
-The developer must explicitly opt-in to the auto-resolved set. Never proceed silently to Step 1.b after auto-resolving — that's how wrong assumptions propagate to the final bundle.
+The developer must explicitly accept new inferences. Preserve an acceptance already given for the same project/scope; do not repeat that confirmation or infer consent to a changed SDK, capability or file-writing scope.
 
 If the agent already passed flags (`country=`, `sdk=`, `mode=`, etc.), treat those as resolved too.
 
@@ -621,7 +639,7 @@ Country is **always resolved before Step 3**. Never fetch tier 1 without a resol
 
 ### Tier 3 — MCP query templates (fallback)
 
-Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mcp__search_documentation` with each. Use `language` from the resolved doc language.
+Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mcp__search_documentation` with each. Use `language` from the resolved doc language and `siteId` from the resolved country. For SmartApps start with `limit=3`, one capability per query, and the confirmed SDK 7.0.0 context. A result limit does not bound document length: extract only the matching site/capability sections while retaining their source links. Never import Brazil-only options into Chile merely because the same response contains both sections.
 
 **Query templates** (use the most specific 1–3 for the chosen product/mode/sdk):
 
@@ -637,7 +655,7 @@ Build 1–3 targeted queries and call `mcp__plugin_mercadopago_mcp__search_docum
 | Subscriptions plan/preapproval | `"subscriptions preapproval {sdk}"` |
 | Payouts (legacy alias: Money Out) | `"payouts money transfer {country} {sdk}"` |
 | Wallet Connect | `"wallet connect agreements payer token orders {sdk} {country}"` |
-| SmartApps | `"smartapps {main|mini} android payment flow restrictions {country}"` |
+| SmartApps | `"smartapps {capability} {main|mini} SDK 7.0.0 {country}"` — consulta solo la capacidad necesaria, `limit=3` |
 
 Do **not** issue more than 3 queries. If a query returns generic results, refine once and stop.
 
@@ -665,12 +683,13 @@ below and do not create `.env` credentials. Render a SmartApps-specific bundle
 from `references/guides/smartapps.md` plus the authenticated MCP result with
 these sections: commercial agreement, Android project eligibility, app kind
 (`main|mini`), ownership (`own|third-party`), selected capabilities
-(`smartapp-capabilities`), latest SDK release artifact and version analysis,
+(`smartapp-capabilities`), confirmed 7.0.0 release artifact and optional version analysis,
 Manifest/initialization contract, SDK-only payment flow, static validation,
 development-terminal tests, official integration stages, and homologation.
-Label anything that still depends on an unconfirmed SDK artifact or the
-terminal as blocked; never replace it with a guessed SDK or API call. Then
-continue to Step 4.5.
+Marca como pendiente la etapa que dependa de un artefacto sin confirmar o de
+la terminal; nunca reemplaces el contrato con APIs inventadas. Sigue la
+autorización y ejecución de la ruta nativa de `guides/smartapps.md`; no continúes
+por el scaffold web de Step 4.5.
 
 ### Payouts bundle override
 
@@ -804,11 +823,13 @@ The full bundle from Step 4 MUST appear in the chat as rendered markdown output 
 
 Immediately after rendering the bundle, **before listing next steps**, call `AskUserQuestion` with:
 
-- `header="Scaffold files"`
-- Question: `"Do you want me to write these files to your project now?"`
-- Options:
-  - `"Yes, write the files"` → execute the scaffold below
-  - `"No, just the code"` → skip to Step 5
+- Encabezado localizado: `"Escribir archivos"` en español.
+- Pregunta: `"¿Quieres que escriba estos archivos en tu proyecto?"`
+- Opciones en el idioma de conversación:
+  - `"Sí, escribir los archivos"` → execute the applicable scaffold below
+  - `"No, solo mostrar el código"` → skip to Step 5
+
+**SmartApps follows its native guide and terminates there.** The server/package-registry sequence below applies only to web/backend products; never execute it for `product=smartapps`.
 
 **If the developer chooses to scaffold**, execute this sequence (in order — each step depends on the previous):
 
@@ -863,8 +884,9 @@ Immediately after rendering the bundle, **before listing next steps**, call `Ask
    **When `product=smartapps`:** apply LOCK 13 after the Android Manifest,
    application initialization, and SDK payment flow have been written. Run the
    validator with the resolved app kind and ownership. Do not report the AAR as
-   current or the build as passing unless the real latest kit artifact was
-   supplied and compiled successfully:
+   current or the build as passing unless the real confirmed 7.0.0 artifact
+   was supplied and compiled successfully. This fallback check never authorizes
+   the server steps for SmartApps; the native guide owns its implementation:
 
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-smartapps-integration.mjs" . "{main|mini}" "{own|third-party}"
@@ -1157,9 +1179,9 @@ Render only the section that matches the chosen product. These are the experient
 
 ### smartapps
 - **Requires direct contact with the Mercado Pago team** — SmartApps is not self-service. Do not scaffold without confirming the developer has an active agreement with MP.
-- SmartApps run on Point devices — code limits and APIs differ from server SDKs. Always query MCP for the SmartApps-specific guide.
+- SmartApps run on Point devices — code limits and APIs differ from server SDKs. Use the bundled verified 7.0.0 contract and consult the SmartApps-specific MCP guide on demand for current country options or documentation gaps.
 - Never retrofit a web application as a SmartApp. The target must be Android; create a separate Android app/module only after the developer authorizes that scope.
-- The SDK is a private AAR from the Mercado Pago integration kit. Ask before updating it, use only the latest artifact confirmed by the integration team, and never substitute a public SDK coordinate.
+- El SDK es una biblioteca AAR distribuida en el kit oficial de la Release/tag 7.0.0. Su origen público no significa que el asesor controle su implementación. Usa los artefactos versionados, pide autorización antes de copiarlos/actualizarlos y nunca los sustituyas por coordenadas de SDK web/backend. Las fuentes y el desglose interno del AAR no son requisitos para asesorar ni escribir la integración.
 - A static validator cannot replace compilation with the real AAR, sandbox mock tests on a development terminal, or Mercado Pago homologation.
 
 ---

@@ -1,7 +1,7 @@
 {
   "plugin": {
     "name": "mercadopago",
-    "version": "4.3.2",
+    "version": "4.3.3",
     "description": "Mercado Pago integration toolkit for Claude Code. One agent routes to four skills: mp-integrate (wizard for Checkout Pro, Checkout API, Bricks, QR Code, Point, Subscriptions, Marketplace, Wallet Connect, Payouts, and SmartApps — plus migration of legacy Instore integrations to the Orders API), mp-webhooks (HMAC-validated receiver scaffold and diagnostics), mp-test-setup (test users, credentials, and test cards), and mp-review (quality and security checks). Scaffolding works offline where possible; live account and documentation operations use the official Mercado Pago MCP server on demand.",
     "repository": "https://github.com/mercadopago/mercadopago-claude-marketplace",
     "license": "Apache-2.0",
@@ -58,7 +58,7 @@
       "name": "mp-integrate",
       "type": "skill",
       "description": "Wizard that scaffolds a complete Mercado Pago integration from official and bundled sources, using MCP only for selected account actions or documentation gaps. Use whenever the developer wants to add or migrate a Mercado Pago payment flow.",
-      "version": "4.3.2",
+      "version": "4.3.3",
       "tags": [
         "mercadopago",
         "integration",

@@ -1,5 +1,5 @@
 # Guía: Feedback de problemas no resueltos en SmartApps
-# Actualizado: 2026-10-06
+# Actualizado: 2026-11-05
 #
 # La usa el asesor de SmartApps (`guides/smartapps.md`) solo después de que el
 # MCP y `guides/smartapps-resources.md` no lograron resolver un problema.
@@ -20,8 +20,11 @@ Usa este flujo solo si se cumple al menos una de estas condiciones:
 - El desarrollador informa que una recomendación verificada no funcionó en la
   terminal de desarrollo.
 
-Nunca la uses para saltarte un gate bloqueante (acuerdo, destino Android o
-confirmación del SDK).
+Nunca la uses para saltarte el acuerdo comercial, el destino Android autorizado
+ni la autorización de un cambio del SDK. Registrar una duda, carecer de fuentes
+o de un desglose del AAR no bloquea la asesoría ni el trabajo independiente.
+Si la consulta no resuelve una capacidad, conserva su estado pendiente sin
+inventar un contrato ni declarar completada su validación.
 
 ## Paso 1 — Escribir el archivo de feedback
 
@@ -51,7 +54,7 @@ Cada entrada usa esta estructura:
 
 ### Fuentes consultadas
 
-- {consulta al MCP y resumen del resultado}
+- {nombre del MCP, herramienta, site, idioma, fecha, documento y resumen del resultado}
 - {recursos consultados de smartapps-resources.md}
 
 ### Por qué el asesor no pudo resolverlo
@@ -78,8 +81,9 @@ El destinatario se configura con la variable de entorno
   `printenv MP_SMARTAPPS_FEEDBACK_EMAIL`). Nunca leas un archivo `.env`
   directamente; el hook de credenciales del plugin lo bloquea.
 - Si la variable está vacía o no existe, informa
-  `PENDING: feedback recipient not configured (MP_SMARTAPPS_FEEDBACK_EMAIL)`,
-  conserva el archivo de feedback y detente. El desarrollador puede definir la
+  `Pendiente: destinatario de feedback no configurado (MP_SMARTAPPS_FEEDBACK_EMAIL)`,
+  conserva el archivo y detén solo su envío; continúa la implementación
+  verificada que no dependa de esa respuesta. El desarrollador puede definir la
   variable en su `.env` local (cargado en el entorno) o en la configuración
   `env` de Claude Code.
 

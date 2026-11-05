@@ -4,7 +4,7 @@
 
 [![Status: Beta](https://img.shields.io/badge/status-beta-orange)](https://github.com/mercadopago/mercadopago-claude-marketplace)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](./LICENSE)
-[![Version: 4.3.2](https://img.shields.io/badge/version-4.3.2-green)](./CHANGELOG.md)
+[![Version: 4.3.3](https://img.shields.io/badge/version-4.3.3-green)](./CHANGELOG.md)
 [![Platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-7c3aed)](https://claude.com/claude-code)
 [![CI](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml/badge.svg)](https://github.com/mercadopago/mercadopago-claude-marketplace/actions/workflows/validate.yml)
 
@@ -35,6 +35,14 @@ A Claude Code plugin that provides guided integration support for the Mercado Pa
 - **Credential leak prevention** — hook inspects supported Claude tool inputs for hardcoded tokens and blocks secret-file reads in detected Mercado Pago projects
 - **OAuth-based auth** — triggered by MCP-backed operations or manually via `/mp-connect`; no keychain scripts needed
 - **4 slash commands** — `/mp-integrate`, `/mp-review`, `/mp-connect`, `/mp-test-cards`
+
+## Novedades de v4.3.3
+
+- Asesor SmartApps basado en la Release/tag oficial **7.0.0**, con ejemplos Android y rutas de APK/AAR del kit versionado.
+- Flujo nativo separado del scaffold web: asesoría sin exigir fuentes del SDK ni autenticación MCP innecesaria; respuestas en el idioma de la conversación.
+- Validación conservadora de `CLIENT_ID` y referencias externas, con revisión pendiente para valores no resolubles.
+- [Inspector opcional del AAR](plugins/mercadopago/skills/mp-integrate/references/guides/smartapps.md): API pública, manifiesto, hashes y referencias externas inferidas. No modifica el SDK ni certifica dependencias o pagos.
+- Las recomendaciones altas de dependencias de runtime, emulador y prechequeo APK se mantienen [pendientes de definición de alcance](docs/smartapps-iteration-4.3.3.md).
 
 ## What's new in v4.3.2
 
