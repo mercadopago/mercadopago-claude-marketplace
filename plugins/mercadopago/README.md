@@ -12,6 +12,14 @@ After installing the plugin, start using it offline or connect to your Mercado P
 
 **Other IDEs (Cursor, VS Code, Windsurf, etc.):** add the HTTP server via your IDE's MCP settings panel with URL `https://mcp.mercadopago.com/mcp`, then complete the OAuth flow your IDE prompts. See `/mp-connect` for IDE-specific snippets.
 
+## Versión 4.3.3
+
+- SmartApps usa el contrato verificado de SDK 7.0.0 y el kit de su Release/tag, sin tomar una prerelease mayor ni la rama por defecto.
+- El asesor puede generar código sin las fuentes del SDK y avanza por etapas: código, compilación, APK y pruebas de terminal se informan por separado.
+- Las consultas MCP se realizan cuando aportan información vigente o resuelven un vacío, con site e idioma explícitos; no son un requisito de autenticación para trabajo local verificado.
+- Incluye inspección binaria opcional del AAR y validación estática con valores no resolubles marcados para revisión.
+- Se conservan un agente y cuatro skills. Esta iteración no implementa los puntos de prioridad alta pendientes de revisión.
+
 ## Version 4.3.2
 
 - `/mp-integrate` reads routed skills directly from `${CLAUDE_PLUGIN_ROOT}`, avoiding a Bash preflight before routing.
