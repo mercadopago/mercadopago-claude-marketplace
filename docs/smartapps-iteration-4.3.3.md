@@ -39,6 +39,14 @@ Se revisarán **el viernes 6 de noviembre de 2026, por la tarde**, para aclarar 
 
 Estas tres mejoras no están implementadas por este PR. El registro de esta revisión no equivale a una reunión agendada ni a una aprobación de esas capacidades.
 
+## Requisitos y alcance propuesto - 11 de noviembre de 2026
+
+Se incorpora el [checklist completo de homologación de MainApp](../plugins/mercadopago/skills/mp-integrate/references/guides/smartapps-homologation-requirements.md), basado en el PDF aportado: 20 requisitos, con sus 11 obligaciones y 9 recomendaciones originales, páginas, huella del documento y evidencia necesaria. Se distinguen los requisitos comprobables en el APK de los que necesitan documentación, pruebas de uso o terminal.
+
+La [especificación funcional propuesta](smartapps-homologation-functional-spec.md) desarrolla las tres prioridades altas: dependencias de ejecución del AAR, etapa de prueba en emulador y prechequeo del APK compilado. Incluye como condición de fiabilidad evitar el falso aprobado reproducido cuando una aplicación incompleta contiene otro proyecto integrado dentro de su raíz.
+
+Esta ampliación publica requisitos y criterios de aceptación para revisión. La validación de dependencias, la etapa formal de emulador, el nuevo script de APK y la corrección de aislamiento siguen pendientes de implementación. La publicación con POM corresponde al proveedor del SDK; DevConsole debe confirmar sus reglas adicionales y ambigüedades antes de afirmar equivalencia completa con su pipeline.
+
 ## Verificación
 
 Las suites están integradas en `scripts/validate_repository.sh`. La suite estática no acredita compilación; los ejemplos de la guía se contrastan por separado con el AAR oficial. Las comprobaciones de esta iteración no procesan pagos ni instalan aplicaciones en una terminal.
