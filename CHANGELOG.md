@@ -30,7 +30,14 @@ All notable changes to this project are documented in this file.
 ### Added
 
 - Inspector opcional del AAR con SHA-256, manifiesto, API pública, comparación y referencias externas inferidas, sin modificar o ejecutar el SDK ni exigir sus fuentes.
-- Registro público de la iteración y backlog de prioridades altas: dependencias de runtime, capa formal de emulador y prechequeo APK, sujetos a revisión de alcance el viernes 6 de noviembre por la tarde.
+- La guía de SmartApps V1 documenta Smart Sandbox 1.1.0, las dependencias de
+  referencia del demo oficial, el tiempo de espera con reintento para la carga
+  de medios y los hashes verificados del kit repuesto.
+- El SDK de SmartApps permanece en 7.0.0. El validador rechaza declaraciones
+  explícitas de otras versiones y llamadas incompatibles. La etiqueta 7.3.1
+  de Smart Sandbox queda como referencia del simulador hasta que se confirme
+  otra release oficial aplicable.
+- El registro de la iteración documenta las mejoras pendientes de la V2.
 
 ## [4.3.2] - 2026-08-26
 

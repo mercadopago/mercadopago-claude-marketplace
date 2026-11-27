@@ -617,7 +617,7 @@ Resolve documentation in **tiers**. The official `llms.txt` per country is alway
 |------|--------|------|------|
 | 1 | `https://www.{country_domain}/developers/llms.txt` (WebFetch — official, always current) | none | **Always first** — fetch using resolved country domain. If fails (403, timeout), fall to tier 2. |
 | 2 | `{plugin_base}/skills/mp-integrate/references/products.md` (bundled) | none | **Always** — product guides, API reference, code snippets, country-specific test cards. |
-| 3 | `mcp__plugin_mercadopago_mcp__search_documentation` | MCP OAuth | **Fallback only**, except SmartApps where it is mandatory — use when tiers 1–2 don't cover the combination, and always for `product=smartapps`. |
+| 3 | `mcp__plugin_mercadopago_mcp__search_documentation` | MCP OAuth | **Fallback only** — use when tiers 1–2 don't cover the combination. For SmartApps, query only for current country options or an unresolved documentation need (LOCK 13). |
 
 **Country domain for tier 1:**
 
@@ -680,12 +680,13 @@ Then stop. Specifically:
 
 When `product=smartapps`, do not render the generic server/web checkout bundle
 below and do not create `.env` credentials. Render a SmartApps-specific bundle
-from `references/guides/smartapps.md` plus the authenticated MCP result with
-these sections: commercial agreement, Android project eligibility, app kind
+from `references/guides/smartapps.md` and include MCP results when the selected
+operation needed that evidence. Include these sections: commercial agreement, Android project eligibility, app kind
 (`main|mini`), ownership (`own|third-party`), selected capabilities
 (`smartapp-capabilities`), confirmed 7.0.0 release artifact and optional version analysis,
-Manifest/initialization contract, SDK-only payment flow, static validation,
-development-terminal tests, official integration stages, and homologation.
+Manifest/initialization contract, SDK-only payment flow, demo dependencies,
+static validation, Smart Sandbox on an emulator, development-terminal tests,
+and homologation.
 Marca como pendiente la etapa que dependa de un artefacto sin confirmar o de
 la terminal; nunca reemplaces el contrato con APIs inventadas. Sigue la
 autorización y ejecución de la ruta nativa de `guides/smartapps.md`; no continúes

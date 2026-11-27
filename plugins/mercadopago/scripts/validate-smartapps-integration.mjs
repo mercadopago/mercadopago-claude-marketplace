@@ -317,10 +317,15 @@ const referenceChecks = [...new Set(referenceExpressions)].map(expression => {
 if (!referenceChecks.length) warnings.add('No se pudo vincular una expresión de externalReference con el pago; revisar su formato y generación por transacción.');
 
 const declaredSdkVersions = [...new Set([...cleanGradle.matchAll(/nativesdk-(\d+\.\d+\.\d+)\.aar/g)].map(match => match[1]))];
-if (declaredSdkVersions.length === 1 && declaredSdkVersions[0] === '7.0.0' && /\b(?:PaymentRequestData|PaymentFlowCallback|getPaymentMethodsList)\b/.test(cleanCode)) {
-  failures.push('El código usa APIs posteriores a la versión 7.0.0 declarada; utiliza PaymentFlowRequestData, getPaymentMethods y el callback MPResponse.');
+if (declaredSdkVersions.some(version => version !== '7.0.0')) {
+  failures.push('La versión confirmada para esta integración es nativesdk 7.0.0; revisa las declaraciones de AAR y el artefacto de la Release oficial.');
 }
-if (declaredSdkVersions.length !== 1 || declaredSdkVersions[0] !== '7.0.0') warnings.add('No se comprobó una declaración única de nativesdk 7.0.0; confirmar la Release oficial y el artefacto elegido sin actualizarlo automáticamente.');
+if (!declaredSdkVersions.length) {
+  warnings.add('No se pudo confirmar nativesdk 7.0.0 en las declaraciones; verifica la Release y el hash del AAR.');
+}
+if (/\b(?:PaymentRequestData|PaymentFlowCallback|getPaymentMethodsList)\b/.test(cleanCode)) {
+  failures.push('El código usa APIs posteriores a 7.0.0; utiliza PaymentFlowRequestData, getPaymentMethods y el callback MPResponse.');
+}
 
 if (fs.existsSync(path.join(appRoot, '.mp-integrate-progress.md'))) {
   failures.push('.mp-integrate-progress.md debe eliminarse después de generar correctamente los archivos');
@@ -412,7 +417,7 @@ forbidPattern(
 requirePattern(codeSource, /class\s+\w+\s*:\s*Application\s*\(|extends\s+Application\b/, 'El SDK debe inicializarse en una clase Application de Android');
 requirePattern(codeSource, /MPConfigBuilder\s*\(/, 'La SmartApp debe configurar el SDK con MPConfigBuilder');
 requirePattern(codeSource, /MPManager(?:\.INSTANCE)?\.initialize\s*\(/, 'La SmartApp debe inicializar MPManager');
-requirePattern(codeSource, /paymentMethodsTools[\s\S]{0,200}?getPaymentMethods(?:List)?\s*(?:\(|\{)/i, 'Los medios de pago deben obtenerse mediante getPaymentMethods del SDK 7.0.0');
+requirePattern(cleanCode, /\b(?:paymentMethodsTools|getPaymentMethodsTools)\b[\s\S]{0,200}?\bgetPaymentMethods\s*(?:\(|\{)/, 'Los medios de pago deben obtenerse mediante getPaymentMethods del SDK 7.0.0');
 requirePattern(codeSource, /launchPaymentFlow\s*\(/, 'Los pagos deben iniciarse mediante el flujo del SDK SmartApps');
 requirePattern(codeSource, /doIfSuccess\s*(?:\(|\{)|onSuccess\s*\(/, 'El flujo de pago debe manejar las respuestas de éxito');
 requirePattern(codeSource, /doIfError\s*(?:\(|\{)|onError\s*\(/, 'El flujo de pago debe manejar los errores con mensajes accionables');

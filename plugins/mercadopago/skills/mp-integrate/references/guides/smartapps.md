@@ -1,5 +1,5 @@
 # Guía: Asesor de SmartApps
-# Actualizado: 2026-11-05 | Línea base oficial confirmada: nativesdk 7.0.0
+# Actualizado: 2026-11-27 | Línea base oficial confirmada: nativesdk 7.0.0
 # Fuentes: Release/tag 7.0.0 y su kit, API pública del AAR y documentación
 #          oficial de SmartApps consultada por país. No tomar master como baseline.
 #          https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0
@@ -94,7 +94,7 @@ commit `f421f20`, no una rama llamada 7.0.0. Consulta el código del mismo tag:
 
 - Release: `https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0`.
 - Kit: `https://github.com/mercadopago/point-smartapp-demo-android/releases/download/7.0.0/Third-Apps-integration-kit-7.0.0.zip`.
-- SHA-256 del ZIP: `f851223d4135c377921a15ef960818bd45e454dbb17cbdebf350503fe8955636`.
+- SHA-256 del ZIP oficial comprobado el 27 de noviembre de 2026: `9881ba1e438c4b1f4e2c90a0d3157ba71c7432396bd03afc4513b7d3ff8b6d1c`.
 - SHA-256 del AAR: `d0c1cf4d26a5ac168cb1d4eef943fbb3158ca62ab5587e776a2f5c5089cc649e`.
 
 Los APK se encuentran **dentro del kit**, no en una URL de APK inventada:
@@ -105,6 +105,9 @@ Third-Apps-integration-kit-7.0.0/
   demo-miniapp-7.0.0.apk
   nativesdk-7.0.0.aar
   documentation-mainapp-SDK-7.0.0.zip
+  emulator sandbox  for testing/
+    [ispi-sandbox-android]-v1.1.0-release-universal.apk
+    README.md
 ```
 
 El ZIP de documentación contiene una carpeta interna rotulada `5.2.2`. Ese
@@ -119,8 +122,10 @@ versión propuesta, origen y archivos afectados; obtén autorización explícita
 reutilizando la ya otorgada cuando corresponda al mismo cambio. Con autorización,
 obtén el kit y completa el trabajo alcanzable; no impongas una descarga manual.
 
-Comprueba el hash del ZIP y luego el del AAR extraído por separado. No confundas
-el nombre de un archivo con evidencia de versión o autenticidad. Nunca uses un
+Comprueba los hashes del ZIP y del AAR extraído por separado. El ZIP oficial
+puede republicarse con otros archivos. Una diferencia en su hash requiere
+verificar la procedencia y confirmar los archivos adicionales antes de
+usarlos. Para usar el AAR como 7.0.0, su SHA-256 debe coincidir. Nunca uses un
 AAR placeholder como compilación exitosa ni sustituyas este SDK por uno web,
 backend o una coordenada Maven inventada. Gradle carga el archivo local:
 
@@ -131,6 +136,25 @@ implementation(files("libs/nativesdk-7.0.0.aar"))
 Si falta el AAR, puedes generar el código del contrato verificado; explica dónde
 se incorpora y qué falta para compilar. La falta de fuentes, POM o desglose
 interno de la biblioteca no bloquea ese trabajo.
+
+### Dependencias de referencia del demo 7.0.0
+
+El [Gradle del módulo demo](https://github.com/mercadopago/point-smartapp-demo-android/blob/7.0.0/app/build.gradle)
+y sus [versiones declaradas](https://github.com/mercadopago/point-smartapp-demo-android/blob/7.0.0/gradle.properties)
+usan estas coordenadas como referencia:
+
+```gradle
+implementation("androidx.core:core-ktx:1.7.0")
+implementation("androidx.fragment:fragment-ktx:1.5.5")
+implementation("com.google.code.gson:gson:2.10")
+```
+
+Son las versiones del demo, no versiones mínimas publicadas por el proveedor.
+Verifica las bibliotecas resueltas en la variante elegida, incluidas las
+coroutines que aporta Fragment KTX de forma transitiva. Conserva dependencias
+compatibles ya resueltas mediante alias o transitividad. Ante un fallo de
+carga de clases, revisa el runtime de esa variante y sus dependencias antes de
+probar con otro SDK.
 
 ### Inspección opcional y comparación de versiones
 
@@ -174,6 +198,10 @@ recompiles, parches ni publiques el AAR: sus cambios corresponden al proveedor.
 en el AAR 7.0.0. No generes esos contratos de versiones posteriores para esta
 línea base. En particular, no copies el nombre Java `PaymentFlowData` si un
 snippet documental lo muestra: la clase verificada es `PaymentFlowRequestData`.
+Si adaptas un ejemplo que use esas APIs, reconstruye la solicitud con los
+campos de `PaymentFlowRequestData`, consume la lista de `getPaymentMethods`,
+maneja `MPResponse` con las funciones de éxito y error e indica la impresión
+con el parámetro `printOnTerminal` de la solicitud.
 
 ## Paso 4 — Contrato de aceptación de la implementación
 
@@ -187,7 +215,11 @@ snippet documental lo muestra: la clase verificada es `PaymentFlowRequestData`.
   manifiesto. Revisa el resultado combinado de la variante, incluyendo recursos;
   no exijas una única expresión textual ni declares inválido lo no resuelto.
 - Compara los Client ID normalizados del manifiesto y de inicialización cuando
-  ambos se puedan resolver. Nunca copies identificadores de la demo.
+  ambos se puedan resolver. Nunca copies identificadores de la demo. Si el
+  log muestra `expected Long but value was a String`, comprueba el manifiesto
+  combinado y la inicialización. Registra el aviso por separado si el SDK
+  inicializa y devuelve el resultado esperado. Si alguno falla, conserva el
+  error para el diagnóstico.
 - Usa `PLATFORM_ID` o `INTEGRATOR_ID` solo con valores y contratos emitidos por
   Mercado Pago para la versión seleccionada; no los inventes ni los conviertas
   en requisitos genéricos por una mención de otra versión.
@@ -203,8 +235,14 @@ snippet documental lo muestra: la clase verificada es `PaymentFlowRequestData`.
 
 - Inicializa una sola vez en `Application.onCreate()`, habilitando solo las
   capacidades elegidas.
-- Obtén los medios de pago desde el SDK y presenta los que devuelva. Conserva
+- Obtén los medios con `getPaymentMethods` y presenta los que devuelva. Conserva
   las decisiones del usuario; no elijas automáticamente el primer medio.
+  Si el entorno no está listo, la consulta puede quedar sin callback de
+  éxito ni de error. Define un tiempo de espera para la consulta; al vencer,
+  quita el estado de carga, muestra un error y ofrece reintentar únicamente
+  la carga de medios. Cancela el temporizador al completar la consulta e
+  ignora callbacks tardíos de intentos anteriores. El reintento de medios
+  nunca vuelve a lanzar un cobro.
 - Crea y persiste una referencia única por intento antes de lanzar el pago.
   Conserva la misma referencia al recuperar ese intento; no generes otra para
   volver a cobrar cuando el resultado sea incierto.
@@ -356,6 +394,7 @@ el código ya generado ni detiene toda la asesoría:
 | Validación estática | Resultado del validador de fuentes y revisión de lo que no pueda resolver |
 | Compilación | AAR 7.0.0 real, dependencias resueltas y salida exitosa del build |
 | APK generada | Archivo existente del build elegido, identificado por ruta y hash |
+| Pruebas en emulador | APK e imagen de Android identificadas, site guardado y recepción de resultados simulados de aprobación, rechazo y cancelación |
 | Pruebas en terminal | Ejecución en Point de desarrollo con SmartPOS Sandbox y evidencia de los escenarios solicitados |
 | Homologación y producción | Aprobación oficial de Mercado Pago y distribución mediante el proceso correspondiente |
 
@@ -380,6 +419,36 @@ declarar completo el control correspondiente. Este control no prueba que SDK,
 firmware, pagos, impresora, cámara o Bluetooth funcionen. Si se solicita una APK final, completa la compilación y comprueba el
 artefacto cuando los insumos y permisos estén disponibles; no la declares lista
 por pasar un análisis textual. No afirmes homologación por un mock exitoso.
+
+### Probar en emulador con Smart Sandbox 1.1.0
+
+1. Crea un emulador dedicado. El README del kit recomienda un Pixel 4 o
+   equivalente con Android 12 (API 31), `arm64-v8a` en Apple Silicon o `x86_64`
+   en Intel/AMD. Evita instalar módulos reales de pago en el mismo emulador.
+2. Instala el APK de Smart Sandbox 1.1.0 indicado en el paso 3 y la APK de
+   la integración en el mismo emulador. Para aislar un problema, usa el demo
+   Main o Mini incluido en el kit, según el tipo de app.
+3. Abre Smart Sandbox, entra en Configuración, selecciona el site del país y
+   pulsa **Guardar**. Luego abre el demo o la aplicación integradora.
+4. Inicia el cobro desde la aplicación integradora. En Smart Sandbox, elige
+   aprobado o rechazado (y su motivo), pulsa **Revisar resultado** y luego
+   **Enviar resultado**. Para probar la cancelación, usa **Atrás** desde la
+   pantalla de configuración del cobro. Desde la pantalla de revisión,
+   **Atrás** vuelve a la configuración y **Cerrar** entrega el resultado.
+5. Comprueba el callback, el resultado mostrado y el retorno del control a la
+   aplicación en los tres escenarios. Registra la APK, el SDK, el site y la API
+   de Android utilizados.
+
+La etiqueta `SDK compat v7.3.1` pertenece al simulador. Verifica la versión
+del SDK desde el AAR que usa tu app y conserva 7.0.0 para esta integración.
+Si aparece el aviso de tamaño de página de 16 KB, regístralo y comprueba si la
+app arranca y devuelve los callbacks. Un fallo de instalación o ejecución
+requiere diagnóstico con la imagen y el artefacto que lo produjeron.
+
+Los resultados son simulados. Verifica lectura real y procesamiento de
+tarjetas, impresora, cámara y Bluetooth en la terminal física cuando
+corresponda. El README de Smart Sandbox dentro del kit describe la
+configuración, los escenarios y sus límites.
 
 Acompaña las etapas oficiales: crear la aplicación en Tus integraciones,
 preparar la terminal y el kit, instalar la SmartApp, integrar el pago, probar en

@@ -37,7 +37,7 @@ Se revisarán **el viernes 6 de noviembre de 2026, por la tarde**, para aclarar 
 2. Capa formal de prueba en emulador y su alcance frente a una terminal de desarrollo.
 3. Prechequeo de APK compilada y reglas acordadas con los responsables de DevConsole.
 
-Estas tres mejoras no están implementadas por este PR. El registro de esta revisión no equivale a una reunión agendada ni a una aprobación de esas capacidades.
+La primera entrega dejó estas tres mejoras pendientes. La actualización del 27 de noviembre describe el alcance incorporado para la V1.
 
 ## Requisitos y alcance propuesto - 11 de noviembre de 2026
 
@@ -45,7 +45,27 @@ Se incorpora el [checklist completo de homologación de MainApp](../plugins/merc
 
 La [especificación funcional propuesta](smartapps-homologation-functional-spec.md) desarrolla las tres prioridades altas: dependencias de ejecución del AAR, etapa de prueba en emulador y prechequeo del APK compilado. Incluye como condición de fiabilidad evitar el falso aprobado reproducido cuando una aplicación incompleta contiene otro proyecto integrado dentro de su raíz.
 
-Esta ampliación publica requisitos y criterios de aceptación para revisión. La validación de dependencias, la etapa formal de emulador, el nuevo script de APK y la corrección de aislamiento siguen pendientes de implementación. La publicación con POM corresponde al proveedor del SDK; DevConsole debe confirmar sus reglas adicionales y ambigüedades antes de afirmar equivalencia completa con su pipeline.
+La ampliación del 11 de noviembre publicó requisitos y criterios de aceptación
+para revisión. La publicación con POM corresponde al proveedor del SDK.
+DevConsole debe confirmar sus reglas para poder evaluar la equivalencia con su
+pipeline.
+
+## Alcance de SmartApps V1 — 27 de noviembre de 2026
+
+La V1 incorpora el procedimiento de emulador con Smart Sandbox 1.1.0 y los
+resultados simulados que deben verificarse. La guía incluye las dependencias
+que usa el demo 7.0.0, el manejo del tiempo de espera al cargar medios y los
+hashes observados del ZIP repuesto y del AAR oficial. El validador rechaza
+versiones explícitas del SDK distintas de 7.0.0 y los nombres de API
+incompatibles con esa versión. Las fuentes del SDK siguen siendo opcionales
+para el trabajo que el AAR permite verificar.
+
+Para la V2 quedan la plantilla completa del wizard, la validación de
+dependencias y del AAR por módulo y variante, el análisis estático de la
+selección de medios, persistencia de referencias y tiempo de espera, el
+aislamiento de proyectos anidados, el prechequeo del APK y la evaluación del
+wizard de punta a punta. Las pruebas físicas y la aprobación oficial tienen
+su propia evidencia.
 
 ## Verificación
 

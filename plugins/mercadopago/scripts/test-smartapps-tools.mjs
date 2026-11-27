@@ -98,7 +98,7 @@ function writeProject(name, options = {}) {
   fs.writeFileSync(path.join(root, 'app/build.gradle.kts'), options.gradle || gradle);
   fs.writeFileSync(path.join(mainRoot, 'AndroidManifest.xml'), options.manifest || manifest(options));
   fs.writeFileSync(path.join(mainRoot, `java/example/${options.applicationFile || 'MainApplication.kt'}`), options.applicationCode || applicationCode);
-  fs.writeFileSync(path.join(mainRoot, 'java/example/PaymentController.kt'), options.paymentCode || paymentCode);
+  fs.writeFileSync(path.join(mainRoot, 'java/example', options.paymentFile || 'PaymentController.kt'), options.paymentCode || paymentCode);
   for (const [relative, contents] of Object.entries(options.files || {})) {
     const file = path.join(root, relative);
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -138,6 +138,34 @@ function validate(name, projectOptions, appKind, ownership, expectedStatus, expe
 
 try {
   validate('valid-main-own', {}, 'main', 'own', 0);
+  validate('sdk-7-accepts-java-payment-methods-getter', {
+    paymentFile: 'PaymentController.java',
+    paymentCode: `
+      class PaymentController {
+        void loadMethods(Consumer<List<PaymentMethod>> onSuccess) {
+          MPManager.INSTANCE.getPaymentMethodsTools().getPaymentMethods(response -> {
+            MPResponseKt.doIfSuccess(response, methods -> {
+              onSuccess.accept(methods);
+              return Unit.INSTANCE;
+            });
+            return Unit.INSTANCE;
+          });
+        }
+        void startPayment(double amount, PaymentMethod chosenMethod) {
+          final String reference = UUID.randomUUID().toString();
+          final PaymentTransactionMetadata metadata =
+              new PaymentTransactionMetadata(null, reference, null, null, null, null);
+          final PaymentFlowRequestData request = new PaymentFlowRequestData(
+              amount, reference, chosenMethod, null, false, null, null, metadata);
+          MPManager.INSTANCE.getPaymentFlow().launchPaymentFlow(request, response -> {
+            MPResponseKt.doIfSuccess(response, payment -> Unit.INSTANCE);
+            MPResponseKt.doIfError(response, error -> Unit.INSTANCE);
+            return Unit.INSTANCE;
+          });
+        }
+      }
+    `,
+  }, 'main', 'own', 0);
   validate('checkpoint-incomplete-kept', {
     files: { '.mp-integrate-progress.md': 'product=smartapps\n' },
   }, 'main', 'own', 1, '.mp-integrate-progress.md');
@@ -285,10 +313,19 @@ buildConfigField("String", "MP_CLIENT_ID", "\"987654321012345\"")`,
   validate('sdk-version-declaration-unresolved', {
     gradle: gradle.replace('nativesdk-7.0.0.aar', 'nativesdk-current.aar'),
   }, 'main', 'own', 0, '', report => assert(report.sdkVersionDeclaration.length === 0, 'No se debe inferir la versión binaria desde una ruta genérica'), true);
-  validate('newer-api-is-not-official-7', {
-    gradle: gradle.replace('nativesdk-7.0.0.aar', 'nativesdk-7.2.0.aar'),
+  validate('sdk-7-rejects-newer-aar-with-compatible-api', {
+    gradle: gradle.replace('nativesdk-7.0.0.aar', 'nativesdk-7.3.1.aar'),
+  }, 'main', 'own', 1, 'La versión confirmada para esta integración es nativesdk 7.0.0');
+  validate('sdk-7-rejects-mixed-aar-versions', {
+    gradle: gradle + '\nimplementation(files("libs/nativesdk-7.3.1.aar"))',
+  }, 'main', 'own', 1, 'La versión confirmada para esta integración es nativesdk 7.0.0');
+  validate('sdk-7-rejects-newer-api-with-unversioned-aar', {
+    gradle: gradle.replace('nativesdk-7.0.0.aar', 'nativesdk-current.aar'),
     paymentCode: builderPaymentCode,
-  }, 'main', 'own', 0, '', () => {}, true);
+  }, 'main', 'own', 1, 'APIs posteriores');
+  validate('comment-does-not-provide-payment-discovery', {
+    paymentCode: paymentCode.replace('MPManager.paymentMethodsTools.getPaymentMethods', '// MPManager.paymentMethodsTools.getPaymentMethods {}\n    loadConfiguredPaymentMethods'),
+  }, 'main', 'own', 1, 'getPaymentMethods');
   console.log(`PASS ${caseCount} casos; las revisiones pendientes conservan salida 0 sin declararse verificadas.`);
 } finally {
   fs.rmSync(temporaryDirectory, { recursive: true, force: true });
