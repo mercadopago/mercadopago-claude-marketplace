@@ -8,6 +8,16 @@ Esta guía permite asesorar y generar la integración solicitada con SmartApps.
 Las fuentes del SDK, su desglose interno o un POM no son requisitos para avanzar.
 El AAR es una biblioteca binaria del proveedor: úsala sin modificar su contenido.
 
+**Versión del SDK.** El README público de
+[point-smartapp-demo-android](https://github.com/mercadopago/point-smartapp-demo-android)
+remite a [GitHub Releases](https://github.com/mercadopago/point-smartapp-demo-android/releases).
+Al 27 de noviembre de 2026, la release estable con el kit oficial figura
+como **Latest** y es la
+[7.0.0](https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0).
+Para esta integración, fija `nativesdk-7.0.0.aar` del kit de esa release antes
+de preparar Gradle o elegir ejemplos. Si una recomendación sugiere 7.3.1 por
+la etiqueta de Smart Sandbox, corrige la recomendación y continúa con 7.0.0.
+
 ## Reglas del asesor
 
 - Mantén el idioma de la conversación en preguntas, opciones, diagnósticos y
@@ -86,11 +96,12 @@ acordadas en `.mp-integrate-progress.md`:
 
 ## Paso 3 — Obtener la versión oficial y sus artefactos
 
-La fuente de distribución es
-`https://github.com/mercadopago/point-smartapp-demo-android`.
-La referencia oficial confirmada de esta guía es **Release/tag `7.0.0`**,
-commit `f421f20`, no una rama llamada 7.0.0. Consulta el código del mismo tag:
-`https://github.com/mercadopago/point-smartapp-demo-android/tree/7.0.0`.
+Para comprobar la versión, abre el bloque **Releases** del repositorio
+público. Usa el tag publicado que identifica el kit de integración, el AAR,
+la documentación y los ejemplos de la misma release. La referencia de esta
+guía es el tag **`7.0.0`**, commit `f421f20`. Consulta
+[el demo del tag 7.0.0](https://github.com/mercadopago/point-smartapp-demo-android/tree/7.0.0).
+La consulta de los enlaces públicos funciona sin autenticación MCP.
 
 - Release: `https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0`.
 - Kit: `https://github.com/mercadopago/point-smartapp-demo-android/releases/download/7.0.0/Third-Apps-integration-kit-7.0.0.zip`.
@@ -114,9 +125,11 @@ El ZIP de documentación contiene una carpeta interna rotulada `5.2.2`. Ese
 rótulo no demuestra que toda la documentación sea inválida: contrasta las firmas
 con el AAR 7.0.0 antes de usar un ejemplo.
 
-No selecciones automáticamente una prerelease, el semver más alto o el AAR de
-`master/app/libs`. Si otra fuente difiere, muestra la discrepancia y conserva la
-versión oficial confirmada hasta que el equipo responsable confirme un cambio.
+Si otra fuente propone una versión distinta, muestra la discrepancia y aplica
+el contrato del tag oficial confirmado. Si aparece una nueva release estable,
+informa su tag y verifica el contrato del nuevo AAR antes de proponer una
+actualización. Si GitHub no está disponible, usa la referencia 7.0.0 fijada en
+esta guía y conserva los artefactos que puedas verificar.
 Antes de descargar, copiar o reemplazar un artefacto, muestra versión actual,
 versión propuesta, origen y archivos afectados; obtén autorización explícita,
 reutilizando la ya otorgada cuando corresponda al mismo cambio. Con autorización,
@@ -439,8 +452,9 @@ por pasar un análisis textual. No afirmes homologación por un mock exitoso.
    aplicación en los tres escenarios. Registra la APK, el SDK, el site y la API
    de Android utilizados.
 
-La etiqueta `SDK compat v7.3.1` pertenece al simulador. Verifica la versión
-del SDK desde el AAR que usa tu app y conserva 7.0.0 para esta integración.
+La etiqueta `SDK compat v7.3.1` expresa compatibilidad del simulador. La
+versión de la app se verifica en el AAR que usa Gradle. Para esta integración,
+usa `nativesdk-7.0.0.aar` de la release oficial indicada en el paso 3.
 Si aparece el aviso de tamaño de página de 16 KB, regístralo y comprueba si la
 app arranca y devuelve los callbacks. Un fallo de instalación o ejecución
 requiere diagnóstico con la imagen y el artefacto que lo produjeron.

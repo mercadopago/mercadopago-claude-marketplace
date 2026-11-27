@@ -293,14 +293,17 @@ capabilities in order: solo cobrar, QR, imprimir, Bluetooth y extras).
 4. Resolve `main` versus `mini` and `own` versus `third-party` before writing.
    Main apps own the HOME launcher; mini apps do not. Third-party integrations
    require the SDK OAuth mode.
-5. El SDK es el AAR `nativesdk` publicado en las Releases de
-   `https://github.com/mercadopago/point-smartapp-demo-android`
-   (`Third-Apps-integration-kit-7.0.0.zip`, Release/tag `7.0.0`). Usa el código
-   y artefactos de ese tag, no lo encontrado en la rama por defecto ni una
-   prerelease más alta. Nunca lo sustituyas por un SDK backend/web ni inventes
-   una coordenada Maven. Antes de copiarlo/actualizarlo muestra el cambio y
-   solicita autorización. La inspección del AAR es opcional; no requiere ni
-   exige las fuentes del proveedor para asesorar o generar código.
+5. Para seleccionar el SDK, consulta el bloque **Releases** del
+   [repositorio público del demo](https://github.com/mercadopago/point-smartapp-demo-android).
+   Para esta integración usa únicamente la [release estable 7.0.0](https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0),
+   confirmada para la V1, y su `nativesdk-7.0.0.aar` de
+   `Third-Apps-integration-kit-7.0.0.zip`. Usa el código del mismo tag.
+   Si el simulador, otra fuente o una respuesta anterior sugiere 7.3.1, corrige
+   la recomendación antes de generar o modificar Gradle y usa 7.0.0.
+   Antes de copiar o actualizar el AAR, muestra el cambio y solicita
+   autorización. La inspección es opcional. El AAR publicado basta para
+   asesorar o generar código; conserva su forma de distribución como
+   dependencia Android local.
 6. Payment methods, payments, printer, scanner/camera, and Bluetooth are used
    through the SmartApps SDK. Do not call payment APIs directly from the
    terminal or request prohibited direct Android permissions.

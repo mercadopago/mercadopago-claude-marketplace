@@ -1,5 +1,5 @@
 # Guía: Recursos externos de SmartApps
-# Actualizado: 2026-11-05
+# Actualizado: 2026-11-27
 
 Fuentes públicas para el asesor de `guides/smartapps.md`. No agregues recursos
 internos, privados o propios de una empresa. No se necesita el código fuente
@@ -18,7 +18,7 @@ interacción del plugin.
 | MCP de Mercado Pago `search_documentation` | Opciones vigentes por país, restricciones y vacíos documentales | Bajo demanda, con `siteId`, idioma y tema; `limit=3` inicial y hasta tres consultas focalizadas |
 | `developers/llms.txt` oficial del país | Índice de páginas oficiales | Usa el dominio del país de la tabla de `SKILL.md`; Chile es `https://www.mercadopago.cl/developers/llms.txt` |
 | Documentación oficial de SmartApps | Etapas, capacidades, restricciones y seguridad | Resuelve el dominio oficial del país; rutas `/developers/{lang}/docs/smartapps/overview`, `/development-environment`, `/integrate-payment-flow` y `/restrictions` |
-| Release oficial confirmada | Kit, notas, nombres de APK/AAR y hashes | `https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0` |
+| Releases oficiales | Confirmar la release estable publicada con kit. Para esta guía, 7.0.0 es la versión confirmada | [Lista pública de releases](https://github.com/mercadopago/point-smartapp-demo-android/releases), [release 7.0.0](https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0) |
 | Kit de 7.0.0 | APK Main/Mini, AAR y documentación de esa distribución | `https://github.com/mercadopago/point-smartapp-demo-android/releases/download/7.0.0/Third-Apps-integration-kit-7.0.0.zip`; rutas internas en `smartapps.md` |
 | Demo del mismo tag | Ejemplos, configuración Gradle y manifiesto | `https://github.com/mercadopago/point-smartapp-demo-android/tree/7.0.0`; no mezclar con `master/app/libs` |
 | Documentación incluida en el kit | Métodos y clases a contrastar con el AAR | Léela localmente cuando esté disponible; un rótulo de carpeta no acredita su versión |
