@@ -17,6 +17,28 @@ All notable changes to this project are documented in this file.
 - Commerce checkout confirmation now queries the Order by id and treats only
   `processed/accredited` as paid.
 
+## [4.3.3] - 2026-11-05
+
+### Fixed
+
+- El asesor de SmartApps usa la Release/tag 7.0.0 confirmada y sus APIs reales, en lugar del baseline 7.2.0 y ejemplos de 7.1+ de la rama pivote.
+- Los enlaces del kit y las rutas de APK/AAR incluyen la versión; no se elige automáticamente una prerelease más alta o el contenido de `master`.
+- El flujo Android evita instrucciones genéricas de servidor, npm y credenciales web, y no requiere autenticación MCP cuando el contrato local está verificado.
+- La interacción y los diagnósticos siguen el idioma de la conversación; las capacidades se resuelven por site sin trasladar opciones de Brasil a Chile.
+- El validador estático distingue `CLIENT_ID` y referencias externas inválidos de valores dinámicos pendientes de revisión; no declara haber comprobado el APK ni la unicidad en ejecución.
+
+### Added
+
+- Inspector opcional del AAR con SHA-256, manifiesto, API pública, comparación y referencias externas inferidas, sin modificar o ejecutar el SDK ni exigir sus fuentes.
+- La guía de SmartApps V1 documenta Smart Sandbox 1.1.0, las dependencias de
+  referencia del demo oficial, el tiempo de espera con reintento para la carga
+  de medios y los hashes verificados del kit repuesto.
+- El SDK de SmartApps permanece en 7.0.0. El validador rechaza declaraciones
+  explícitas de otras versiones y llamadas incompatibles. La etiqueta 7.3.1
+  de Smart Sandbox queda como referencia del simulador hasta que se confirme
+  otra release oficial aplicable.
+- El registro de la iteración documenta las mejoras pendientes de la V2.
+
 ## [4.3.2] - 2026-08-26
 
 ### Fixed

@@ -32,6 +32,7 @@ node plugins/mercadopago/scripts/test-subscriptions-tools.mjs
 node plugins/mercadopago/scripts/test-marketplace-tools.mjs
 node plugins/mercadopago/scripts/test-wallet-connect-tools.mjs
 node plugins/mercadopago/scripts/test-smartapps-tools.mjs
+node plugins/mercadopago/scripts/test-smartapps-sdk-inspector.mjs
 node plugins/mercadopago/scripts/test-payouts-tools.mjs
 
 claude plugins validate . --strict

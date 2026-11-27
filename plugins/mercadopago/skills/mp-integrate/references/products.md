@@ -388,18 +388,19 @@ terminal marketplace.
 **Non-negotiable prerequisites:**
 - Active contact/agreement with the Mercado Pago business and integration team
 - Android target application and Android Studio
-- Private development kit with the current SmartApps AAR
+- SDK AAR `nativesdk` de la [release oficial 7.0.0 confirmada](https://github.com/mercadopago/point-smartapp-demo-android/releases/tag/7.0.0)
 - Mercado Pago development terminal with the approved test firmware for full testing
 
 **Critical boundaries:**
 - Never scaffold into a web/backend/iOS project as if it were a SmartApp
-- Always query the authenticated MCP for the current product guide
-- Ask before copying/updating the private AAR and use only the latest artifact
-  confirmed by the integration team
+- Use the bundled 7.0.0 contract. Query the MCP only for current country
+  options or an unresolved documentation need.
+- Pregunta antes de copiar o actualizar el AAR. Conserva la release 7.0.0
+  hasta que el equipo responsable confirme otra versión.
 - Payment and terminal capabilities are invoked through the SmartApps SDK, not
   through direct Android hardware permissions or browser/server SDKs
-- Static validation does not replace compilation with the real AAR, tests on a
-  development terminal, or Mercado Pago homologation
+- Report static validation, compilation with the real AAR, Smart Sandbox
+  simulations, development-terminal tests, and Mercado Pago homologation separately.
 
 **Docs:** https://www.mercadopago.com.{country}/developers/en/docs/smartapps/overview
 
